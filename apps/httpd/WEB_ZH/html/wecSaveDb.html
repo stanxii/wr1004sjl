@@ -1,0 +1,50 @@
+<html>
+   <head>
+      <link rel="stylesheet" href='stylemain.css' type='text/css'>
+			<link rel="stylesheet" href='colors.css' type='text/css'>
+			<!--<meta http-equiv="Pragma" content="no-cache">-->
+			<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">			
+			<title>保存配置</title>
+			<base target="_self">
+			<SCRIPT language=JavaScript> 				
+				function btnSave() {
+					var loc = 'wecSaveDbInfo.cgi';
+					var code = 'location="' + loc + '"';
+					with ( document.forms[0] )
+					{
+						mybtn.disabled = "disabled";
+					}		   
+			  	eval(code);
+				}
+			</SCRIPT>
+   </head>
+   <body>
+      <blockquote>
+         <form>
+            <br>
+            <table border="0" cellpadding="5" cellspacing="0">
+            	<tr>
+            		<td class='maintitle'><b>保存配置</b></td>            		
+            	</tr>                       
+		        </table>
+		        <table border="0" cellpadding="0" cellspacing="0">            	
+            	<tr>
+								<td class='mainline' width=900></td>
+							</tr>                           
+		        </table>
+            <br>将配置信息保存至非易失性存储器，以便系统重启时可以正确加载您变更的配置。
+          	<br>注意：您通过网页变更的配置如果未保存至非易失性存储器，该配置在系统重启后将会丢失。</br>
+            	 <br>            	
+               <br>
+               <table border="0" cellpadding="3" cellspacing="0">
+               <tr>
+                  <td width=200>将配置保存至非易失性存储器:</td>                  
+                	<td align="center" width=180>
+                		<input type='button' name='mybtn' class='btn2L' onClick='btnSave()' value='保 存'>
+                	</td>
+               </tr>               
+        </table>
+         </form>
+      </blockquote>
+   </body>
+</html>

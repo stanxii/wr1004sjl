@@ -1,0 +1,179 @@
+<html>
+	<head>
+		<link rel="stylesheet" href='stylemain.css' type='text/css'>
+		<link rel="stylesheet" href='colors.css' type='text/css'>
+		<!--<meta http-equiv="Pragma" content="no-cache">-->
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
+		<!--<meta http-equiv="refresh" content="20">-->
+		<title>网络设置</title>
+		<base target="_self">
+		
+		<script language="javascript" src="util.js"></script>
+		<script language="javascript">
+			function frmLoad() {
+			   with ( document.forms[0] ) {
+			      ethIpAddress.value = '<%ejGet(wecIpaddr)%>';
+			      ethSubnetMask.value = '<%ejGet(wecNetmask)%>';
+			      ethGateway.value = '<%ejGet(wecDefaultGw)%>';
+			      var state = '<%ejGet(wecMgmtVlanSts)%>';
+			      if ( state == '0' )
+			      {
+			      	enblMgmtVlan.checked = false;
+			      	hideMgmtVlanInfo(1);
+			      	vlanid.value = '1';
+			      }
+			      else
+			      {
+			      	enblMgmtVlan.checked = true;
+			      	hideMgmtVlanInfo(0);
+			      	vlanid.value = '<%ejGet(wecMgmtVlanId)%>';
+			      }
+			    }
+			}
+			function hideMgmtVlanInfo(hide)
+			{
+			   var status = 'visible';
+			
+			   if ( hide == 1 )
+			      status = 'hidden';
+			   if (document.getElementById)  // DOM3 = IE5, NS6
+			      document.getElementById('mgmtVlanInfo').style.visibility = status;
+			   else {
+			      if (document.layers == false) // IE4
+			         document.all.mgmtVlanInfo.style.visibility = status;
+			   }
+			}
+			
+			function mgmtVlanCbClick(cb)
+			{
+			   if ( cb.checked == true )
+			      hideMgmtVlanInfo(0);
+			   else
+			      hideMgmtVlanInfo(1);
+			}
+			
+			function btnSave()
+			{
+				 var loc = 'ntwkcfg.cgi?';
+
+			   with ( document.forms[0] )
+			   {
+			   		if ( isValidIpAddress(ethIpAddress.value) == false )
+			   		{
+			   			alert('IP address "' + ethIpAddress.value + '" is invalid.');
+			   			return;
+			   		}
+			   		else
+			   		{
+			   			loc += 'wecIpaddr=' + ethIpAddress.value;
+			   		}
+			   		
+			   		if ( isValidSubnetMask(ethSubnetMask.value) == false )
+			   		{
+			   			alert('Subnet mask "' + ethSubnetMask.value + '" is invalid.');	
+			   			return;
+			   		}
+			   		else
+			   		{
+			   			loc += '&wecNetmask=' + ethSubnetMask.value;
+			   		}
+			   		
+			   		if ( isValidGwAddress(ethGateway.value) == false )
+			   		{
+			   			alert('Gateway "' + ethGateway.value + '" is invalid.');	
+			   			return;
+			   		}
+			   		else
+			   		{
+			   			loc += '&wecDefaultGw=' + ethGateway.value;
+			   		}			   		
+			   		
+			   		if ( enblMgmtVlan.checked == true )
+			   		{
+			   			loc += '&wecMgmtVlanSts=1';
+			   			if ( isValidVlanId(vlanid.value) == false )
+			   			{
+			   				return;
+			   			}
+			   			else
+			   			{
+			   				loc += '&wecMgmtVlanId=' + vlanid.value;
+			   			}			   			
+			   		}
+			   		else
+			   		{
+			   			loc += '&wecMgmtVlanSts=0';
+			   			loc += '&wecMgmtVlanId=1';
+			   		}
+			   }
+			
+			   var code = 'location="' + loc + '"';			   
+			   eval(code);	   
+			}
+		</script>
+	</head>
+	
+	<body onLoad='frmLoad()'>
+		<blockquote>
+			<form>
+				<br>
+        <table border="0" cellpadding="5" cellspacing="0">
+        	<tr>
+        		<td class='maintitle'><b>网络设置</b></td>            		
+        	</tr>                       
+        </table>
+        <table border="0" cellpadding="0" cellspacing="0">            	
+        	<tr>
+						<td class='mainline' width=800></td>
+					</tr>                           
+        </table>
+				<br>通过本页面，您可以设置本机的管理IP地址以及管理VLAN。设置生效之后请以新的IP地址以及指定的管理VLAN通道访问设备。
+				<br>注意：请确保修改后的配置保存至非易失性存储器。</br>
+				<br>            	
+				<br>
+				<table border="0" cellpadding="0" cellspacing="0">
+		  		<tr>
+		  			<td class='diagret' width=200>网络参数设置</td>
+		  			<td class='diagret' width=260>&nbsp;</td>
+		  		</tr>
+		  		<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>
+		  		<tr>
+						<td class='diagdata' width=200>IP地址：</td>
+						<td class='diagdata' width=260><input type='text' name='ethIpAddress'></td>
+					</tr>
+					<tr>
+						<td class='diagdata'>子网掩码：</td>
+						<td class='diagdata'><input type='text' name='ethSubnetMask'></td>
+					</tr>
+					<tr>
+						<td class='diagdata'>默认网关：</td>
+						<td class='diagdata'><input type='text' name='ethGateway'></td>
+					</tr>
+					<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>
+					<tr>
+						<td class='diagdata' width=200><input type='checkbox' name='enblMgmtVlan' onClick='mgmtVlanCbClick(this)'></td>
+						<td class='diagdata' width=260>启用管理VLAN</td>
+					</tr>					  		
+		  		<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>		  		
+		  	</table>				
+				<div id='mgmtVlanInfo'>
+					<table border="0" cellpadding="0" cellspacing="0">
+						<tr>
+							<td class='diagdata' width=200>管理VLAN-ID</td>
+							<td class='diagdata' width=260><input type='text' name='vlanid'></td>
+						</tr>
+						<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>						
+					</table>
+				</div>
+				<table border="0" cellpadding="0" cellspacing="0">
+		  		<tr><td class='listend' width=460></td></tr>		  		
+		  	</table>
+		  	<br><b>提示：</b>网络参数配置需要在系统重启之后才能生效。</br>
+				<br><br>      
+				<p>
+					<input type='button' class='btn2L' onClick='btnSave()' value='确 定'>
+				</p>
+			</form>
+		</blockquote>
+	</body>
+</html>

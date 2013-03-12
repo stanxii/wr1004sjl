@@ -1,0 +1,34 @@
+#ifndef __WEC_PLATFORM_H__
+#define __WEC_PLATFORM_H__
+
+#define	WEC9720EK_SINGLE_MODULE
+#undef	WEC9720EK_DUAL_MODULES
+#undef	WEC9720EK_MULTI_MODULES
+
+#ifdef WEC9720EK_SINGLE_MODULE
+
+#define PORT_CPU_PORT_ID			5
+#define PORT_CPU_PORT_ADDR		0x15
+
+#define PORT_ETH1_PHY_ID			0
+#define PORT_ETH1_PHY_ADDR		0
+
+#define PORT_ETH1_PORT_ID			0
+#define PORT_ETH1_PORT_ADDR		0x10
+
+#define PORT_ETH2_PHY_ID			1
+#define PORT_ETH2_PHY_ADDR		1
+
+#define PORT_ETH2_PORT_ID			1
+#define PORT_ETH2_PORT_ADDR		0x11
+
+#define PORT_CABLE1_PORT_ID		6
+#define PORT_CABLE1_PORT_ADDR		0x16
+
+#define PORT_CABLE2_PORT_ID		2
+#define PORT_CABLE2_PORT_ADDR		0x12
+
+#endif
+
+#endif 
+

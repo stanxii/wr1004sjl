@@ -1,0 +1,103 @@
+<html>
+	<head>
+		<link rel="stylesheet" href='stylemain.css' type='text/css'>
+		<link rel="stylesheet" href='colors.css' type='text/css'>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
+		<title>WEC9720EK</title>
+		<base target="_self">
+		<script language="javascript" src="util.js"></script>
+		<SCRIPT language=JavaScript>
+			function btnReturn()
+			{
+				window.location = "previewCnus.cgi";
+			}
+			
+			function btnApply()
+			{				
+				var loc = 'cnuCreate.cgi?';
+				with ( document.forms[0] )
+				{
+					if( isValidMacAddress(cnuMac.value) == false )
+					{
+						alert('MAC address "' + cnuMac.value + '" is invalid.');
+						return;
+					}
+					loc += 'newCnuMac=' + cnuMac.value;
+					loc += '&newCnuModel=' + devModel.selectedIndex;
+					loc += '&newCnuPro=' + devPro.selectedIndex;
+				}
+				var code = 'location="' + loc + '"';
+				//alert(code);
+    		eval(code);
+			}
+		</SCRIPT>
+   </head>
+   <body>
+      <blockquote>
+         <form>
+            <br>
+            <table border="0" cellpadding="5" cellspacing="0">
+            	<tr>
+            		<td class='maintitle'><b>Create New CNU</b></td>            		
+            	</tr>                       
+		        </table>
+		        <table border="0" cellpadding="0" cellspacing="0">            	
+            	<tr>
+								<td class='mainline' width=800></td>
+							</tr>                           
+		        </table>
+          	<br>Through this page, you can create a new CNU. After the CNU is created, you can do offline configuration for it.</br>
+            	 <br>            	
+               <br>
+               <table border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class='diagret' width=200>Input device information</td>
+									<td class='diagret' width=360>&nbsp;</td>
+								</tr>                           
+			        </table>
+			        <br>
+              <table border="0" cellpadding="0" cellspacing="0">
+               <tr>
+                  <td class='diagdata' width=110>MAC Address:</td>
+                  <td class='diagdata' width=150><input type='text' name='cnuMac' size="20"></td>
+                  <td class='diagdata' width=300>Such as: 30:71:B2:20:12:00</td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>Device model</td>
+                  <td class='diagdata'>
+                  	<select name='devModel' size="1">
+                  		<option value="0" selected='selected'>Auto Scane
+                      <option value="1">WEC-3702I L2
+                      <option value="2">WEC-3702I C2
+                      <option value="2">WEC-3702I C4
+                    </select>
+                  </td>
+                  <td class='diagdata'>&nbsp;</td>
+               </tr> 
+               <tr>
+                  <td class='diagdata'>Profile:</td>
+                  <td class='diagdata'>
+                  	<select name='devPro' size="1">
+                  		<option value="0" selected='selected' disabled>Default Profile
+                    </select>
+                  </td>
+                  <td class='diagdata'>&nbsp;</td>
+               </tr>             
+        </table>
+        <br>
+        <table border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class='listend' width=560></td>
+					</tr>                           
+        </table>
+        <br><b>Note:</b> If you are not sure about the device model, please select "Auto Scane".</br>
+        <br><br>
+        <p>
+        	<input type='button' class='btn2L' onClick='btnReturn()' value='Return'>          	
+        	<input type='button' class='btn2L' onClick='btnApply()' value='Commit'>
+        </p>
+			</form>
+		</blockquote>
+	</body>
+</html>
+

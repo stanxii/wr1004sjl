@@ -1,0 +1,482 @@
+<html>
+   <head>
+      <link rel="stylesheet" href='stylemain.css' type='text/css'>
+			<link rel="stylesheet" href='colors.css' type='text/css'>
+			<!--<meta http-equiv="Pragma" content="no-cache">-->
+			<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">			
+			<title>WEC9720EK</title>
+			<base target="_self">
+			<SCRIPT language=JavaScript> 
+				var eth1speed = '<%ejGet(eth1speed)%>';
+				var eth1duplex = '<%ejGet(eth1duplex)%>';
+				//var eth1pri = '<%ejGet(eth1pri)%>';
+				var eth1fc = '<%ejGet(eth1fc)%>';
+				var eth1sts = '<%ejGet(eth1sts)%>';
+				var eth1linksts = '<%ejGet(eth1linksts)%>';
+				
+				var eth2speed = '<%ejGet(eth2speed)%>';
+				var eth2duplex = '<%ejGet(eth2duplex)%>';
+				//var eth2pri = '<%ejGet(eth2pri)%>';
+				var eth2fc = '<%ejGet(eth2fc)%>';
+				var eth2sts = '<%ejGet(eth2sts)%>';
+				var eth2linksts = '<%ejGet(eth2linksts)%>';
+				
+				var eth3speed = '<%ejGet(eth3speed)%>';
+				var eth3duplex = '<%ejGet(eth3duplex)%>';
+				//var eth3pri = '<%ejGet(eth3pri)%>';
+				var eth3fc = '<%ejGet(eth3fc)%>';
+				var eth3sts = '<%ejGet(eth3sts)%>';
+				var eth3linksts = '<%ejGet(eth3linksts)%>';
+				
+				var eth4speed = '<%ejGet(eth4speed)%>';
+				var eth4duplex = '<%ejGet(eth4duplex)%>';
+				//var eth4pri = '<%ejGet(eth4pri)%>';
+				var eth4fc = '<%ejGet(eth4fc)%>';
+				var eth4sts = '<%ejGet(eth4sts)%>';
+				var eth4linksts = '<%ejGet(eth4linksts)%>';
+				
+				function btnConfig(portid) {
+					var loc = 'portPropety.cmd?';
+					loc += 'portid=' + portid;
+					var code = 'location="' + loc + '"';
+					//alert(code);
+					eval(code);
+				}
+				function btnRefresh() {
+				   location.href = "wecPortPropety.cgi";
+				}
+			</SCRIPT>
+   </head>
+   <body>
+      <blockquote>
+         <form>
+            <br>
+		        <table border="0" cellpadding="5" cellspacing="0">
+		        	<tr>
+		        		<td class='maintitle'><b>Port Properties</b></td>            		
+		        	</tr>                       
+		        </table>
+		        <table border="0" cellpadding="0" cellspacing="0">            	
+		        	<tr>
+								<td class='mainline' width=800></td>
+							</tr>                           
+		        </table>
+            <br>Through this page, you can view and configure the properties of native Ethernet and coaxial ports, including: speed, duplex status, 
+	     <br>port flow control and port state property parameters....</br>      	
+            <br>
+            <br>
+            <table border="1" cellpadding="3" cellspacing="0">
+               <tr>
+                  <td class='hd' align="center" width=80>Port</td>
+                  <td class='hd' align="center" width=100>Link status</td>
+                  <td class='hd' align="center" width=120>Speed/Duplex</td>
+                  <td class='hd' align="center" width=60>pri</td>
+                  <td class='hd' align="center" width=80>Flow Control</td>
+                  <td class='hd' align="center" width=80>Port status</td>
+                  <td class='hd' align="center" width=80>Setup</td>
+               </tr>
+               <tr>
+                  <td align="center">ETH1</td>
+                  <script language="javascript">
+                  	if( parseInt(eth1linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>Link Up</font></td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>Link Down</font></td>");
+                  	}                  	
+                  	
+                  	if( parseInt(eth1speed) == 0 )
+                  	{
+                  		if( parseInt(eth1duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>Auto/Auto</td>");
+                  		}
+                  		else if( parseInt(eth1duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>Auto/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>Auto/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth1speed) == 1 )
+                  	{
+                  		if( parseInt(eth1duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>10M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth1duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>10M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>10M/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth1speed) == 2 )
+                  	{
+                  		if( parseInt(eth1duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>100M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth1duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>100M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>100M/FULL</td>");
+                  		}
+                  	}
+                  	else
+                  	{
+                  		if( parseInt(eth1duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>1000M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth1duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>1000M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>1000M/FULL</td>");
+                  		}
+                  	}                  	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth1pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth1fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth1sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(1)' value='Config'></td>
+               </tr>
+               <tr>
+                  <td align="center">ETH2</td>
+                  <script language="javascript">
+                  	if( parseInt(eth2linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>Link Up</font></td>");	
+                  	}                  	
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>Link Down</font></td>");
+                  	}
+                  	
+                  	if( parseInt(eth2speed) == 0 )
+                  	{
+                  		if( parseInt(eth2duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>Auto/Auto</td>");
+                  		}
+                  		else if( parseInt(eth2duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>Auto/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>Auto/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth2speed) == 1 )
+                  	{
+                  		if( parseInt(eth2duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>10M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth2duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>10M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>10M/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth2speed) == 2 )
+                  	{
+                  		if( parseInt(eth2duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>100M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth2duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>100M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>100M/FULL</td>");
+                  		}
+                  	}
+                  	else
+                  	{
+                  		if( parseInt(eth2duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>1000M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth2duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>1000M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>1000M/FULL</td>");
+                  		}
+                  	}                  	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth2pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth2fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth2sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(2)' value='Config'></td>
+               </tr>
+               <tr>
+                  <td align="center">Cable1</td>
+                  <script language="javascript">
+                  	if( parseInt(eth3linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>Link Up</font></td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>Link Down</font></td>");
+                  	}
+                  	
+                  	if( parseInt(eth3speed) == 0 )
+                  	{
+                  		if( parseInt(eth3duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>Auto/Auto</td>");
+                  		}
+                  		else if( parseInt(eth3duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>Auto/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>Auto/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth3speed) == 1 )
+                  	{
+                  		if( parseInt(eth3duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>10M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth3duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>10M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>10M/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth3speed) == 2 )
+                  	{
+                  		if( parseInt(eth3duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>100M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth3duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>100M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>100M/FULL</td>");
+                  		}
+                  	}
+                  	else
+                  	{
+                  		if( parseInt(eth3duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>1000M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth3duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>1000M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>1000M/FULL</td>");
+                  		}
+                  	}                  	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth3pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth3fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth3sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(3)' value='Config'></td>
+               </tr>
+               <tr>
+                  <td align="center">Cable2</td>
+                  <script language="javascript">
+                  	if( parseInt(eth4linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>Link Up</font></td>");	
+                  	}                  	
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>Link Down</font></td>");
+                  	}
+                  	
+                  	if( parseInt(eth4speed) == 0 )
+                  	{
+                  		if( parseInt(eth4duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>Auto/Auto</td>");
+                  		}
+                  		else if( parseInt(eth4duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>Auto/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>Auto/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth4speed) == 1 )
+                  	{
+                  		if( parseInt(eth4duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>10M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth4duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>10M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>10M/FULL</td>");
+                  		}
+                  	}
+                  	else if( parseInt(eth4speed) == 2 )
+                  	{
+                  		if( parseInt(eth4duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>100M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth4duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>100M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>100M/FULL</td>");
+                  		}
+                  	}
+                  	else
+                  	{
+                  		if( parseInt(eth4duplex) == 0 )
+                  		{
+                  			document.writeln("<td align=center>1000M/Auto</td>");
+                  		}
+                  		else if( parseInt(eth4duplex) == 1 )
+                  		{
+                  			document.writeln("<td align=center>1000M/HALF</td>");
+                  		}
+                  		else
+                  		{
+                  			document.writeln("<td align=center>1000M/FULL</td>");
+                  		}
+                  	}                  	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth4pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth4fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth4sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>Disable</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>Enable</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(4)' value='Config'></td>
+               </tr>              
+        </table>
+        <br>
+        <p>
+        	<input type='button' class='btn2L' onClick='btnRefresh()' value='Refresh'>
+        </p> 
+         </form>
+      </blockquote>
+   </body>
+</html>

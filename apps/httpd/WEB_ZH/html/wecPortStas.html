@@ -1,0 +1,83 @@
+<html>
+	<head>
+		<link rel="stylesheet" href='stylemain.css' type='text/css'>
+		<link rel="stylesheet" href='colors.css' type='text/css'>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
+		<title>WEC9720EK</title>
+		<base target="_self">
+		<SCRIPT language=JavaScript>
+			function btnClear()
+			{
+				var loc = 'clearPortStas.cgi';
+				var code = 'location="' + loc + '"';
+				eval(code);
+			}
+			function btnRefresh() {
+			   var code = 'location="' + 'wecPortStas.cgi' + '"';
+			   eval(code);
+			}
+		</SCRIPT>
+	</head>
+	<body>
+		<blockquote>
+			<form>
+            <br>
+		        <table border="0" cellpadding="5" cellspacing="0">
+		        	<tr>
+		        		<td class='maintitle'><b>端口统计</b></td>            		
+		        	</tr>                       
+		        </table>
+		        <table border="0" cellpadding="0" cellspacing="0">            	
+		        	<tr>
+								<td class='mainline' width=800></td>
+							</tr>                           
+		        </table>
+          	<br>查询以太网接口以及同轴接口的数据包统计信息。</br>
+            <br>
+            <br>
+            <table border="1" cellpadding="3" cellspacing="0">
+               <tr>
+                  <td class='hd' align="center" width=80>端口</td>
+                  <td class='hd' align="center" width=120>发送数据包</td>
+                  <td class='hd' align="center" width=140>发送字节数</td>
+                  <td class='hd' align="center" width=120>接收数据包</td>
+                  <td class='hd' align="center" width=140>接收字节数</td>                  
+               </tr>
+               <tr>
+                  <td class='diagdata' align="center"><a href="portStatsDetail.cmd?portid=1">ETH1</a></td>
+                  <td class='diagdata' align="center"><%ejGet(eth1txp)%></td>
+                  <td class='diagdata' align="center"><%ejGet(eth1txb)%></td>
+                  <td class='diagdata' align="center"><%ejGet(eth1rxp)%></td>
+                  <td class='diagdata' align="center"><%ejGet(eth1rxb)%></td>
+               </tr>
+               <tr>
+                  <td align="center"><a href="portStatsDetail.cmd?portid=2">ETH2</a></td>
+                  <td align="center"><%ejGet(eth2txp)%></td>
+                  <td align="center"><%ejGet(eth2txb)%></td>
+                  <td align="center"><%ejGet(eth2rxp)%></td>
+                  <td align="center"><%ejGet(eth2rxb)%></td>
+               </tr>
+               <tr>
+                  <td align="center"><a href="portStatsDetail.cmd?portid=3">Cable1</a></td>
+                  <td align="center"><%ejGet(eth3txp)%></td>
+                  <td align="center"><%ejGet(eth3txb)%></td>
+                  <td align="center"><%ejGet(eth3rxp)%></td>
+                  <td align="center"><%ejGet(eth3rxb)%></td>
+               </tr>
+               <tr>
+                  <td align="center"><a href="portStatsDetail.cmd?portid=4">Cable2</a></td>
+                  <td align="center"><%ejGet(eth4txp)%></td>
+                  <td align="center"><%ejGet(eth4txb)%></td>
+                  <td align="center"><%ejGet(eth4rxp)%></td>
+                  <td align="center"><%ejGet(eth4rxb)%></td>
+               </tr>               
+        </table>
+        <br>
+        <p>
+        	<input type='button' class='btn2L' onClick='btnRefresh()' value='刷 新'>          	
+        	<input type='button' class='btn2L' onClick='btnClear()' value='清 零'>        	
+        </p>            
+         </form>
+      </blockquote>
+   </body>
+</html>

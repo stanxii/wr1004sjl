@@ -1,0 +1,68 @@
+<html>
+	<head>
+		<link rel="stylesheet" href='stylemain.css' type='text/css'>
+		<link rel="stylesheet" href='colors.css' type='text/css'>
+		<!--<meta http-equiv="Pragma" content="no-cache">-->
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
+		<!--<meta http-equiv="refresh" content="20">-->
+    <title>系统日志</title>
+    <base target="_self">
+    
+    <script language="javascript">
+    	
+    	function btnApply()
+    	{
+			  var loc = 'wecSyslog.cmd?action=';			
+			  with( document.forms[0] )
+			  {
+			  	loc += condition.selectedIndex;
+			  }
+			  var code = 'location="' + loc + '"';
+			  //alert(code);
+			  eval(code);
+			}
+			
+    </script>
+	</head>
+	<body>
+		<blockquote>
+			<form>
+				<br>
+				<table border="0" cellpadding="5" cellspacing="0">
+					<tr>
+						<td class='maintitle'><b>系统日志查询</b></td>            		
+					</tr>                       
+		    </table>
+		    <table border="0" cellpadding="0" cellspacing="0">            	
+      		<tr>
+						<td class='mainline' width=900></td>
+					</tr>                           
+				</table>
+        <br>您可以按照条件来查询系统日志信息。若按照等级查询时，高于您选择等级的信息将被塞选出来。</br>
+        <br>
+        <br>                
+        <table border="0" cellpadding="3" cellspacing="0">
+        	<tr>
+        		<td width=180>请选择查询条件:</td>
+        		<td align="center" width=200>
+            	<select name=condition>
+            		<option value=0>Emergency
+            		<option value=1>Alert
+            		<option value=2>Cratical
+            		<option value=3>Error
+            		<option value=4>Warnning
+            		<option value=5>Notice
+            		<option value=6>Informational
+            		<option value=7>Debugging
+            		<option value=8 selected='selected'>所有            		
+            	</select>
+          	</td>
+          	<td align="center" width=180>
+          		<input type='button' class='btn2L' onClick='btnApply()' value='查 询'>
+          	</td>
+        	</tr>
+        </table>
+			</form>
+		</blockquote>
+	</body>
+</html>

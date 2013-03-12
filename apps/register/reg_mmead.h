@@ -1,0 +1,19 @@
+#ifndef __REGISTER_MMEAD_MSG_H__
+#define __REGISTER_MMEAD_MSG_H__
+
+#include <public.h>
+
+int msg_reg_mmead_enable_user(uint32_t devType, uint8_t ODA[]);
+int msg_reg_mmead_block_user(uint32_t devType, uint8_t ODA[]);
+int msg_reg_mmead_wr_user_mod(uint32_t devType, uint8_t ODA[]);
+int msg_reg_mmead_wr_user_pib(uint32_t devType, uint8_t ODA[]);
+int msg_reg_mmead_bootout_dev(uint8_t ODA[], uint8_t CNU_MAC[]);
+int msg_reg_mmead_get_clt(T_CLT_INFO *clt);
+int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist);
+int msg_reg_mmead_reset_cnu(uint32_t devType, uint8_t ODA[]);
+int msg_mmead_destroy(void);
+int msg_mmead_init(void);
+
+#endif
+
+

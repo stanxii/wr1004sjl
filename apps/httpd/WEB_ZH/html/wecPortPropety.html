@@ -1,0 +1,381 @@
+<html>
+   <head>
+      <link rel="stylesheet" href='stylemain.css' type='text/css'>
+			<link rel="stylesheet" href='colors.css' type='text/css'>
+			<!--<meta http-equiv="Pragma" content="no-cache">-->
+			<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">			
+			<title>端口属性</title>
+			<base target="_self">
+			<SCRIPT language=JavaScript> 
+				var eth1speed = '<%ejGet(eth1speed)%>';
+				var eth1duplex = '<%ejGet(eth1duplex)%>';
+				//var eth1pri = '<%ejGet(eth1pri)%>';
+				var eth1fc = '<%ejGet(eth1fc)%>';
+				var eth1sts = '<%ejGet(eth1sts)%>';
+				var eth1linksts = '<%ejGet(eth1linksts)%>';
+				
+				var eth2speed = '<%ejGet(eth2speed)%>';
+				var eth2duplex = '<%ejGet(eth2duplex)%>';
+				//var eth2pri = '<%ejGet(eth2pri)%>';
+				var eth2fc = '<%ejGet(eth2fc)%>';
+				var eth2sts = '<%ejGet(eth2sts)%>';
+				var eth2linksts = '<%ejGet(eth2linksts)%>';
+				
+				var eth3speed = '<%ejGet(eth3speed)%>';
+				var eth3duplex = '<%ejGet(eth3duplex)%>';
+				//var eth3pri = '<%ejGet(eth3pri)%>';
+				var eth3fc = '<%ejGet(eth3fc)%>';
+				var eth3sts = '<%ejGet(eth3sts)%>';
+				var eth3linksts = '<%ejGet(eth3linksts)%>';
+				
+				var eth4speed = '<%ejGet(eth4speed)%>';
+				var eth4duplex = '<%ejGet(eth4duplex)%>';
+				//var eth4pri = '<%ejGet(eth4pri)%>';
+				var eth4fc = '<%ejGet(eth4fc)%>';
+				var eth4sts = '<%ejGet(eth4sts)%>';
+				var eth4linksts = '<%ejGet(eth4linksts)%>';
+				
+				function btnConfig(portid) {
+					var loc = 'portPropety.cmd?';
+					loc += 'portid=' + portid;
+					var code = 'location="' + loc + '"';
+					//alert(code);
+					eval(code);
+				}
+				function btnRefresh() {
+				   location.href = "wecPortPropety.cgi";
+				}
+			</SCRIPT>
+   </head>
+   <body>
+      <blockquote>
+         <form>
+            <br>
+		        <table border="0" cellpadding="5" cellspacing="0">
+		        	<tr>
+		        		<td class='maintitle'><b>端口属性</b></td>            		
+		        	</tr>                       
+		        </table>
+		        <table border="0" cellpadding="0" cellspacing="0">            	
+		        	<tr>
+								<td class='mainline' width=800></td>
+							</tr>                           
+		        </table>
+            <br>通过该页面，您可以查看及配置本机以太网以及同轴端口的属性，包括：速率、双工状态、端口流控以及端口状态等属性参数。</br>      	
+            <br>
+            <br>
+            <table border="1" cellpadding="3" cellspacing="0">
+               <tr>
+                  <td class='hd' align="center" width=80>端口</td>
+                  <td class='hd' align="center" width=100>连接状态</td>
+                  <td class='hd' align="center" width=120>速率/双工设置</td>
+                  <td class='hd' align="center" width=60>优先级</td>
+                  <td class='hd' align="center" width=80>流控</td>
+                  <td class='hd' align="center" width=80>端口状态</td>
+                  <td class='hd' align="center" width=80>设置</td>
+               </tr>
+               <tr>
+                  <td align="center">ETH1</td>
+                  <script language="javascript">
+                  	if( parseInt(eth1linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>已连接</font></td>");	
+                  		if( parseInt(eth1speed) == 1 )
+	                  	{
+	                  		if( parseInt(eth1duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>10M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>10M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else if( parseInt(eth1speed) == 2 )
+	                  	{
+	                  		if( parseInt(eth1duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>100M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>100M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else
+	                  	{
+	                  		if( parseInt(eth1duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>1000M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>1000M/全双工</td>");
+	                  		}
+	                  	}
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>未连接</font></td>");
+                  		document.writeln("<td align=center>--/--</td>");
+                  	}                 	
+                  	
+                  	                  	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth1pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth1fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>禁用</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>启用</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth1sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>关闭</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>开启</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(1)' value='配 置'></td>                 
+               </tr>
+               <tr>
+                  <td align="center">ETH2</td>
+                  <script language="javascript">
+                  	if( parseInt(eth2linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>已连接</font></td>");	
+                  		if( parseInt(eth2speed) == 1 )
+	                  	{
+	                  		if( parseInt(eth2duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>10M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>10M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else if( parseInt(eth2speed) == 2 )
+	                  	{
+	                  		if( parseInt(eth2duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>100M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>100M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else
+	                  	{
+	                  		if( parseInt(eth2duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>1000M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>1000M/全双工</td>");
+	                  		}
+	                  	} 
+                  	}                  	
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>未连接</font></td>");
+                  		document.writeln("<td align=center>--/--</td>");
+                  	}
+                  	
+                  	                 	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth2pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth2fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>禁用</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>启用</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth2sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>关闭</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>开启</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(2)' value='配 置'></td>                 
+               </tr>
+               <tr>
+                  <td align="center">Cable1</td>
+                  <script language="javascript">
+                  	if( parseInt(eth3linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>已连接</font></td>");	
+                  		if( parseInt(eth3speed) == 1 )
+	                  	{
+	                  		if( parseInt(eth3duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>10M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>10M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else if( parseInt(eth3speed) == 2 )
+	                  	{
+	                  		if( parseInt(eth3duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>100M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>100M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else
+	                  	{
+	                  		if( parseInt(eth3duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>1000M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>1000M/全双工</td>");
+	                  		}
+	                  	} 
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>未连接</font></td>");
+                  		document.writeln("<td align=center>--/--</td>");
+                  	}
+                  	
+                  	                 	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth3pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth3fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>禁用</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>启用</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth3sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>关闭</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>开启</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(3)' value='配 置'></td>                 
+               </tr>
+               <tr>
+                  <td align="center">Cable2</td>
+                  <script language="javascript">
+                  	if( parseInt(eth4linksts) == 1 )
+                  	{
+                  		document.writeln("<td align=center><font color=green>已连接</font></td>");	
+                  		if( parseInt(eth4speed) == 1 )
+	                  	{
+	                  		if( parseInt(eth4duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>10M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>10M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else if( parseInt(eth4speed) == 2 )
+	                  	{
+	                  		if( parseInt(eth4duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>100M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>100M/全双工</td>");
+	                  		}
+	                  	}
+	                  	else
+	                  	{
+	                  		if( parseInt(eth4duplex) == 1 )
+	                  		{
+	                  			document.writeln("<td align=center>1000M/半双工</td>");
+	                  		}
+	                  		else
+	                  		{
+	                  			document.writeln("<td align=center>1000M/全双工</td>");
+	                  		}
+	                  	}  
+                  	}                  	
+                  	else
+                  	{
+                  		document.writeln("<td align=center><font color=red>未连接</font></td>");
+                  		document.writeln("<td align=center>--/--</td>");
+                  	}
+                  	
+                  	                	
+                  	
+                  </script>              
+                  
+                  <td align="center"><%ejGet(eth4pri)%></td>
+                  
+                  <script language="javascript">
+                  	if( parseInt(eth4fc) == 0 )
+                  	{
+                  		document.writeln("<td align=center>禁用</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>启用</td>");	
+                  	}
+                  	
+                  	if( parseInt(eth4sts) == 0 )
+                  	{
+                  		document.writeln("<td align=center>关闭</td>");	
+                  	}
+                  	else
+                  	{
+                  		document.writeln("<td align=center>开启</td>");	
+                  	}
+                  </script>
+                  
+                  <td align="center"><input type='button' class='btn2L' onClick='btnConfig(4)' value='配 置'></td>                 
+               </tr>              
+        </table>
+        <br>
+        <p>
+        	<input type='button' class='btn2L' onClick='btnRefresh()' value='刷 新'>
+        </p> 
+         </form>
+      </blockquote>
+   </body>
+</html>

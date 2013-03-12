@@ -1,0 +1,426 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD crt0_gnu.o
+LOAD at91sam9xeek.o
+LOAD main.o
+LOAD gpio.o
+LOAD pmc.o
+LOAD debug.o
+LOAD sdramc.o
+LOAD nandflash.o
+LOAD _udivsi3.o
+LOAD _umodsi3.o
+LOAD div0.o
+LOAD udiv.o
+LOAD string.o
+                0x00000000                . = ALIGN (0x4)
+
+.text           0x00200000      0xec4
+                0x00200000                _stext = .
+ *(.text)
+ .text          0x00200000      0x140 crt0_gnu.o
+                0x00200000                reset
+ .text          0x00200140      0x174 at91sam9xeek.o
+                0x00200158                nandflash_cfg_16bits_dbw_init
+                0x0020016c                nandflash_cfg_8bits_dbw_init
+                0x00200208                hw_init
+                0x00200180                nandflash_hw_init
+                0x00200140                sdramc_hw_init
+ .text          0x002002b4       0x2c main.o
+                0x002002b4                main
+ .text          0x002002e0      0x230 gpio.o
+                0x002004c0                pio_set_value
+                0x002002e8                pio_get_value
+                0x00200324                pio_setup
+ .text          0x00200510       0xd4 pmc.o
+                0x00200510                pmc_cfg_plla
+                0x0020057c                pmc_cfg_mck
+                0x002005b0                pmc_cfg_pllb
+                0x00200544                pmc_cfg_pck
+ .text          0x002005e4        0x0 debug.o
+ .text          0x002005e4      0x134 sdramc.o
+                0x002005e4                sdram_init
+ .text          0x00200718      0x4d8 nandflash.o
+                0x00200914                CheckBlock
+                0x00200980                AT91F_NandRead
+                0x00200718                AT91F_NandEraseBlock0
+                0x002009dc                load_nandflash
+ .text          0x00200bf0       0x98 _udivsi3.o
+                0x00200bf0                __udivsi3
+                0x00200bf0                __aeabi_uidiv
+ .text          0x00200c88       0xcc _umodsi3.o
+                0x00200c88                __umodsi3
+                0x00200d3c                __aeabi_uidivmod
+ .text          0x00200d54        0x4 div0.o
+                0x00200d54                __div0
+ .text          0x00200d58       0x54 udiv.o
+                0x00200d58                udiv
+ .text          0x00200dac       0xa0 string.o
+                0x00200e2c                memcpy
+                0x00200dc8                bcopy
+                0x00200dac                memset
+ *(.rodata)
+ .rodata        0x00200e4c       0x64 at91sam9xeek.o
+ *(.rodata*)
+ .rodata.str1.4
+                0x00200eb0       0x14 at91sam9xeek.o
+                0x00200ec4                . = ALIGN (0x4)
+                0x00200ec4                _etext = .
+
+.glue_7         0x00200ec4        0x0
+ .glue_7        0x00200ec4        0x0 crt0_gnu.o
+ .glue_7        0x00200ec4        0x0 at91sam9xeek.o
+ .glue_7        0x00200ec4        0x0 main.o
+ .glue_7        0x00200ec4        0x0 gpio.o
+ .glue_7        0x00200ec4        0x0 pmc.o
+ .glue_7        0x00200ec4        0x0 debug.o
+ .glue_7        0x00200ec4        0x0 sdramc.o
+ .glue_7        0x00200ec4        0x0 nandflash.o
+ .glue_7        0x00200ec4        0x0 _udivsi3.o
+ .glue_7        0x00200ec4        0x0 _umodsi3.o
+ .glue_7        0x00200ec4        0x0 div0.o
+ .glue_7        0x00200ec4        0x0 udiv.o
+ .glue_7        0x00200ec4        0x0 string.o
+
+.glue_7t        0x00200ec4        0x0
+ .glue_7t       0x00200ec4        0x0 crt0_gnu.o
+ .glue_7t       0x00200ec4        0x0 at91sam9xeek.o
+ .glue_7t       0x00200ec4        0x0 main.o
+ .glue_7t       0x00200ec4        0x0 gpio.o
+ .glue_7t       0x00200ec4        0x0 pmc.o
+ .glue_7t       0x00200ec4        0x0 debug.o
+ .glue_7t       0x00200ec4        0x0 sdramc.o
+ .glue_7t       0x00200ec4        0x0 nandflash.o
+ .glue_7t       0x00200ec4        0x0 _udivsi3.o
+ .glue_7t       0x00200ec4        0x0 _umodsi3.o
+ .glue_7t       0x00200ec4        0x0 div0.o
+ .glue_7t       0x00200ec4        0x0 udiv.o
+ .glue_7t       0x00200ec4        0x0 string.o
+
+.vfp11_veneer   0x00200ec4        0x0
+ .vfp11_veneer  0x00200ec4        0x0 crt0_gnu.o
+ .vfp11_veneer  0x00200ec4        0x0 at91sam9xeek.o
+ .vfp11_veneer  0x00200ec4        0x0 main.o
+ .vfp11_veneer  0x00200ec4        0x0 gpio.o
+ .vfp11_veneer  0x00200ec4        0x0 pmc.o
+ .vfp11_veneer  0x00200ec4        0x0 debug.o
+ .vfp11_veneer  0x00200ec4        0x0 sdramc.o
+ .vfp11_veneer  0x00200ec4        0x0 nandflash.o
+ .vfp11_veneer  0x00200ec4        0x0 _udivsi3.o
+ .vfp11_veneer  0x00200ec4        0x0 _umodsi3.o
+ .vfp11_veneer  0x00200ec4        0x0 div0.o
+ .vfp11_veneer  0x00200ec4        0x0 udiv.o
+ .vfp11_veneer  0x00200ec4        0x0 string.o
+
+.data           0x00300000      0x100 load address 0x00200ec4
+                0x00300000                _sdata = .
+ *(.vectors)
+ *(.data)
+ .data          0x00300000        0x0 crt0_gnu.o
+ .data          0x00300000        0x0 at91sam9xeek.o
+ .data          0x00300000        0x0 main.o
+ .data          0x00300000        0x0 gpio.o
+ .data          0x00300000        0x0 pmc.o
+ .data          0x00300000        0x0 debug.o
+ .data          0x00300000        0x0 sdramc.o
+ .data          0x00300000      0x100 nandflash.o
+ .data          0x00300100        0x0 _udivsi3.o
+ .data          0x00300100        0x0 _umodsi3.o
+ .data          0x00300100        0x0 div0.o
+ .data          0x00300100        0x0 udiv.o
+ .data          0x00300100        0x0 string.o
+                0x00300100                _edata = .
+
+.bss            0x00300100        0x0
+                0x00300100                . = ALIGN (0x4)
+                0x00300100                _sbss = .
+ *(.bss)
+ .bss           0x00300100        0x0 crt0_gnu.o
+ .bss           0x00300100        0x0 at91sam9xeek.o
+ .bss           0x00300100        0x0 main.o
+ .bss           0x00300100        0x0 gpio.o
+ .bss           0x00300100        0x0 pmc.o
+ .bss           0x00300100        0x0 debug.o
+ .bss           0x00300100        0x0 sdramc.o
+ .bss           0x00300100        0x0 nandflash.o
+ .bss           0x00300100        0x0 _udivsi3.o
+ .bss           0x00300100        0x0 _umodsi3.o
+ .bss           0x00300100        0x0 div0.o
+ .bss           0x00300100        0x0 udiv.o
+ .bss           0x00300100        0x0 string.o
+                0x00300100                _ebss = .
+                0x00300100                end = .
+Address of section .text set to 0x200000
+Address of section .data set to 0x300000
+OUTPUT(nandflash_at91sam9xeek.elf elf32-littlearm)
+                0x00300100                . = ALIGN (0x1)
+                0x00300100                __start_start = .
+
+start           0x00000000        0x0
+ start          0x00000000        0x0 crt0_gnu.o
+                0x00000000                __stop_start = .
+
+.ARM.attributes
+                0x00000000       0x10
+ .ARM.attributes
+                0x00000000       0x1a crt0_gnu.o
+ .ARM.attributes
+                0x0000001a       0x2a at91sam9xeek.o
+ .ARM.attributes
+                0x00000044       0x2a main.o
+ .ARM.attributes
+                0x0000006e       0x2a gpio.o
+ .ARM.attributes
+                0x00000098       0x2a pmc.o
+ .ARM.attributes
+                0x000000c2       0x28 debug.o
+ .ARM.attributes
+                0x000000ea       0x2a sdramc.o
+ .ARM.attributes
+                0x00000114       0x2a nandflash.o
+ .ARM.attributes
+                0x0000013e       0x1a _udivsi3.o
+ .ARM.attributes
+                0x00000158       0x1a _umodsi3.o
+ .ARM.attributes
+                0x00000172       0x2a div0.o
+ .ARM.attributes
+                0x0000019c       0x2a udiv.o
+ .ARM.attributes
+                0x000001c6       0x2a string.o
+
+.debug_line     0x00000000      0x7fa
+ .debug_line    0x00000000       0x84 crt0_gnu.o
+ .debug_line    0x00000084       0xdd at91sam9xeek.o
+ .debug_line    0x00000161       0x4b main.o
+ .debug_line    0x000001ac      0x125 gpio.o
+ .debug_line    0x000002d1       0x82 pmc.o
+ .debug_line    0x00000353       0x1d debug.o
+ .debug_line    0x00000370       0xc7 sdramc.o
+ .debug_line    0x00000437      0x197 nandflash.o
+ .debug_line    0x000005ce       0x6c _udivsi3.o
+ .debug_line    0x0000063a       0x79 _umodsi3.o
+ .debug_line    0x000006b3       0x43 div0.o
+ .debug_line    0x000006f6       0xb2 udiv.o
+ .debug_line    0x000007a8       0x52 string.o
+
+.debug_info     0x00000000     0x1954
+ .debug_info    0x00000000       0x8b crt0_gnu.o
+ .debug_info    0x0000008b      0x23c at91sam9xeek.o
+ .debug_info    0x000002c7       0x5e main.o
+ .debug_info    0x00000325      0x7f0 gpio.o
+ .debug_info    0x00000b15      0x23a pmc.o
+ .debug_info    0x00000d4f        0x0 debug.o
+ .debug_info    0x00000d4f      0x232 sdramc.o
+ .debug_info    0x00000f81      0x609 nandflash.o
+ .debug_info    0x0000158a       0x8f _udivsi3.o
+ .debug_info    0x00001619       0x8f _umodsi3.o
+ .debug_info    0x000016a8       0x39 div0.o
+ .debug_info    0x000016e1      0x12a udiv.o
+ .debug_info    0x0000180b      0x149 string.o
+
+.debug_abbrev   0x00000000      0x96e
+ .debug_abbrev  0x00000000       0x14 crt0_gnu.o
+ .debug_abbrev  0x00000014      0x189 at91sam9xeek.o
+ .debug_abbrev  0x0000019d       0x4a main.o
+ .debug_abbrev  0x000001e7      0x1ce gpio.o
+ .debug_abbrev  0x000003b5      0x105 pmc.o
+ .debug_abbrev  0x000004ba        0x1 debug.o
+ .debug_abbrev  0x000004bb       0xcc sdramc.o
+ .debug_abbrev  0x00000587      0x1eb nandflash.o
+ .debug_abbrev  0x00000772       0x14 _udivsi3.o
+ .debug_abbrev  0x00000786       0x14 _umodsi3.o
+ .debug_abbrev  0x0000079a       0x29 div0.o
+ .debug_abbrev  0x000007c3       0xcb udiv.o
+ .debug_abbrev  0x0000088e       0xe0 string.o
+
+.debug_aranges  0x00000000      0x180
+ .debug_aranges
+                0x00000000       0x20 crt0_gnu.o
+ .debug_aranges
+                0x00000020       0x20 at91sam9xeek.o
+ .debug_aranges
+                0x00000040       0x20 main.o
+ .debug_aranges
+                0x00000060       0x20 gpio.o
+ .debug_aranges
+                0x00000080       0x20 pmc.o
+ .debug_aranges
+                0x000000a0       0x20 sdramc.o
+ .debug_aranges
+                0x000000c0       0x20 nandflash.o
+ .debug_aranges
+                0x000000e0       0x20 _udivsi3.o
+ .debug_aranges
+                0x00000100       0x20 _umodsi3.o
+ .debug_aranges
+                0x00000120       0x20 div0.o
+ .debug_aranges
+                0x00000140       0x20 udiv.o
+ .debug_aranges
+                0x00000160       0x20 string.o
+
+.debug_frame    0x00000000      0x2c8
+ .debug_frame   0x00000000       0x74 at91sam9xeek.o
+ .debug_frame   0x00000074       0x28 main.o
+ .debug_frame   0x0000009c       0x74 gpio.o
+ .debug_frame   0x00000110       0x50 pmc.o
+ .debug_frame   0x00000160       0x30 sdramc.o
+ .debug_frame   0x00000190       0xa8 nandflash.o
+ .debug_frame   0x00000238       0x20 div0.o
+ .debug_frame   0x00000258       0x28 udiv.o
+ .debug_frame   0x00000280       0x48 string.o
+
+.debug_loc      0x00000000      0xb33
+ .debug_loc     0x00000000       0x5d at91sam9xeek.o
+ .debug_loc     0x0000005d       0x1f main.o
+ .debug_loc     0x0000007c      0x394 gpio.o
+ .debug_loc     0x00000410       0x93 pmc.o
+ .debug_loc     0x000004a3       0x98 sdramc.o
+ .debug_loc     0x0000053b      0x4b7 nandflash.o
+ .debug_loc     0x000009f2       0x63 udiv.o
+ .debug_loc     0x00000a55       0xde string.o
+
+.debug_pubnames
+                0x00000000      0x229
+ .debug_pubnames
+                0x00000000       0x8a at91sam9xeek.o
+ .debug_pubnames
+                0x0000008a       0x1b main.o
+ .debug_pubnames
+                0x000000a5       0x44 gpio.o
+ .debug_pubnames
+                0x000000e9       0x54 pmc.o
+ .debug_pubnames
+                0x0000013d       0x21 sdramc.o
+ .debug_pubnames
+                0x0000015e       0x61 nandflash.o
+ .debug_pubnames
+                0x000001bf       0x1d div0.o
+ .debug_pubnames
+                0x000001dc       0x1b udiv.o
+ .debug_pubnames
+                0x000001f7       0x32 string.o
+
+.debug_str      0x00000000      0x7b2
+ .debug_str     0x00000000      0x1a6 at91sam9xeek.o
+                                0x1d0 (size before relaxing)
+ .debug_str     0x000001a6       0x15 main.o
+                                 0xa8 (size before relaxing)
+ .debug_str     0x000001bb       0xf9 gpio.o
+                                0x202 (size before relaxing)
+ .debug_str     0x000002b4       0x92 pmc.o
+                                0x12d (size before relaxing)
+ .debug_str     0x00000346       0x4f sdramc.o
+                                 0xea (size before relaxing)
+ .debug_str     0x00000395      0x33b nandflash.o
+                                0x3f0 (size before relaxing)
+ .debug_str     0x000006d0       0x1b div0.o
+                                 0x8e (size before relaxing)
+ .debug_str     0x000006eb       0x91 udiv.o
+                                0x14b (size before relaxing)
+ .debug_str     0x0000077c       0x36 string.o
+                                 0xda (size before relaxing)
+
+.comment        0x00000000      0x302
+ .comment       0x00000000       0x4d at91sam9xeek.o
+ .comment       0x0000004d       0x4d main.o
+ .comment       0x0000009a       0x4d gpio.o
+ .comment       0x000000e7       0x4d pmc.o
+ .comment       0x00000134       0x4d debug.o
+ .comment       0x00000181       0x4d sdramc.o
+ .comment       0x000001ce       0x4d nandflash.o
+ .comment       0x0000021b       0x4d div0.o
+ .comment       0x00000268       0x4d udiv.o
+ .comment       0x000002b5       0x4d string.o
+
+.note.GNU-stack
+                0x00000000        0x0
+ .note.GNU-stack
+                0x00000000        0x0 at91sam9xeek.o
+ .note.GNU-stack
+                0x00000000        0x0 main.o
+ .note.GNU-stack
+                0x00000000        0x0 gpio.o
+ .note.GNU-stack
+                0x00000000        0x0 pmc.o
+ .note.GNU-stack
+                0x00000000        0x0 debug.o
+ .note.GNU-stack
+                0x00000000        0x0 sdramc.o
+ .note.GNU-stack
+                0x00000000        0x0 nandflash.o
+ .note.GNU-stack
+                0x00000000        0x0 div0.o
+ .note.GNU-stack
+                0x00000000        0x0 udiv.o
+ .note.GNU-stack
+                0x00000000        0x0 string.o
+
+.debug_ranges   0x00000000      0x218
+ .debug_ranges  0x00000000       0xa8 gpio.o
+ .debug_ranges  0x000000a8       0xc0 pmc.o
+ .debug_ranges  0x00000168       0x80 sdramc.o
+ .debug_ranges  0x000001e8       0x30 nandflash.o
+
+Cross Reference Table
+
+Symbol                                            File
+AT91F_NandEraseBlock0                             nandflash.o
+                                                  at91sam9xeek.o
+AT91F_NandRead                                    nandflash.o
+CheckBlock                                        nandflash.o
+__aeabi_uidiv                                     _udivsi3.o
+                                                  _umodsi3.o
+                                                  nandflash.o
+__aeabi_uidivmod                                  _umodsi3.o
+                                                  nandflash.o
+__div0                                            div0.o
+                                                  _umodsi3.o
+                                                  _udivsi3.o
+__udivsi3                                         _udivsi3.o
+__umodsi3                                         _umodsi3.o
+_ebss                                             crt0_gnu.o
+_edata                                            crt0_gnu.o
+_etext                                            crt0_gnu.o
+_sbss                                             crt0_gnu.o
+_sdata                                            crt0_gnu.o
+bcopy                                             string.o
+hw_init                                           at91sam9xeek.o
+                                                  main.o
+load_nandflash                                    nandflash.o
+                                                  main.o
+main                                              main.o
+                                                  crt0_gnu.o
+memcpy                                            string.o
+memset                                            string.o
+                                                  at91sam9xeek.o
+nandflash_cfg_16bits_dbw_init                     at91sam9xeek.o
+nandflash_cfg_8bits_dbw_init                      at91sam9xeek.o
+                                                  nandflash.o
+nandflash_hw_init                                 at91sam9xeek.o
+                                                  nandflash.o
+pio_get_value                                     gpio.o
+                                                  at91sam9xeek.o
+pio_set_value                                     gpio.o
+pio_setup                                         gpio.o
+                                                  at91sam9xeek.o
+pmc_cfg_mck                                       pmc.o
+                                                  at91sam9xeek.o
+pmc_cfg_pck                                       pmc.o
+pmc_cfg_plla                                      pmc.o
+                                                  at91sam9xeek.o
+pmc_cfg_pllb                                      pmc.o
+                                                  at91sam9xeek.o
+reset                                             crt0_gnu.o
+sdram_init                                        sdramc.o
+                                                  at91sam9xeek.o
+sdramc_hw_init                                    at91sam9xeek.o
+                                                  sdramc.o
+udiv                                              udiv.o

@@ -1,0 +1,426 @@
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD crt0_gnu.o
+LOAD at91cap9adk.o
+LOAD main.o
+LOAD gpio.o
+LOAD pmc.o
+LOAD debug.o
+LOAD sddrc.o
+LOAD dataflash.o
+LOAD _udivsi3.o
+LOAD _umodsi3.o
+LOAD div0.o
+LOAD udiv.o
+LOAD string.o
+                0x00000000                . = ALIGN (0x4)
+
+.text           0x00000000      0xf84
+                0x00000000                _stext = .
+ *(.text)
+ .text          0x00000000      0x130 crt0_gnu.o
+                0x00000000                reset
+ .text          0x00000130       0xdc at91cap9adk.o
+                0x00000130                df_hw_init
+                0x00000150                sddrc_hw_init
+                0x00000170                hw_init
+ .text          0x0000020c       0x34 main.o
+                0x0000020c                main
+ .text          0x00000240      0x230 gpio.o
+                0x00000420                pio_set_value
+                0x00000248                pio_get_value
+                0x00000284                pio_setup
+ .text          0x00000470       0xd4 pmc.o
+                0x00000470                pmc_cfg_plla
+                0x000004dc                pmc_cfg_mck
+                0x00000510                pmc_cfg_pllb
+                0x000004a4                pmc_cfg_pck
+ .text          0x00000544       0x5c debug.o
+                0x00000544                dbg_print
+                0x00000574                dbg_init
+ .text          0x000005a0      0x184 sddrc.o
+                0x000005a0                sddrc_init
+ .text          0x00000724      0x38c dataflash.o
+                0x000008d4                load_df
+                0x00000724                df_send_command
+ .text          0x00000ab0       0x98 _udivsi3.o
+                0x00000ab0                __udivsi3
+                0x00000ab0                __aeabi_uidiv
+ .text          0x00000b48       0xcc _umodsi3.o
+                0x00000b48                __umodsi3
+                0x00000bfc                __aeabi_uidivmod
+ .text          0x00000c14        0x4 div0.o
+                0x00000c14                __div0
+ .text          0x00000c18       0x54 udiv.o
+                0x00000c18                udiv
+ .text          0x00000c6c       0xa0 string.o
+                0x00000cec                memcpy
+                0x00000c88                bcopy
+                0x00000c6c                memset
+ *(.rodata)
+ .rodata        0x00000d0c      0x1f4 at91cap9adk.o
+ *(.rodata*)
+ .rodata.str1.4
+                0x00000f00       0x84 at91cap9adk.o
+                0x00000f84                . = ALIGN (0x4)
+                0x00000f84                _etext = .
+
+.glue_7         0x00000f84        0x0
+ .glue_7        0x00000f84        0x0 crt0_gnu.o
+ .glue_7        0x00000f84        0x0 at91cap9adk.o
+ .glue_7        0x00000f84        0x0 main.o
+ .glue_7        0x00000f84        0x0 gpio.o
+ .glue_7        0x00000f84        0x0 pmc.o
+ .glue_7        0x00000f84        0x0 debug.o
+ .glue_7        0x00000f84        0x0 sddrc.o
+ .glue_7        0x00000f84        0x0 dataflash.o
+ .glue_7        0x00000f84        0x0 _udivsi3.o
+ .glue_7        0x00000f84        0x0 _umodsi3.o
+ .glue_7        0x00000f84        0x0 div0.o
+ .glue_7        0x00000f84        0x0 udiv.o
+ .glue_7        0x00000f84        0x0 string.o
+
+.glue_7t        0x00000f84        0x0
+ .glue_7t       0x00000f84        0x0 crt0_gnu.o
+ .glue_7t       0x00000f84        0x0 at91cap9adk.o
+ .glue_7t       0x00000f84        0x0 main.o
+ .glue_7t       0x00000f84        0x0 gpio.o
+ .glue_7t       0x00000f84        0x0 pmc.o
+ .glue_7t       0x00000f84        0x0 debug.o
+ .glue_7t       0x00000f84        0x0 sddrc.o
+ .glue_7t       0x00000f84        0x0 dataflash.o
+ .glue_7t       0x00000f84        0x0 _udivsi3.o
+ .glue_7t       0x00000f84        0x0 _umodsi3.o
+ .glue_7t       0x00000f84        0x0 div0.o
+ .glue_7t       0x00000f84        0x0 udiv.o
+ .glue_7t       0x00000f84        0x0 string.o
+
+.vfp11_veneer   0x00000f84        0x0
+ .vfp11_veneer  0x00000f84        0x0 crt0_gnu.o
+ .vfp11_veneer  0x00000f84        0x0 at91cap9adk.o
+ .vfp11_veneer  0x00000f84        0x0 main.o
+ .vfp11_veneer  0x00000f84        0x0 gpio.o
+ .vfp11_veneer  0x00000f84        0x0 pmc.o
+ .vfp11_veneer  0x00000f84        0x0 debug.o
+ .vfp11_veneer  0x00000f84        0x0 sddrc.o
+ .vfp11_veneer  0x00000f84        0x0 dataflash.o
+ .vfp11_veneer  0x00000f84        0x0 _udivsi3.o
+ .vfp11_veneer  0x00000f84        0x0 _umodsi3.o
+ .vfp11_veneer  0x00000f84        0x0 div0.o
+ .vfp11_veneer  0x00000f84        0x0 udiv.o
+ .vfp11_veneer  0x00000f84        0x0 string.o
+
+.data           0x00000f84        0x0 load address 0x00000f84
+                0x00000f84                _sdata = .
+ *(.vectors)
+ *(.data)
+ .data          0x00000f84        0x0 crt0_gnu.o
+ .data          0x00000f84        0x0 at91cap9adk.o
+ .data          0x00000f84        0x0 main.o
+ .data          0x00000f84        0x0 gpio.o
+ .data          0x00000f84        0x0 pmc.o
+ .data          0x00000f84        0x0 debug.o
+ .data          0x00000f84        0x0 sddrc.o
+ .data          0x00000f84        0x0 dataflash.o
+ .data          0x00000f84        0x0 _udivsi3.o
+ .data          0x00000f84        0x0 _umodsi3.o
+ .data          0x00000f84        0x0 div0.o
+ .data          0x00000f84        0x0 udiv.o
+ .data          0x00000f84        0x0 string.o
+                0x00000f84                _edata = .
+
+.bss            0x00000f84        0x0
+                0x00000f84                . = ALIGN (0x4)
+                0x00000f84                _sbss = .
+ *(.bss)
+ .bss           0x00000f84        0x0 crt0_gnu.o
+ .bss           0x00000f84        0x0 at91cap9adk.o
+ .bss           0x00000f84        0x0 main.o
+ .bss           0x00000f84        0x0 gpio.o
+ .bss           0x00000f84        0x0 pmc.o
+ .bss           0x00000f84        0x0 debug.o
+ .bss           0x00000f84        0x0 sddrc.o
+ .bss           0x00000f84        0x0 dataflash.o
+ .bss           0x00000f84        0x0 _udivsi3.o
+ .bss           0x00000f84        0x0 _umodsi3.o
+ .bss           0x00000f84        0x0 div0.o
+ .bss           0x00000f84        0x0 udiv.o
+ .bss           0x00000f84        0x0 string.o
+                0x00000f84                _ebss = .
+                0x00000f84                end = .
+Address of section .text set to 0x0
+OUTPUT(dataflash_at91cap9adk.elf elf32-littlearm)
+                0x00000f84                . = ALIGN (0x1)
+                0x00000f84                __start_start = .
+
+start           0x00000000        0x0
+ start          0x00000000        0x0 crt0_gnu.o
+                0x00000000                __stop_start = .
+
+.ARM.attributes
+                0x00000000       0x10
+ .ARM.attributes
+                0x00000000       0x1a crt0_gnu.o
+ .ARM.attributes
+                0x0000001a       0x2a at91cap9adk.o
+ .ARM.attributes
+                0x00000044       0x2a main.o
+ .ARM.attributes
+                0x0000006e       0x2a gpio.o
+ .ARM.attributes
+                0x00000098       0x2a pmc.o
+ .ARM.attributes
+                0x000000c2       0x2a debug.o
+ .ARM.attributes
+                0x000000ec       0x2a sddrc.o
+ .ARM.attributes
+                0x00000116       0x2a dataflash.o
+ .ARM.attributes
+                0x00000140       0x1a _udivsi3.o
+ .ARM.attributes
+                0x0000015a       0x1a _umodsi3.o
+ .ARM.attributes
+                0x00000174       0x2a div0.o
+ .ARM.attributes
+                0x0000019e       0x2a udiv.o
+ .ARM.attributes
+                0x000001c8       0x2a string.o
+
+.debug_line     0x00000000      0x813
+ .debug_line    0x00000000       0x84 crt0_gnu.o
+ .debug_line    0x00000084       0xbc at91cap9adk.o
+ .debug_line    0x00000140       0x44 main.o
+ .debug_line    0x00000184      0x125 gpio.o
+ .debug_line    0x000002a9       0x82 pmc.o
+ .debug_line    0x0000032b       0x64 debug.o
+ .debug_line    0x0000038f       0xb5 sddrc.o
+ .debug_line    0x00000444      0x1a3 dataflash.o
+ .debug_line    0x000005e7       0x6c _udivsi3.o
+ .debug_line    0x00000653       0x79 _umodsi3.o
+ .debug_line    0x000006cc       0x43 div0.o
+ .debug_line    0x0000070f       0xb2 udiv.o
+ .debug_line    0x000007c1       0x52 string.o
+
+.debug_info     0x00000000     0x1ba0
+ .debug_info    0x00000000       0x8a crt0_gnu.o
+ .debug_info    0x0000008a      0x188 at91cap9adk.o
+ .debug_info    0x00000212       0x5e main.o
+ .debug_info    0x00000270      0x7f0 gpio.o
+ .debug_info    0x00000a60      0x23a pmc.o
+ .debug_info    0x00000c9a      0x182 debug.o
+ .debug_info    0x00000e1c      0x1e1 sddrc.o
+ .debug_info    0x00000ffd      0x7db dataflash.o
+ .debug_info    0x000017d8       0x8e _udivsi3.o
+ .debug_info    0x00001866       0x8e _umodsi3.o
+ .debug_info    0x000018f4       0x39 div0.o
+ .debug_info    0x0000192d      0x12a udiv.o
+ .debug_info    0x00001a57      0x149 string.o
+
+.debug_abbrev   0x00000000      0xa34
+ .debug_abbrev  0x00000000       0x14 crt0_gnu.o
+ .debug_abbrev  0x00000014       0xb1 at91cap9adk.o
+ .debug_abbrev  0x000000c5       0x4a main.o
+ .debug_abbrev  0x0000010f      0x1ce gpio.o
+ .debug_abbrev  0x000002dd      0x105 pmc.o
+ .debug_abbrev  0x000003e2      0x107 debug.o
+ .debug_abbrev  0x000004e9       0xc3 sddrc.o
+ .debug_abbrev  0x000005ac      0x28c dataflash.o
+ .debug_abbrev  0x00000838       0x14 _udivsi3.o
+ .debug_abbrev  0x0000084c       0x14 _umodsi3.o
+ .debug_abbrev  0x00000860       0x29 div0.o
+ .debug_abbrev  0x00000889       0xcb udiv.o
+ .debug_abbrev  0x00000954       0xe0 string.o
+
+.debug_aranges  0x00000000      0x1a0
+ .debug_aranges
+                0x00000000       0x20 crt0_gnu.o
+ .debug_aranges
+                0x00000020       0x20 at91cap9adk.o
+ .debug_aranges
+                0x00000040       0x20 main.o
+ .debug_aranges
+                0x00000060       0x20 gpio.o
+ .debug_aranges
+                0x00000080       0x20 pmc.o
+ .debug_aranges
+                0x000000a0       0x20 debug.o
+ .debug_aranges
+                0x000000c0       0x20 sddrc.o
+ .debug_aranges
+                0x000000e0       0x20 dataflash.o
+ .debug_aranges
+                0x00000100       0x20 _udivsi3.o
+ .debug_aranges
+                0x00000120       0x20 _umodsi3.o
+ .debug_aranges
+                0x00000140       0x20 div0.o
+ .debug_aranges
+                0x00000160       0x20 udiv.o
+ .debug_aranges
+                0x00000180       0x20 string.o
+
+.debug_frame    0x00000000      0x2b0
+ .debug_frame   0x00000000       0x58 at91cap9adk.o
+ .debug_frame   0x00000058       0x28 main.o
+ .debug_frame   0x00000080       0x74 gpio.o
+ .debug_frame   0x000000f4       0x50 pmc.o
+ .debug_frame   0x00000144       0x30 debug.o
+ .debug_frame   0x00000174       0x2c sddrc.o
+ .debug_frame   0x000001a0       0x80 dataflash.o
+ .debug_frame   0x00000220       0x20 div0.o
+ .debug_frame   0x00000240       0x28 udiv.o
+ .debug_frame   0x00000268       0x48 string.o
+
+.debug_loc      0x00000000      0x978
+ .debug_loc     0x00000000       0x75 at91cap9adk.o
+ .debug_loc     0x00000075       0x2b main.o
+ .debug_loc     0x000000a0      0x394 gpio.o
+ .debug_loc     0x00000434       0x93 pmc.o
+ .debug_loc     0x000004c7       0x67 sddrc.o
+ .debug_loc     0x0000052e      0x309 dataflash.o
+ .debug_loc     0x00000837       0x63 udiv.o
+ .debug_loc     0x0000089a       0xde string.o
+
+.debug_pubnames
+                0x00000000      0x1dc
+ .debug_pubnames
+                0x00000000       0x3f at91cap9adk.o
+ .debug_pubnames
+                0x0000003f       0x1b main.o
+ .debug_pubnames
+                0x0000005a       0x44 gpio.o
+ .debug_pubnames
+                0x0000009e       0x54 pmc.o
+ .debug_pubnames
+                0x000000f2       0x2d debug.o
+ .debug_pubnames
+                0x0000011f       0x21 sddrc.o
+ .debug_pubnames
+                0x00000140       0x32 dataflash.o
+ .debug_pubnames
+                0x00000172       0x1d div0.o
+ .debug_pubnames
+                0x0000018f       0x1b udiv.o
+ .debug_pubnames
+                0x000001aa       0x32 string.o
+
+.debug_str      0x00000000      0x606
+ .debug_str     0x00000000      0x140 at91cap9adk.o
+                                0x15f (size before relaxing)
+ .debug_str     0x00000140       0x15 main.o
+                                 0xa7 (size before relaxing)
+ .debug_str     0x00000155       0xf2 gpio.o
+                                0x201 (size before relaxing)
+ .debug_str     0x00000247       0x92 pmc.o
+                                0x12c (size before relaxing)
+ .debug_str     0x000002d9       0x49 debug.o
+                                 0xda (size before relaxing)
+ .debug_str     0x00000322       0x43 sddrc.o
+                                 0xcf (size before relaxing)
+ .debug_str     0x00000365      0x20c dataflash.o
+                                0x317 (size before relaxing)
+ .debug_str     0x00000571       0x1b div0.o
+                                 0x8d (size before relaxing)
+ .debug_str     0x0000058c       0x3d udiv.o
+                                0x14a (size before relaxing)
+ .debug_str     0x000005c9       0x3d string.o
+                                 0xd9 (size before relaxing)
+
+.comment        0x00000000      0x302
+ .comment       0x00000000       0x4d at91cap9adk.o
+ .comment       0x0000004d       0x4d main.o
+ .comment       0x0000009a       0x4d gpio.o
+ .comment       0x000000e7       0x4d pmc.o
+ .comment       0x00000134       0x4d debug.o
+ .comment       0x00000181       0x4d sddrc.o
+ .comment       0x000001ce       0x4d dataflash.o
+ .comment       0x0000021b       0x4d div0.o
+ .comment       0x00000268       0x4d udiv.o
+ .comment       0x000002b5       0x4d string.o
+
+.note.GNU-stack
+                0x00000000        0x0
+ .note.GNU-stack
+                0x00000000        0x0 at91cap9adk.o
+ .note.GNU-stack
+                0x00000000        0x0 main.o
+ .note.GNU-stack
+                0x00000000        0x0 gpio.o
+ .note.GNU-stack
+                0x00000000        0x0 pmc.o
+ .note.GNU-stack
+                0x00000000        0x0 debug.o
+ .note.GNU-stack
+                0x00000000        0x0 sddrc.o
+ .note.GNU-stack
+                0x00000000        0x0 dataflash.o
+ .note.GNU-stack
+                0x00000000        0x0 div0.o
+ .note.GNU-stack
+                0x00000000        0x0 udiv.o
+ .note.GNU-stack
+                0x00000000        0x0 string.o
+
+.debug_ranges   0x00000000      0x418
+ .debug_ranges  0x00000000       0xa8 gpio.o
+ .debug_ranges  0x000000a8       0xc0 pmc.o
+ .debug_ranges  0x00000168       0x48 debug.o
+ .debug_ranges  0x000001b0       0x80 sddrc.o
+ .debug_ranges  0x00000230      0x1e8 dataflash.o
+
+Cross Reference Table
+
+Symbol                                            File
+__aeabi_uidiv                                     _udivsi3.o
+                                                  _umodsi3.o
+__aeabi_uidivmod                                  _umodsi3.o
+__div0                                            div0.o
+                                                  _umodsi3.o
+                                                  _udivsi3.o
+__udivsi3                                         _udivsi3.o
+__umodsi3                                         _umodsi3.o
+_ebss                                             crt0_gnu.o
+_edata                                            crt0_gnu.o
+_etext                                            crt0_gnu.o
+_sbss                                             crt0_gnu.o
+_sdata                                            crt0_gnu.o
+bcopy                                             string.o
+dbg_init                                          debug.o
+                                                  at91cap9adk.o
+dbg_print                                         debug.o
+                                                  at91cap9adk.o
+df_hw_init                                        at91cap9adk.o
+                                                  dataflash.o
+df_send_command                                   dataflash.o
+hw_init                                           at91cap9adk.o
+                                                  main.o
+load_df                                           dataflash.o
+                                                  main.o
+main                                              main.o
+                                                  crt0_gnu.o
+memcpy                                            string.o
+memset                                            string.o
+pio_get_value                                     gpio.o
+pio_set_value                                     gpio.o
+pio_setup                                         gpio.o
+                                                  at91cap9adk.o
+pmc_cfg_mck                                       pmc.o
+                                                  at91cap9adk.o
+pmc_cfg_pck                                       pmc.o
+pmc_cfg_plla                                      pmc.o
+                                                  at91cap9adk.o
+pmc_cfg_pllb                                      pmc.o
+                                                  at91cap9adk.o
+reset                                             crt0_gnu.o
+sddrc_hw_init                                     at91cap9adk.o
+                                                  sddrc.o
+sddrc_init                                        sddrc.o
+                                                  at91cap9adk.o
+udiv                                              udiv.o
+                                                  dataflash.o

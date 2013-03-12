@@ -1,0 +1,146 @@
+<html>
+	<head>
+		<link rel="stylesheet" href='stylemain.css' type='text/css'>
+		<link rel="stylesheet" href='colors.css' type='text/css'>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
+		<title>WEC9720EK</title>
+		<base target="_self">
+		<SCRIPT language=JavaScript>
+				function btnRefresh() {
+				   location.href = "info.html";
+				}
+			</SCRIPT>
+   </head>
+   <body>
+      <blockquote>
+         <form>
+            <br>
+            <table border="0" cellpadding="5" cellspacing="0">
+            	<tr>
+            		<td class='maintitle'><b>基本信息</b></td>            		
+            	</tr>                       
+		        </table>
+		        <table border="0" cellpadding="0" cellspacing="0">            	
+            	<tr>
+								<td class='mainline' width=800></td>
+							</tr>                           
+		        </table>
+          	<br>描述设备的基本信息：包括硬件平台，软件版本，厂商信息等。</br>
+            	 <br>            	
+               <br>
+               <table border="0" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class='diagret' width=260>描述项</td>
+									<td class='diagret' width=300>内容</td>
+								</tr>                           
+			        </table>
+			        <br>
+               <table border="0" cellpadding="0" cellspacing="0">
+               <tr>
+                  <td class='diagdata' width=260>设备描述:</td>
+                  <td class='diagdata' width=300><%ejGet(wecDevSerial)%></td>              
+               </tr>
+               <tr>
+                  <td class='diagdata'>设备型号:</td>
+                  <td class='diagdata'><%ejGet(wecDevModel)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>EoC模块技术标准:</td>
+                  <td class='diagdata'><%ejGet(wecEoCType)%></td>                  
+               </tr>
+               <tr>
+                  <td class='diagdata'>EoC通道数量:</td>
+                  <td class='diagdata'><%ejGet(wecCltNumber)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>最大用户数:</td>
+                  <td class='diagdata'><%ejGet(wecCltNumber)%>×<%ejGet(wecCnuStation)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>白名单:</td>
+                  <script language="javascript">
+                  	if ('<%ejGet(wecWlistStatus)%>' == '1')
+                  	{
+                  		document.writeln("<td class='diagdata'>Enable</td>\n");	
+                  	}                  	
+                  	else
+                  	{
+                  		document.writeln("<td class='diagdata'>Disable</td>\n");	
+                  	}
+                  </script>
+               </tr>
+               <tr>
+                  <td class='diagdata'>看门狗:</td>
+                  <script language="javascript">
+                  	if ('<%ejGet(wecWDTStatus)%>' == '1')
+                  	{
+                  		document.writeln("<td class='diagdata'>Enable</td>\n");	
+                  	}                  	
+                  	else
+                  	{
+                  		document.writeln("<td class='diagdata'>Disable</td>\n");	
+                  	}
+                  </script>
+               </tr>
+               <tr>
+                  <td class='diagdata'>硬件版本号:</td>
+                  <td class='diagdata'><%ejGet(wecHwVersion)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>引导程序版本号:</td>
+                  <td class='diagdata'><%ejGet(wecBootVersion)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>内核程序版本号:</td>
+                  <td class='diagdata'><%ejGet(wecKernelVersion)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>应用程序版本号:</td>
+                  <td class='diagdata'><%ejGet(wecAppVersion)%></td>
+               </tr>              
+               <tr>
+                  <td class='diagdata'>闪存信息:</td>
+                  <td class='diagdata'><%ejGet(wecFlashSize)%> MB</td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>内存信息:</td>
+                  <td class='diagdata'><%ejGet(wecSdramSize)%> MB</td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>制造商:</td>
+                  <td class='diagdata'><%ejGet(wecManufactory)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>系统运行时间:</td>
+                  <td class='diagdata'><%ejGet(wecSysupHours)%>:<%ejGet(wecSysupMins)%>:<%ejGet(wecSysupSecs)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>CPU平均负载:</td>
+                  <td class='diagdata'><%ejGet(wecSys0loads)%> <%ejGet(wecSys1loads)%> <%ejGet(wecSys2loads)%></td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>系统总内存:</td>
+                  <td class='diagdata'><%ejGet(wecTotalram)%> kB</td>
+               </tr>
+               <tr>
+                  <td class='diagdata'>系统当前可用内存:</td>
+                  <td class='diagdata'><%ejGet(wecFreeram)%> kB</td>
+               </tr>
+		<tr>
+			<td class='diagdata'>当前环境温度:</td>
+			<td class='diagdata'><%ejGet(wecTemprature)%></td>
+		</tr>
+        </table>
+        <br>
+        <table border="0" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class='listend' width=560></td>
+					</tr>                           
+        </table>
+        <p>            	
+        	<input type='button' class='btn2L' onClick='btnRefresh()' value='刷 新'>
+        </p>
+			</form>
+		</blockquote>
+	</body>
+</html>

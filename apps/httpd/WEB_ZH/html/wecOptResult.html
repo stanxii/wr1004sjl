@@ -1,0 +1,77 @@
+<html>
+	<head>
+      <link rel="stylesheet" href='stylemain.css' type='text/css'>
+			<link rel="stylesheet" href='colors.css' type='text/css'>
+			<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
+			<title>WEC9720EK</title>
+			<base target="_self">
+			<script language="javascript">
+			<!-- hide
+				var optErrCode = "<%ejGet(wecOptCode)%>";
+				function btnReturn()
+				{
+					location.href = "<%ejGet(returnUrl)%>";
+				}
+				
+			// done hiding -->
+		</script>
+	</head>	
+	<body>
+  	<blockquote>
+    	<form>
+      	<br>
+        <table border="0" cellpadding="5" cellspacing="0">
+        	<tr>
+          	<td class='maintitle'><b>系统提示</b></td>            		
+          </tr>                       
+		    </table>
+		    <table border="0" cellpadding="0" cellspacing="0">            	
+        	<tr>
+						<td class='mainline' width=900></td>
+					</tr>                           
+		    </table>
+		  	<br>本页面显示您的操作结果，您可以按照下面的导航信息选择继续配置或者立即将修改的配置信息保存至数据库。
+		  	<br><font color=red>注意：</font>您的配置信息需要保存至后台数据库，否则系统重启后该配置项将丢失。</br>
+		  	<br>
+		  	<br>
+		  	<table border="0" cellpadding="0" cellspacing="0">
+		  		<tr>
+		  			<td class='diagret' width=400>操作结果</td>
+		  			<td class='diagret' width=200>&nbsp;</td>
+		  		</tr>
+		  		<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>
+		  		<tr>
+		  			<td class='diagdata'>操作状态:</td>
+		  			<script language="javascript">
+            	if ( optErrCode == '0')
+            	{
+            		document.writeln("<td class='diagdata'><b><font color=green>成 功</font></b></td>\n");	
+            	}                  	
+            	else
+            	{
+            		document.writeln("<td class='diagdata'><b><font color=red>失 败</font></b></td>\n");	
+            	}
+            </script>		  			
+		  		</tr>
+		  		<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>
+		  		<tr>
+		  			<td class='diagdata'>重新配置或者查看先前的配置信息，请点击：</td>
+		  			<td class='diagdata'><a href="<%ejGet(returnUrl)%>"><font color=blue>[返回]</font></a></td>
+		  		</tr>
+		  		<tr>
+		  			<td class='diagdata'>将配置信息保存至非易失性存储器，请点击：</td>
+		  			<td class='diagdata'><a href="wecSaveDb.html"><font color=blue>[保存]</font></a></td>
+		  		</tr>
+		  		<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>
+		  		<tr><td class='listend' colspan=2></td></tr>
+		  	</table>
+		  	<br><b>提示1：</b>您可以修改多个配置项后，再进行保存操作。
+		  	<br><b>提示2：</b>您亦可以通过“保存配置信息”菜单进行最终的存储工作。</br>
+		  	<br><br>
+        <p>            	
+        	<input type='button' class='btn2L' onClick='btnReturn()' value='返 回'>
+        </p>
+			</form>
+		</blockquote>
+	</body>
+</html>
