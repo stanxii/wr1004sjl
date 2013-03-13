@@ -20,6 +20,31 @@ NAND Flash MTD MAP:
 |+++++++++++++++++++++++|
 
 ########################################################################################
+NEW makefile support
+########################################################################################
+How to compile all project:
+	1) make {wec9720ek_c22|wec9720ek_s220|wec9720ek_xd25|wr1004sjl};
+	clean all compile targets:
+	4) make clean;
+	distclean all compile targets:
+	5) make distclean;
+
+How to build apps:
+	1) make {wec9720ek_c22_config|wec9720ek_s220_config|wec9720ek_xd25_config|wr1004sjl_config};
+	2) make apps;
+	3) make apps_clean;
+	4) make distclean;
+
+How to build kernel:
+	1) make kernel;
+	2) make clean;
+	3) make distclean;
+
+How to build u-boot:
+	1) make uboot;
+	2) make clean;
+	3) make distclean;
+########################################################################################
 
 flash kernel:
 	1) nand erase 0xA0000 0x200000
