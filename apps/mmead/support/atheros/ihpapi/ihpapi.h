@@ -279,6 +279,7 @@ typedef enum ihpapi_opCode_e
 	IHPAPI_OPCODE_GET_RX_TONE_MAP_INFO = 14,
 	IHPAPI_OPCODE_SET_CLASSIFICATION_INFO = 15,
 	IHPAPI_OPCODE_MDIO_COMMAND_INFO = 16,
+	IHPAPI_OPCODE_GET_NETWORK_INFO_STATS = 17,
 	IHPAPI_OPCODE_MAX 
 }
 
@@ -383,6 +384,57 @@ typedef struct __packed ihpapi_getNetworkInfoData_s
 
 ihpapi_getNetworkInfoData_t;
 
+
+/*====================================================================*
+ *   
+ *--------------------------------------------------------------------*/
+ 
+/*! This structure contain information decoded from a VS_NW_INFO
+ *  message by function RxFrame; 
+ *  see the INT74107.1.2 v1 Firmware Technical Reference Manual 
+ *  for more information;
+ *  add by stan
+ */
+ 
+ 	typedef struct __packed stav1_s  {
+		uint8_t DA[6];
+		uint8_t TEI;
+		uint8_t RESERVED[3];
+		uint8_t F1STBDA[6];
+		uint8_t AVGPHYDR_TX[2];
+		uint8_t TR_COUPLING;
+		uint8_t RESERVED1;
+		uint8_t AVGPHYDR_RX[2];
+		int8_t REVERSEVED2[2];
+	}
+	 v1sta_t;
+	
+ 
+typedef struct __packed ihpapi_getNetworkInfoStatsData_s 
+
+{	
+	  uint8_t MME_SUBVER;
+		uint8_t RESERVED;
+		uint8_t MME_DATA_LEN[2];
+		uint8_t FIRST_TEI;
+		uint8_t NUM_STAS;
+		uint8_t RESERVED1[2];
+		uint8_t IN_AVLIN;
+		uint8_t NID[7];
+		uint8_t RESERVED2;
+		uint8_t SNID;
+		uint8_t TEI;
+		uint8_t RESERVED3[2];
+		uint8_t STATIONROLE;
+		uint8_t CCO_MACADDR[6];
+		uint8_t ACCESS;
+		uint8_t NUMCORDNWS;
+		uint8_t CCO_TEI;
+		uint8_t REVERSEVED4[7];
+		uint8_t nwinfostats[IHPAPI_ETHER_MAX_LEN - IHPAPI_ETHER_HDR_LEN - 38]  ; 
+}
+
+ihpapi_getNetworkInfoStatsData_t;
 /*====================================================================*
  *   
  *--------------------------------------------------------------------*/
@@ -559,6 +611,7 @@ typedef struct __packed ihpapi_result_s
 		ihpapi_getConnectInfoData_t connInfo;
 		ihpapi_getManufacturerInfoData_t mftrInfo;
 		ihpapi_getNetworkInfoData_t netInfo;
+		ihpapi_getNetworkInfoStatsData_t netInfoStats;
 		ihpapi_getVersionData_t version;
 		ihpapi_hostActionRequestData_t hostAction;
 		ihpapi_updateDeviceData_t updateDev;
@@ -632,6 +685,7 @@ size_t ihpapi_Bandwidthlimiting (uint8_t sa [], uint8_t da [], size_t bufferLen,
 size_t ihpapi_GetConnectionInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_connectCtl_t * inputConnectInfo);
 size_t ihpapi_GetManufacturerInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_GetNetworkInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
+size_t ihpapi_GetNetworkInfoStats (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_GetVersionInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_GetToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_toneMapCtl_t * inputToneMapInfo);
 size_t ihpapi_GetRxToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_toneMapCtl_t * inputToneMapInfo);
@@ -649,6 +703,7 @@ size_t ihpapi_MdioCommand ( uint8_t sa [], uint8_t da [], MdioCmdInfo*pMdioCmdIn
  *--------------------------------------------------------------------*/
  
 int ihpapi_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result);
+int ihpapi_v1_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result); 
 
 /*====================================================================*
  *   sequencer functions; see the Intellon HomePlug AV

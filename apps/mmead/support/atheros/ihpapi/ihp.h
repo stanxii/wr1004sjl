@@ -244,6 +244,8 @@
 #define VS_OP_ATTRIBUTES 0xA068
 #define VS_ENET_SETTINGS 0xA06C
 #define VS_TONE_MAP_CHAR 0xA070
+
+/* ar7410 7.1.2 分片机制获取拓扑 */
 #define VS_NW_INFO_STATS 0xA074
 #define VS_SLAVE_MEM	0xA078
 #define VS_FAC_DEFAULT 0xA07C
@@ -305,6 +307,23 @@ typedef struct __packed header_mme
 
 header_mme;
 
+/*! Vendor specific header structure; for v1
+ *  See the Intellon Homeplug AV Firmware Technical Reference Manual
+ *  for more information;
+ * add by stan
+ */
+ 
+typedef struct __packed header_v1_mme 
+
+{
+	uint8_t MMV;
+	uint16_t MMTYPE;
+	uint8_t FMI[2];
+	uint8_t OUI [3];
+}
+
+header_v1_mme;
+
 /*! Manufacturer specific header structure; 
  *  See the Intellon HomePlug AV Firmware Technical Reference Manual 
  *  for more information;
@@ -345,6 +364,21 @@ typedef struct __packed header_vs
 
 header_vs;
 
+
+//add by stan
+/*! A vendor specific HomePlug AV message frame header defined 
+ *  using structures defined above to reduce program clutter;
+ */
+ 
+typedef struct __packed header_v1_vs 
+
+{
+	struct header_eth ethernet;
+	struct header_v1_mme intellon;
+}
+
+header_v1_vs;
+
 /*
  *
  */
@@ -358,6 +392,21 @@ typedef struct __packed header_cnf
 }
 
 header_cnf;
+
+/*
+ *
+ */
+ 
+typedef struct __packed header_v1_cnf 
+
+{
+	struct header_eth ethernet;
+	struct header_v1_mme intellon;
+	uint8_t MSTATUS;
+}
+
+header_V1_cnf;
+
 
 #pragma pack (pop)
  
@@ -784,12 +833,15 @@ SeqCB;
 size_t EncodeEthernetHeader (uint8_t buffer [], signed length, uint8_t ODA [], uint8_t OSA []);
 size_t EncodeIntellonHeader (uint8_t buffer [], signed length, uint16_t MMTYPE);
 
+size_t EncodeV1IntellonHeader (uint8_t buffer [], signed length, uint16_t MMTYPE);
+
 /*====================================================================*
  *   internal decoder functions;
  *--------------------------------------------------------------------*/
  
 int ihp_DecodeGetVersion (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeLinkStats (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
+int ihp_DecodeNetworkInfoStats (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeNetworkInfo (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeSetKey (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeMfgString (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
