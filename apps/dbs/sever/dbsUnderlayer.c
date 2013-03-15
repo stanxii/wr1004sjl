@@ -313,7 +313,9 @@ DBS_TBL_DESIGN tbl_sysinfo[DBS_SYS_TBL_COLS_SYSINFO] =
 	{DBS_SYS_TBL_SYSINFO_COL_ID_AU,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_autoud"},
 	{DBS_SYS_TBL_SYSINFO_COL_ID_AC,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_autoconf"},
 	{DBS_SYS_TBL_SYSINFO_COL_ID_WDT,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_wdt"},
-	{DBS_SYS_TBL_SYSINFO_COL_ID_MF,		SQLITE3_TEXT,	128,	BOOL_FALSE,	BOOL_TRUE,	"col_mfinfo"}
+	{DBS_SYS_TBL_SYSINFO_COL_ID_MF,		SQLITE3_TEXT,	128,	BOOL_FALSE,	BOOL_TRUE,	"col_mfinfo"},
+	{DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_p6rxdelay"},
+	{DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_p6txdelay"}
 };
 
 
@@ -586,7 +588,7 @@ int __dbs_underlayer_sql_exec(uint8_t *sql)
 		}
 		else if( ret != SQLITE_OK )
 		{
-			fprintf(stderr, "ERROR: [__dbs_underlayer_sql_exec] [%s] [%s]\n", sql, err_msg);
+			fprintf(stderr, "\r\n\r\n  ERROR: [__dbs_underlayer_sql_exec] [%s] [%s]\n", sql, err_msg);
 			return SQLITE_ERROR;
 		}
 	}while( SQLITE_BUSY == ret );
@@ -4887,6 +4889,36 @@ int __dbs_underlayer_get_row_sysinfo(st_dbsSysinfo *row)
 		{
 			strncpy(row->col_mfinfo, sqlite3_column_text(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_MF), 
 				tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_MF].col_len);
+		}
+		/* SQLITE_INTEGER	| col_p6rxdelay */
+		/* 为了兼容老的数据表格式，AR7410和88E6171R是通过port6的RGMII接口
+		** 连接的，AR7410为RGMII MAC，88E6171R为RGMII PHY，该接口通过88E6171R
+		** 的寄存器配置了RGMII RX Delay，而AR7410没有配置TX Delay，这样存在
+		** 一个问题，就是Port6需要软件初始化之后才能通，而一旦软件
+		** 不能运行，马上就会影响到用户上网，现在在新的硬件设计中
+		** 通过IO脚来使能了AR7410的RX 和TX Delay，而软件上不需要通过软件
+		** 来配置88E6171R的Delay了，这样一来，即使软件出现异常也不会
+		** 影响用户上网*/
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD) )
+		{
+			/* 如果读取不到col_p6rxdelay这一列，则认为是老的机器，默认
+			** 开启 88E6171R 的Port6 的RGMII RX Delay */
+			row->col_p6rxdelay = 1;	/* enable dsdt port 6 rgmii rx delay */
+		}
+		else
+		{
+			row->col_p6rxdelay = sqlite3_column_int(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD);
+		}
+		/* SQLITE_INTEGER	| col_p6txdelay */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD) )
+		{
+			/* 如果读取不到col_p6txdelay这一列，则认为是老的机器，默认
+			** 关闭88E6171R 的Port6 的RGMII TX Delay */
+			row->col_p6txdelay = 0;	/* disable dsdt port 6 rgmii tx delay */
+		}
+		else
+		{
+			row->col_p6txdelay = sqlite3_column_int(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD);
 		}
 		
 		ret = SQLITE_OK;		

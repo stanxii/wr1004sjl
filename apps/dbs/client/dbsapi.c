@@ -92,7 +92,7 @@ int __dbsCommunicate(uint8_t *buf, uint32_t len)
 					}
 					else
 					{
-						fprintf(stderr, "ERROR: MOD[%d] dbsCommunicate: result [%d] !\n", dbsSrcMod, r->result);
+						fprintf(stderr, "\r\n  ERROR: MOD[%d] dbsCommunicate: result [%d] !\n", dbsSrcMod, r->result);
 						return r->result;
 					}
 				}
@@ -615,6 +615,29 @@ int dbsUpdateInteger(DB_INTEGER_V *v)
 	return __dbsCommunicate(buf, len);
 }
 
+int dbsSetDsdtRgmiiDelay(st_dsdtRgmiiTimingDelay *dsdtRgmiiTimingDelay)
+{
+	DB_INTEGER_V iv;
+	
+	iv.ci.tbl = DBS_SYS_TBL_ID_SYSINFO;
+	iv.ci.row = 1;
+	iv.ci.col = DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD;
+	iv.ci.colType = SQLITE_INTEGER;
+	iv.len = sizeof(uint32_t);
+	iv.integer = dsdtRgmiiTimingDelay->rxdelay;
+	if( CMM_SUCCESS != dbsUpdateInteger(&iv) )
+	{
+		return CMM_FAILED;
+	}
+
+	iv.ci.tbl = DBS_SYS_TBL_ID_SYSINFO;
+	iv.ci.row = 1;
+	iv.ci.col = DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD;
+	iv.ci.colType = SQLITE_INTEGER;
+	iv.len = sizeof(uint32_t);
+	iv.integer = dsdtRgmiiTimingDelay->txdelay;
+	return dbsUpdateInteger(&iv);
+}
 
 int dbsUpdateText(DB_TEXT_V *v)
 {

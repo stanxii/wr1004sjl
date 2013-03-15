@@ -206,6 +206,27 @@ int do_network_config(st_dbsNetwork networkinfo)
 	return CMM_SUCCESS;
 }
 
+int do_dsdt_rgmii_delay_config(st_dsdtRgmiiTimingDelay* pDelay)
+{
+	int opt_sts=CMM_SUCCESS;
+
+	opt_sts = cmm2dsdt_setRgmiiTimingDelay(pDelay);
+	
+	if( CMM_SUCCESS ==  opt_sts )
+	{
+		if( pDelay->rxdelay )
+		{
+			dbs_sys_log(DBS_LOG_DEBUG, "dsdt port6 rgmii rx delay enabled");
+		}
+		if( pDelay->txdelay )
+		{
+			dbs_sys_log(DBS_LOG_DEBUG, "dsdt port6 rgmii tx delay enabled");
+		}
+	}
+
+	return opt_sts;
+}
+
 /********************************************************************************************
 *	函数名称:init_network
 *	函数功能:从数据库读取网络配置信息,初始化配置
@@ -216,8 +237,28 @@ int init_network(void)
 {
 	//int opt_sts=CMM_SUCCESS;	
 	st_dbsNetwork	szNetwork;
-	
+	st_dbsSysinfo		szSysinfo;
+	st_dsdtRgmiiTimingDelay dsdtRgmiiDelay;
+
 	/*从数据库中读取配置信息*/
+	if(CMM_SUCCESS == dbsGetSysinfo(1, &szSysinfo))
+	{
+		/* dsdt rgmii delay config */
+		dsdtRgmiiDelay.port = 6;
+		dsdtRgmiiDelay.rxdelay = szSysinfo.col_p6rxdelay;
+		dsdtRgmiiDelay.txdelay = szSysinfo.col_p6txdelay;
+		if( CMM_SUCCESS != do_dsdt_rgmii_delay_config(&dsdtRgmiiDelay) )
+		{
+			perror("cmm init_network->do_dsdt_rgmii_delay_config failed !\n");
+			return CMM_FAILED;
+		}		
+	}
+	else
+	{
+		perror("CMM init_network->dbsGetSysinfo error !\n");
+		return CMM_FAILED;
+	}
+	
 	if(CMM_SUCCESS == dbsGetNetwork(1, &szNetwork))
 	{
 		/* 设置ip,子网掩码,网关*/
@@ -592,6 +633,16 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 		case CMM_GET_CBAT_TEMPERATURE:
 		{
 			strcpy(log.cmd, "CMM_GET_CBAT_TEMPERATURE");
+			break;
+		}
+		case CMM_GET_DSDT_RGMII_DELAY:
+		{
+			strcpy(log.cmd, "CMM_GET_DSDT_RGMII_DELAY");
+			break;
+		}
+		case CMM_SET_DSDT_RGMII_DELAY:
+		{
+			strcpy(log.cmd, "CMM_SET_DSDT_RGMII_DELAY");
 			break;
 		}
 		default:
@@ -1286,8 +1337,14 @@ int CMM_ProcessSetDsdtRgmiiDelay(BBLOCK_QUEUE *this)
 	T_Msg_CMM *msg = (T_Msg_CMM *)(this->b);
 	st_dsdtRgmiiTimingDelay *msg_data = (st_dsdtRgmiiTimingDelay *)(msg->BUF);
 
+	/* save dsdt rgmii delay config in dbs */
+	if( CMM_SUCCESS != dbsSetDsdtRgmiiDelay(msg_data) )
+	{
+		fprintf(stderr, "\r\n  WARNING: Cannot save dsdt rgmii delay config into databases.");
+		dbs_sys_log(DBS_LOG_WARNING, "cannot save dsdt rgmii delay config into databases");
+	}
 
-	opt_sts = cmm2dsdt_setRgmiiTimingDelay(msg_data);	
+	opt_sts = cmm2dsdt_setRgmiiTimingDelay(msg_data);
 
 	/* 将处理信息发送给请求者 */
 	CMM_ProcessAck(opt_sts, this, NULL, 0);

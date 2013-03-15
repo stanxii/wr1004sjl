@@ -38,6 +38,7 @@ int dbsCreateDeblProfileForCnu(uint16_t id);
 int dbsCreateSuProfileForWec701Cnu(uint16_t id);
 int dbsCreateDewlProfileForWec701Cnu(uint16_t id);
 int dbsCreateDeblProfileForWec701Cnu(uint16_t id);
+int dbsSetDsdtRgmiiDelay(st_dsdtRgmiiTimingDelay *dsdtRgmiiTimingDelay);
 int dbsLogCount(uint16_t tbl, uint32_t *n);
 int dbsGetSyslog(uint32_t row, st_dbsSyslog *log);
 int dbsGetOptlog(uint32_t row, st_dbsOptlog *log);

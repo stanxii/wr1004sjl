@@ -170,14 +170,16 @@ GT_STATUS MV88E6171R_INIT(void)
 			return status;
 		}
 	}
-
+	
+	/* init rgmii delay config in cmm init_network() */
+#if 0
 	/* 6) Enable port6 RGMII RX delay */
 	if((status = gpcsSetRGMIITimingDelay(dev, 6, GT_TRUE, GT_FALSE)) != GT_OK)
 	{
 		printf("gpcsSetRGMIITimingDelay returned fail.\n");
 		return status;
 	}
-	
+#endif	
 	return GT_OK;
 }
 

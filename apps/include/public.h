@@ -52,7 +52,7 @@
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.2.4.0-cr24"
+#define SYSINFO_APP_VERSION		"v1.2.4.1-cr0"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -641,7 +641,7 @@ typedef enum
 #define DBS_SYS_TBL_COLS_CNUPRO		63
 #define DBS_SYS_TBL_COLS_SNMPINFO		8
 #define DBS_SYS_TBL_COLS_SWMGMT		6
-#define DBS_SYS_TBL_COLS_SYSINFO		14
+#define DBS_SYS_TBL_COLS_SYSINFO		16
 
 /*      定义system.db中数据表的索引号   */
 #define DBS_SYS_TBL_ID_CLIROLE		0
@@ -894,6 +894,8 @@ typedef enum
 #define DBS_SYS_TBL_SYSINFO_COL_ID_AC		11
 #define DBS_SYS_TBL_SYSINFO_COL_ID_WDT		12
 #define DBS_SYS_TBL_SYSINFO_COL_ID_MF		13
+#define DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD		14
+#define DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD		15
 
 /*      定义log.db中数据表的索引号   */
 #define DBS_LOG_TBL_ID_ALARM		0
@@ -2225,6 +2227,8 @@ typedef struct
 	uint32_t	col_autoconf;
 	uint32_t	col_wdt;
 	uint8_t	col_mfinfo[128];
+	uint32_t	col_p6rxdelay;
+	uint32_t	col_p6txdelay;
 }st_dbsSysinfo;
 
 #if 0
