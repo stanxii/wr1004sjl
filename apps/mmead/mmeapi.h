@@ -26,6 +26,19 @@ void MME_Atheros_MsgNeRefresh
 int MME_Atheros_MsgGetNetWorkInfo
 (T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_TOPOLOGY *pNEList);
 
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGetNetWorkInfoStats
+*	函数功能:ihpapi_GetNetworkInfoStats
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:Stan
+*	时间:2013-03-12
+*********************************************************************************************/
+int MME_Atheros_MsgGetNetWorkInfoStats
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_TOPOLOGY *pNEList);
+
+
 /********************************************************************************************
 *	函数名称:MME_Atheros_MsgGetManufacturerInfo
 *	函数功能:ihpapi_GetManufacturerInfo
@@ -78,6 +91,18 @@ int MME_Atheros_MsgResetDevice(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[]);
 *********************************************************************************************/
 int MME_Atheros_MsgGetTopology
 (T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_TOPOLOGY *pNEList);
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGetTopology
+*	函数功能:获取网元节点信息
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgGetTopologyStats
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_TOPOLOGY *pNEList);
+
 
 /********************************************************************************************
 *	函数名称:MME_Atheros_MsgGetRxToneMapInfo

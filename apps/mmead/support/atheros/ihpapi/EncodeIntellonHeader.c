@@ -101,6 +101,43 @@ size_t EncodeIntellonHeader (uint8_t buffer [], signed length, uint16_t MMTYPE)
 	return (sizeof (struct header_mme));
 }
 
+//add by stan for 74 mmv=1 encoder intellon header
+size_t EncodeV1IntellonHeader (uint8_t buffer [], signed length, uint16_t MMTYPE) 
+
+{
+	struct header_v1_mme * header = (struct header_v1_mme *)(buffer);
+
+#if INTELLON_SAFEMODE
+ 
+	if (buffer == (uint8_t *)(0)) 
+	{
+		errno = EFAULT;
+		return (0);
+	}
+
+#endif
+ 
+	if (length < sizeof (struct header_v1_mme)) 
+	{
+#if INTELLON_SAFEMODE
+ 
+		memset (buffer, 0, length);
+
+#endif
+ 
+		errno = ERANGE;
+		return (0);
+	}
+	header->MMV = 0x01;
+	header->MMTYPE = ihtons(MMTYPE);
+	header->FMI [0] = 0x00;
+	header->FMI [1] = 0x00;
+	header->OUI [0] = 0x00;
+	header->OUI [1] = 0xB0;
+	header->OUI [2] = 0x52;
+	return (sizeof (struct header_v1_mme));
+}
+
 #endif
  
 

@@ -46,6 +46,7 @@ void print_usage(void)
 	printf("	--13:	test mmead case [MMEAD_LINK_DIAG:RX] \n");
 	printf("	--14:	test mmead case [MMEAD_LINK_DIAG:TX] \n");
 	printf("	--15:	test mmead read pib from cnu \n");
+	printf("	--16:	test mmead case [MMEAD_GET_TOPOLOGY_STATS]\n");
 	printf("\n\n");
 }
 
@@ -447,6 +448,76 @@ int TEST_MMEAD_GET_TOPOLOGY(T_UDP_SK_INFO *sk)
 		return -1;
 	}
 }
+
+int TEST_MMEAD_GET_TOPOLOGY_STATS(T_UDP_SK_INFO *sk)
+{
+	T_Msg_Header_MMEAD h;
+	T_REQ_Msg_MMEAD *r = NULL;
+	uint8_t buf[MAX_UDP_SIZE];
+	struct timeval start, end;
+	
+	/* 先获取线卡的MAC 地址*/
+	TEST_MMEAD_GET_CLT_MAC(sk);
+
+	h.M_TYPE = 0xCC08;
+	h.DEV_TYPE = WEC_3801I;
+	h.MM_TYPE = MMEAD_GET_TOPOLOGY_STATS;
+	h.fragment = 0;
+	memcpy(h.ODA, cltMac, 6);
+	h.LEN = 0;
+
+	memcpy(buf, &h, sizeof(h));
+
+	start.tv_sec = 0;
+	start.tv_usec = 0;
+	end.tv_sec = 0;
+	end.tv_usec = 0;
+
+	gettimeofday( &start, NULL );
+	
+	if( 0 == msg_communicate(sk, buf, sizeof(h)) )
+	{
+		gettimeofday( &end, NULL );
+		r = (T_REQ_Msg_MMEAD *)buf;
+		T_MMEAD_TOPOLOGY *l = (T_MMEAD_TOPOLOGY *)(r->BUF);
+		int i = 0;
+		//printf("TEST_MMEAD_GET_TOPOLOGY_STATS\n");
+		printf("TEST_MMEAD_GET_TOPOLOGY_STATS: [Time Used: %d Seconds %ul Microseconds]\n", 
+			(int)(end.tv_sec - start.tv_sec),
+			(uint32_t)(end.tv_usec - start.tv_usec)
+		);
+		printf("==========================================================================\n");
+		printf( "clt.Mac = [%02X:%02X:%02X:%02X:%02X:%02X], clt.NumStas = [%d], clt.DevType = [%d]\n", 
+			l->clt.Mac[0], l->clt.Mac[1], l->clt.Mac[2], l->clt.Mac[3], l->clt.Mac[4], l->clt.Mac[5], 
+			l->clt.NumStas, l->clt.DevType );
+		
+		if( l->clt.NumStas > 0 )
+		{
+			for( i=0; i<l->clt.NumStas; i++ )
+			{
+				printf( "	-- cnu[%d].Mac = [%02X:%02X:%02X:%02X:%02X:%02X], TX/RX = [%d/%d], DevType = [%d]\n", 
+					i, 
+					l->cnu[i].Mac[0], l->cnu[i].Mac[1], l->cnu[i].Mac[2], 
+					l->cnu[i].Mac[3], l->cnu[i].Mac[4], l->cnu[i].Mac[5], 
+					l->cnu[i].AvgPhyTx, l->cnu[i].AvgPhyRx, l->cnu[i].DevType );
+			}
+		}
+		printf("==========================================================================\n");
+		return 0;
+	}
+	else
+	{
+		gettimeofday( &end, NULL );
+		printf("TEST_MMEAD_GET_TOPOLOGY_STATS: [Time Used: %d Seconds %ul Microseconds]\n", 
+			(int)(end.tv_sec - start.tv_sec),
+			(uint32_t)(end.tv_usec - start.tv_usec)
+		);
+		printf("TEST_MMEAD_GET_TOPOLOGY_STATS: Failed\n");
+		return -1;
+	}
+}
+
+
 
 int TEST_MMEAD_GET_TOPOLOGY_LOOP(T_UDP_SK_INFO *sk)
 {
@@ -908,6 +979,11 @@ int main(int argc, char *argv[])
 			case 15:
 			{
 				TEST_MMEAD_READ_PIB(&sk);
+				break;
+			}
+			case 16:
+			{
+				TEST_MMEAD_GET_TOPOLOGY_STATS(&sk);
 				break;
 			}
 			default:

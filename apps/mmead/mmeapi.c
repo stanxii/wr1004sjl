@@ -182,6 +182,74 @@ static int mme_rx
 
 }
 
+/********************************************************************************************
+*	函数名称:mme_v1_rx
+*	函数功能:MME 二层OAM RAW SOCKET报文接收函数，并负责完成
+*				   
+*	返回值:成功返回0，失败返回其他数值
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+static int mme_v1_rx
+( T_MME_SK_HANDLE *MME_SK, uint16_t MMtype, uint8_t *buffer, int buffersize, int *msg_len, ihpapi_result_t *xresult )	
+{
+	int ret=0;
+	long packetsize;
+	header_V1_cnf *p = NULL;
+
+	while ( (packetsize = readpacket(MME_SK, MMtype, buffer, buffersize, msg_len)) > 0)	
+	{
+		p = (header_V1_cnf *)buffer;
+		if( intohs(p->intellon.MMTYPE) != ( MMtype|MMTYPE_CNF ) )
+		{
+			mmead_debug_printf("MMtype not match, continue !\n");
+			continue;
+		}
+		if (ihpapi_v1_RxFrame(packetsize, buffer, xresult) == -1)
+		{			
+			switch(errno)			
+			{
+				case EFAULT:				
+					mmead_debug_printf( "invalid packet or result\n");		
+					break;			
+				case EBADMSG:				
+					mmead_debug_printf("wrong message error or EBADMSG\n");
+					break;			
+				case ENOSYS:
+					mmead_debug_printf("wrong message error or ENOSYS\n");						
+					break;			
+				case EPROTONOSUPPORT:		
+					mmead_debug_printf("wrong message error or EPROTONOSUPPORT\n");							
+					break;
+				case EAGAIN:
+					/* Atheros 6400增加了设备上线主动通知的MME */
+					/* 我们需要将该消息过滤掉*/
+					break;
+				default:				
+					mmead_debug_printf("unknown RxFrame error\n"); 		
+					break;			
+			}			
+			continue;		
+		}	
+		else
+		{
+			break;	
+		}
+	}
+
+	if ( (*msg_len) > 0 )
+	{
+		ret = CMM_SUCCESS;
+	}
+	else
+	{
+		ret = -1;
+	}
+
+	return (ret);
+
+}
+
 int smiRead(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_szMdioPhy *v)
 {
 	int packetsize;
@@ -969,6 +1037,7 @@ void MME_Atheros_MsgNeRefresh
 	T_MMEAD_TOPOLOGY NEList;
 	assert( NULL != pNEList );
 	uint32_t RealStations = pNEList->clt.NumStas;
+	
 
 	mmead_debug_printf("-------->MME_Atheros_MsgNeRefresh\n");
 	//printf("sizeof(T_MMEAD_TOPOLOGY) = %d\n", sizeof(T_MMEAD_TOPOLOGY));
@@ -978,7 +1047,7 @@ void MME_Atheros_MsgNeRefresh
 	bzero((char *)pNEList, sizeof(T_MMEAD_TOPOLOGY));
 
 #if 1
-	/* 获取CLT的设备类型，同时可以确定是否在线*/
+	/* 获取CLT的设备类型，同时可以确定是否在线*/	
 	if( MME_Atheros_MsgGetDeviceInfo(MME_SK, NEList.clt.Mac, &stDevInfo) == CMM_SUCCESS )
 	{
 		NEList.clt.DevType = stDevInfo.DevType;
@@ -1012,6 +1081,7 @@ void MME_Atheros_MsgNeRefresh
 			usleep(10000);
 			if( MME_Atheros_MsgGetDeviceInfo(MME_SK, NEList.cnu[i].Mac, &stDevInfo) == CMM_SUCCESS )
 			{
+				printf("XXXXX fuck you cnu devtype = %d \n", stDevInfo.DevType);
 				NEList.cnu[i].DevType = stDevInfo.DevType;
 				NEList.cnu[i].CRC[0] = stDevInfo.CRC[0];
 				NEList.cnu[i].CRC[1] = stDevInfo.CRC[1];
@@ -1116,6 +1186,78 @@ int MME_Atheros_MsgGetNetWorkInfo
 				pNEList->cnu[i].Tei = xresult.data.netInfo.nwinfo[24+i*15];
 				pNEList->cnu[i].AvgPhyTx = xresult.data.netInfo.nwinfo[31+i*15];
 				pNEList->cnu[i].AvgPhyRx = xresult.data.netInfo.nwinfo[32+i*15];
+			}
+		}
+		return CMM_SUCCESS;
+	}
+	else
+	{
+		return CMM_MME_ERROR;
+	}
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGetNetWorkInfoStats
+*	函数功能:ihpapi_GetNetworkInfoStats
+*				   only 支持 v1版本 在 oui 之前增加FMI
+*	返回值:操作是否成功的状态码
+*	作者:Stan
+*	时间:2013-03-12
+*********************************************************************************************/
+int MME_Atheros_MsgGetNetWorkInfoStats
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_TOPOLOGY *pNEList)
+{
+	int packetsize;
+	int i = 0;	
+	int recv_msg_len = 0;
+	ihpapi_result_t xresult;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	
+	assert( NULL != pNEList );
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGetNetWorkInfoStats\n");
+	
+	memset(pNEList, 0, sizeof(T_MMEAD_TOPOLOGY));
+	memset(buffer, 0, IHPAPI_ETHER_MAX_LEN);
+	
+	packetsize = ihpapi_GetNetworkInfoStats(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer);
+		
+	if( 0 != packetsize )
+	{	
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{		
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{		
+		return CMM_FAILED;
+	}
+  
+  
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_v1_rx(MME_SK, VS_NW_INFO_STATS, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS )
+	{
+		return CMM_MME_ERROR;
+	}
+	else if( xresult.validData )
+	{
+		pNEList->clt.DevType = WEC_3801I;
+		pNEList->clt.NumStas = xresult.data.netInfoStats.NUM_STAS;
+		memcpy(pNEList->clt.Mac, xresult.data.netInfoStats.CCO_MACADDR, IHPAPI_ETHER_ADDR_LEN);
+		
+		if( pNEList->clt.NumStas > 0 )
+		{
+			v1sta_t *p = (struct stav1_s *)&xresult.data.netInfoStats.nwinfostats;
+			for( i=0; i<pNEList->clt.NumStas; i++ )
+			{				
+				pNEList->cnu[i].DevType = WEC_XXXXX;
+				memcpy(pNEList->cnu[i].Mac, p->DA, IHPAPI_ETHER_ADDR_LEN);
+				pNEList->cnu[i].Tei = p->TEI;
+				pNEList->cnu[i].AvgPhyTx = p->AVGPHYDR_TX[0];
+				pNEList->cnu[i].AvgPhyRx = p->AVGPHYDR_RX[0];
+				p++;
 			}
 		}
 		return CMM_SUCCESS;
@@ -1349,6 +1491,31 @@ int MME_Atheros_MsgGetTopology
 	
 	/* 获取Athreos设备的网络节点信息，注意是5分钟之前的*/
 	if( MME_Atheros_MsgGetNetWorkInfo(MME_SK, ODA, pNEList) != CMM_SUCCESS )
+	{
+		return CMM_MME_ERROR;
+	}
+
+	/* 排除已经下线的CNU设备*/
+	MME_Atheros_MsgNeRefresh(MME_SK, ODA, pNEList);
+
+	return CMM_SUCCESS;
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGetTopologyStats
+*	函数功能:74系列分片获取网元节点信息
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:stan
+*	时间:2013-03-12
+*********************************************************************************************/
+int MME_Atheros_MsgGetTopologyStats
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_TOPOLOGY *pNEList)
+{
+	mmead_debug_printf("-------->MME_Atheros_MsgGetTopologyStats\n");
+	
+	/* 获取Athreos设备的网络节点信息，注意是5分钟之前的*/
+	if( MME_Atheros_MsgGetNetWorkInfoStats(MME_SK, ODA, pNEList) != CMM_SUCCESS )
 	{
 		return CMM_MME_ERROR;
 	}
@@ -2183,8 +2350,7 @@ int MME_Atheros_MsgGetPibSpec
 	int recv_msg_len = 0;
 	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
 
-	mmead_debug_printf("-------->MME_Atheros_MsgGetPibSpec\n");
-	
+	mmead_debug_printf("-------->MME_Atheros_MsgGetPibSpec\n");	
 #pragma pack (push,1)
 	typedef struct __packed vs_rd_mod_request 
 	{
@@ -2216,7 +2382,6 @@ int MME_Atheros_MsgGetPibSpec
 	ihpapi_result_t xresult;
 
 	memset(buffer, 0, sizeof(buffer));
-	
 	EncodeEthernetHeader ((uint8_t *)&(request->ethernet), sizeof(struct header_eth), ODA, OSA);	
 	EncodeIntellonHeader ((uint8_t *)&(request->intellon), sizeof(struct header_mme), (VS_RD_MOD | MMTYPE_REQ));
 
@@ -2325,7 +2490,7 @@ int MME_Atheros_MsgGetDeviceInfo
 	uint32_t modCrc = 0;
 	mmead_debug_printf("-------->MME_Atheros_MsgGetDeviceInfo\n");
 
-	/* 获取设备类型和PIB CRC */
+	/* 获取设备类型和PIB CRC */	
 	if( MME_Atheros_MsgGetPibSpec(MME_SK, ODA, pDevInfo) )
 	{
 		return CMM_MME_ERROR;	

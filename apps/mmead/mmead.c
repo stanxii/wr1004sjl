@@ -34,6 +34,7 @@ int MMEAD_MODULE_DEBUG_ENABLE = 0;
 
 void hexdump (const unsigned char memory [], size_t length, FILE *fp) ;
 void MME_Atheros_ProcessGetTopology(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK);
+void MME_Atheros_ProcessGetTopologyStats(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK);
 int MME_Atheros_MsgGetPhyReg(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_szMdioPhy *v);
 int MME_Atheros_MsgSetPhyReg(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_szMdioPhy *v);
 int MME_Atheros_MsgGetSwReg(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_szMdioSw *v);
@@ -326,6 +327,27 @@ void MME_Atheros_ProcessGetTopology(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *M
 }
 
 /********************************************************************************************
+*	函数名称:MME_Atheros_ProcessGetTopologyStats
+*	函数功能:  本函数是针对74系列分片包0xa0 74 获取拓扑的函数
+*         该函数为MME_ProcessGetTopologyStats函数完成硬件屏蔽之后
+*				  调用的子函数，
+*				  该函数通过发送MME获取在线的网元，并将获取
+*				  到的信息通过消息接口发送给请求模块
+*	作者:stan
+*	时间:2013-03-12
+*********************************************************************************************/
+void MME_Atheros_ProcessGetTopologyStats(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	T_MMEAD_TOPOLOGY NEList;
+
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgGetTopologyStats(MME_SK, h->ODA, &NEList), 
+						this, (uint8_t *)&NEList, sizeof(NEList));
+}
+
+/********************************************************************************************
 *	函数名称:MME_ProcessGetCltMac
 *	函数功能:该函数通过发送MME获取CLT的MAC地址，并将获取
 *				  到的信息通过消息接口发送给请求模块
@@ -504,6 +526,37 @@ void MME_ProcessGetTopology(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC_3801I:
 		{
 			MME_Atheros_ProcessGetTopology(this, MME_SK);
+			break;
+		}
+		default:
+		{
+			/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+			MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+			break;
+		}
+	}
+}
+
+/********************************************************************************************
+*	函数名称:MME_ProcessGetTopologyStats
+*	函数功能: 针对74系列 分片机制获取 0xa0 74 获取拓扑
+*  该函数通过发送MME获取在线的网元，并将获取
+*				  到的信息通过消息接口发送给请求模块
+*	限制:这里一次调用只能获取一块CLT线卡的拓扑，对于有
+*			多块线卡的CBAT，注册模块需要针对每块CLT都调用
+*			一次该函数才能拿到所有的拓扑信息
+*	作者:stan
+*	时间:2013-01-12
+*********************************************************************************************/
+void MME_ProcessGetTopologyStats(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	switch(h->DEV_TYPE)
+	{
+		/* 这里仅仅支持Atheros的CLT线卡WEC_3801I */
+		case WEC_3801I:
+		{
+			MME_Atheros_ProcessGetTopologyStats(this, MME_SK);
 			break;
 		}
 		default:
@@ -1260,6 +1313,9 @@ void ComReqManager(void)
 			case MMEAD_GET_TOPOLOGY:
 				MME_ProcessGetTopology(this, &MME_SK);
 				break;
+		  case MMEAD_GET_TOPOLOGY_STATS:
+		  	MME_ProcessGetTopologyStats(this, &MME_SK);
+				break;
 			case MMEAD_GET_CLT_MAC:
 				MME_ProcessGetCltMac(this, &MME_SK);
 				break;
@@ -1296,6 +1352,9 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 		case MMEAD_GET_TOPOLOGY:
 			MME_ProcessGetTopology(this, MME_SK);
 			break;
+		case MMEAD_GET_TOPOLOGY_STATS:
+		  MME_ProcessGetTopologyStats(this, MME_SK);
+			break;			
 		case MMEAD_GET_CLT_MAC:
 			MME_ProcessGetCltMac(this, MME_SK);
 			break;

@@ -240,6 +240,84 @@ int ihpapi_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result)
 	return (rc);
 }
 
+
+//add by stan for v1
+int ihpapi_v1_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result) 
+
+{
+	extern struct SeqCB scb;
+	int rc = -1;
+	int i=0;
+	uint8_t OUI [3] = 
+	{
+		0x00,
+		0xB0,
+		0x52 
+	};
+	TxInfo *tcb = &scb.tcb;
+	BlockInfo block;
+	struct header_v1_cnf * header = (struct header_v1_cnf *)(buffer);
+	memset (result, 0, sizeof (* result));
+	result->opCode = IHPAPI_OPCODE_NOOP;
+	result->opCompltCode = IHPAPI_OPCMPLTCODE_NOOP;
+	result->opStatus.type = XX_MMTYPE_BAD;
+	result->opStatus.status = 0;
+	result->validData = false;
+	result->dataLen = 0;
+	
+	
+
+#if INTELLON_SAFEMODE
+ 
+	if (buffer == (uint8_t *)(0)) 
+	{
+		result->opStatus.status = errno = EFAULT;
+		return (-1);
+	}
+	if (result == (ihpapi_result_t *)(0)) 
+	{
+		result->opStatus.status = errno = EFAULT;
+		return (-1);
+	}
+
+#endif
+ 
+	if (ntohs (header->ethernet.MTYPE) != HOMEPLUG_MTYPE) 
+	{
+		result->opStatus.status = errno = EPERM;
+		return (-1);
+	}
+	//fix by stan use 0x01 version 
+	
+	
+	if (header->intellon.MMV != 0x01) 
+	{
+		result->opStatus.status = errno = EFAULT;
+		return (-1);
+	}
+	if (memcmp (header->intellon.OUI, OUI, sizeof (OUI))) 
+	{
+		result->opStatus.status = errno = EFAULT;
+		return (-1);
+	}
+	result->opStatus.type = intohs(header->intellon.MMTYPE);
+	memcpy (result->ODA, header->ethernet.ODA, IHPAPI_ETHER_ADDR_LEN);
+	memcpy (result->OSA, header->ethernet.OSA, IHPAPI_ETHER_ADDR_LEN);
+	
+	switch (result->opStatus.type) 
+	{
+	case VS_NW_INFO_STATS | MMTYPE_CNF:
+		rc = ihp_DecodeNetworkInfoStats (buffer, length, result);
+		result->opCode = IHPAPI_OPCODE_GET_NETWORK_INFO_STATS;
+		result->opCompltCode = IHPAPI_OPCMPLTCODE_COMPLETE;
+		break;
+	default:
+		printf("ihpapi_RxFrame->case default: set errno = ENOSYS\n");
+		result->opStatus.status = errno = ENOSYS;
+		result->opStatus.type = XX_MMTYPE_BAD;
+	}
+	return (rc);
+}
 #endif
  
 

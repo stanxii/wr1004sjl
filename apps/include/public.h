@@ -454,7 +454,7 @@ enum
 	MMEAD_BOOT_OUT_CNU,					/* 踢出非法用户*/
 	MMEAD_AUTHORIZATION_USER,			/* 授权CNU用户端口*/
 	MMEAD_LINK_DIAG,
-	
+	MMEAD_GET_TOPOLOGY_STATS,
 	
 	/* 请在中间增加其他枚举定义 */
 
