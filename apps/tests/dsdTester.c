@@ -57,6 +57,9 @@ void dsdTester_usage(void)
 	printf("  --case/5/1: display switch rmon conter1\n");
 	printf("  --case/5/2: display switch rmon conter2\n");
 	printf("  --case/5/3: display switch rmon conter3\n");
+	printf("  --case/6/1: show all the vid entry in the VTU\n");
+	printf("  --case/6/2: show all the Mac entry in the ATU\n");
+	printf("  --case/6/3: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU\n");
 	
 	printf("\n\n");
 }
@@ -267,6 +270,57 @@ GT_STATUS dsdtStart(int cpuPort)
 	{
 		printf("MV88E6171R_INIT return Failed\n");
 		return GT_FAIL;
+	}
+
+	printf("QuarterDeck has been started.\n");
+
+	return GT_OK;
+}
+
+/*
+ *  Initialize the QuarterDeck. This should be done in BSP driver init routine.
+ *    Since BSP is not combined with QuarterDeck driver, we are doing here.
+*/
+GT_STATUS dsdtInit(int cpuPort)
+{
+	GT_STATUS status;
+
+	memset((char*)&cfg,0,sizeof(GT_SYS_CONFIG));
+	memset((char*)&diagDev,0,sizeof(GT_QD_DEV));
+
+	cfg.BSPFunctions.readMii   = MV88E6171R_SMI_READ;
+	cfg.BSPFunctions.writeMii  = MV88E6171R_SMI_WRITE;
+#ifdef GT_RMGMT_ACCESS
+	cfg.BSPFunctions.hwAccess  = NULL; 
+#endif
+	cfg.BSPFunctions.semCreate = NULL;
+	cfg.BSPFunctions.semDelete = NULL;
+	cfg.BSPFunctions.semTake   = NULL;
+	cfg.BSPFunctions.semGive   = NULL;	
+
+	cfg.initPorts = GT_FALSE;    /* Set switch ports to Forwarding mode. If GT_FALSE, use Default Setting. */
+	cfg.cpuPortNum = cpuPort;
+	cfg.mode.scanMode = SMI_AUTO_SCAN_MODE;    /* Scan 0 or 0x10 base address to find the QD */
+	cfg.mode.baseAddr = 0;
+	
+	if( (status=qdLoadDriver(&cfg, dev)) != GT_OK )
+	{
+		printf("qdLoadDriver return Failed\n");
+		return status;
+	}
+
+	printf("Device ID     : 0x%x\n",dev->deviceId);
+	printf("Base Reg Addr : 0x%x\n",dev->baseRegAddr);
+	printf("No of Ports   : %d\n",dev->numOfPorts);
+	printf("CPU Ports     : %d\n",dev->cpuPortNum);
+
+	/*
+	*  start the QuarterDeck
+	*/
+	if((status=sysEnable(dev)) != GT_OK)
+	{
+		printf("sysConfig return Failed\n");
+		return status;
 	}
 
 	printf("QuarterDeck has been started.\n");
@@ -529,6 +583,120 @@ GT_STATUS dsdTester_initMgmtVlan(void)
 	{
 		return __undo_mgmt_vlan();
 	}	
+}
+
+GT_STATUS dsdTester_displayMacEntry(GT_U32 dbNum)
+{
+	GT_STATUS status;
+	GT_ATU_ENTRY tmpMacEntry;
+
+	printf("ATU %d List:\n", dbNum);
+	memset(&tmpMacEntry,0,sizeof(GT_ATU_ENTRY));
+	tmpMacEntry.DBNum = dbNum;
+
+	while(1)
+	{
+		/* Get the sorted list of MAC Table. */
+		if((status = gfdbGetAtuEntryNext(dev,&tmpMacEntry)) != GT_OK)
+		{
+			return status;
+		}
+
+		printf("(%02x-%02x-%02x-%02x-%02x-%02x) PortVec %#x\n",
+			tmpMacEntry.macAddr.arEther[0],
+			tmpMacEntry.macAddr.arEther[1],
+			tmpMacEntry.macAddr.arEther[2],
+			tmpMacEntry.macAddr.arEther[3],
+			tmpMacEntry.macAddr.arEther[4],
+			tmpMacEntry.macAddr.arEther[5],
+			tmpMacEntry.portVec
+		);
+	}
+	return GT_OK;
+}
+
+GT_STATUS dsdTester_displayMacEntryAll(void)
+{
+	GT_U32          dbNum, maxDbNum;
+	GT_ATU_ENTRY    entry;
+	//GT_ATU_STAT        atuStat;
+	GT_U32 iNum;
+	GT_U32         *count = &iNum;
+
+	printf("dsdTester_displayMacEntryAll Called.\n");
+
+	if (IS_IN_DEV_GROUP(dev,DEV_DBNUM_FULL))
+		maxDbNum = 16;
+	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_64))
+		maxDbNum = 64;
+	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_256))
+		maxDbNum = 256;
+	else if(IS_IN_DEV_GROUP(dev,DEV_DBNUM_4096))
+		maxDbNum = 4096;
+	else
+		maxDbNum = 1;
+
+	for(dbNum=0; dbNum<maxDbNum; dbNum++)
+	{
+		dsdTester_displayMacEntry(dbNum);
+	}
+
+	printf("OK.\n");
+	return GT_OK;
+}
+
+/*
+ *    Add the intellon muticast MAC address (00:b0:52:00:00:01) into the ATU.
+ *    Input - None
+*/
+GT_STATUS sampleAddAtherosMac(void)
+{
+    GT_STATUS status;
+    GT_ATU_ENTRY macEntry;
+
+    macEntry.macAddr.arEther[0] = 0x00;
+    macEntry.macAddr.arEther[1] = 0xb0;
+    macEntry.macAddr.arEther[2] = 0x52;
+    macEntry.macAddr.arEther[3] = 0x00;
+    macEntry.macAddr.arEther[4] = 0x00;
+    macEntry.macAddr.arEther[5] = 0x01;
+
+    macEntry.portVec = 1 << 6;     /* clt Port number. 7bits are used for portVector. */
+
+    macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
+                                any other priority determined by the frame's data. This value is
+                                meaningful only if the device does not support extended priority
+                                information such as MAC Queue Priority and MAC Frame Priority */
+
+    macEntry.exPrio.macQPri = 0;    /* If device doesnot support MAC Queue Priority override, 
+                                    this field is ignored. */
+    macEntry.exPrio.macFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+    macEntry.exPrio.useMacFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+
+    macEntry.entryState.ucEntryState = GT_UC_STATIC;
+                                /* This address is locked and will not be aged out.
+                                Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
+    macEntry.DBNum = 0;
+								
+    /* 
+     *    Add the MAC Address.
+     */
+    if((status = gfdbAddMacEntry(dev,&macEntry)) != GT_OK)
+    {
+        printf("gfdbAddMacEntry returned fail.\n");
+        return status;
+    }
+
+    return GT_OK;
+}
+
+GT_STATUS dsdTester_addAtherosMulticastAddress(void)
+{
+	//st_dbsNetwork networkinfo;
+
+	return sampleAddAtherosMac();
 }
 
 GT_STATUS dsdTester_case_1_1_settings(void)
@@ -1066,6 +1234,52 @@ GT_STATUS dsdTester_case_5_3_settings()
 	return GT_OK;
 }
 
+GT_STATUS dsdTester_showVIDTable()
+{
+	GT_STATUS status;
+	GT_VTU_ENTRY vtuEntry;
+	GT_LPORT port;    
+	int portIndex;
+
+	gtMemSet(&vtuEntry,0,sizeof(GT_VTU_ENTRY));
+	vtuEntry.vid = 0xfff;
+	if((status = gvtuGetEntryFirst(dev,&vtuEntry)) != GT_OK)
+	{
+		printf("gvtuGetEntryCount returned fail.\n");
+		return status;
+	}
+
+	printf("DBNum:%i, VID:%i \n",vtuEntry.DBNum,vtuEntry.vid);
+
+	for(portIndex=0; portIndex<dev->numOfPorts; portIndex++)
+	{
+		port = portIndex;
+		printf("Tag%i:%#x  ",port,vtuEntry.vtuData.memberTagP[port]);
+	}
+
+	printf("\n");
+
+	while(1)
+	{
+		if((status = gvtuGetEntryNext(dev,&vtuEntry)) != GT_OK)
+		{
+			break;
+		}
+
+		printf("DBNum:%i, VID:%i \n",vtuEntry.DBNum,vtuEntry.vid);
+
+		for(portIndex=0; portIndex<dev->numOfPorts; portIndex++)
+		{
+			port = portIndex;
+			printf("Tag%i:%#x  ",port,vtuEntry.vtuData.memberTagP[port]);
+		}
+
+		printf("\n");
+	}
+	return GT_OK;
+}
+
+
 void dsdTester_showVtu(void)
 {
 	GT_STATUS ret = GT_OK;
@@ -1456,6 +1670,45 @@ int main(int argc, char *argv[])
 		dsdtStart(cpuPort);
 
 		if( GT_OK != dsdTester_case_5_3_settings() )
+		{
+			goto DSDT_END;
+		}		
+
+		printf("\n");
+		goto DSDT_END;
+	}
+	else if( strcmp(argv[1], "case/6/1") == 0)
+	{
+		printf("\n");
+		dsdtInit(cpuPort);
+
+		if( GT_OK != dsdTester_showVIDTable() )
+		{
+			goto DSDT_END;
+		}		
+
+		printf("\n");
+		goto DSDT_END;
+	}
+	else if( strcmp(argv[1], "case/6/2") == 0)
+	{
+		printf("\n");
+		dsdtInit(cpuPort);
+
+		if( GT_OK != dsdTester_displayMacEntryAll() )
+		{
+			goto DSDT_END;
+		}		
+
+		printf("\n");
+		goto DSDT_END;
+	}
+	else if( strcmp(argv[1], "case/6/3") == 0)
+	{
+		printf("\n");
+		dsdtInit(cpuPort);
+
+		if( GT_OK != dsdTester_addAtherosMulticastAddress() )
 		{
 			goto DSDT_END;
 		}		
