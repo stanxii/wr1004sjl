@@ -13,6 +13,7 @@ DBSDIR = $(ROOTDIR)/apps/dbs
 IFLAGS = -I../include -I../boardapi
 DBS_INC = -I$(DBSDIR)/include
 DSDT_INC = -I$(DSDTSWDIR)/Include \
+           -I$(DSDTSWDIR)/sample/Include \
 	-I$(DSDTSWDIR)/Include/h/msApi
 	
 LDFLAGS += -L../dbs/client/lib
@@ -21,7 +22,7 @@ BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 
 QD_LIB = $(DSDTSWDIR)/Library/qdDrv.o
 
-CFLAGS += -g -O2
+CFLAGS += -g -O2 -D__KERNEL__
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
 
