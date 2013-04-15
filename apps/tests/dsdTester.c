@@ -67,7 +67,7 @@ void dsdTester_usage(void)
 	printf("  --case/6/3: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, P6 only\n");
 	printf("  --case/6/4: sample del intellon multicast address 00:b0:52:00:00:01 from the ATU\n");
 	printf("  --case/6/5: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, p0 & p6\n");
-	printf("  --case/7/1 0x200000 0x3D: cbsLimit 0x200000 < 0xFFFFFF  cbsIncreament < 0xFF sample Storm prevent test for broadcast unknow unicast and multicast\n");
+	printf("  --case/7/1 1 0x200000 0x3D: 1 is Enable ,cbsLimit 0x200000 < 0xFFFFFF , cbsIncreament < 0xFF sample:: --case/7/1 0 is disable Storm prevent test for broadcast unknow unicast and multicast\n");
 	
 	printf("\n\n");
 }
@@ -1559,7 +1559,7 @@ GT_STATUS dsdTester_showVlan(void)
  *
 */
 
-GT_STATUS dsdTester_PIRL2CustomSetup(long cbsLimit, int cbsIncreament)
+GT_STATUS dsdTester_PIRL2CustomSetup(int cbsEnable, long cbsLimit, int cbsIncreament)
 {
     GT_STATUS status;
     GT_PIRL2_DATA pirlData;
@@ -1572,7 +1572,14 @@ GT_STATUS dsdTester_PIRL2CustomSetup(long cbsLimit, int cbsIncreament)
     //  demo  default cbsLimit 0x200000 
    //  demo  default cbsIncreament 0x3D 
 
-    pirlData.customSetup.isValid = GT_TRUE;
+    //add by stan 
+    if( 1 == cbsEnable)
+      pirlData.customSetup.isValid = GT_TRUE;
+    else if( 0 == cbsEnable)
+      pirlData.customSetup.isValid = GT_FALSE;
+    else
+	return GT_BAD_PARAM; 
+
     pirlData.customSetup.ebsLimit = 0xFFFFFF;
 //    pirlData.customSetup.cbsLimit = 0x200000;
  //   pirlData.customSetup.bktIncrement = 0x3D;
@@ -1632,6 +1639,7 @@ int main(int argc, char *argv[])
 	int cpuPort = 5;
 	long cbsLimit =0x000000;
 	int cbsIncreament = 0x00;	
+	int cbsEnable= 0;	
 
 	if( argc != 2 )
 	{
@@ -1990,12 +1998,25 @@ int main(int argc, char *argv[])
 		printf("\n");
 		dsdtInit(cpuPort);
                 //add by stan for param cbslimit argv[3] and increament argv[4]
-                if(argc == 4 ) {
-                  sprintf((char *)&cbsLimit, "%6X", argv[2]);
-                  sprintf((char *)&cbsIncreament,  "%2X", argv[3]);
+                if(argc >= 3 ) {
+                  sprintf((char *)&cbsEnable, "%d", argv[2]);
+                  // storm prevent enable
+	 	  if( 1 == cbsEnable && 5 == argc) {
+                    sprintf((char *)&cbsLimit, "%6X", argv[3]);
+                    sprintf((char *)&cbsIncreament,  "%2X", argv[4]);
+                    cbsEnable = 1;
+		  }else if( 0 == cbsEnable){
+                    // storm prevent disable
+		    cbsLimit = 0x200000;
+                    cbsIncreament = 0x3D;
+		  }else {
+                    
+		        printf(" storm prevent param error not 1 or 0 , pls reinput and try bye!\n");
+			goto DSDT_END;
+		  }
                 }
 
-		if( GT_OK != dsdTester_PIRL2CustomSetup(cbsLimit, cbsIncreament) )
+		if( GT_OK != dsdTester_PIRL2CustomSetup(cbsEnable, cbsLimit, cbsIncreament) )
 		{
 			goto DSDT_END;
 		}		
