@@ -65,6 +65,8 @@
 #include <net-snmp/agent/agent_module_config.h>
 #include <net-snmp/agent/mib_module_config.h>
 
+#include "snmp2cmm.h"
+
 #include <public.h>
 #include <dbsapi.h>
 
@@ -1113,7 +1115,7 @@ snmpd_parse_config_trap2sink(const char *word, char *cptr)
 		return;
 	}
 
-	if( !dbsGetSnmp(1, &snmpConfig) )
+	if( !dbsGetSnmp(dbsdev, 1, &snmpConfig) )
 	{		
 		sprintf(pp, "%d", snmpConfig.col_tpa);		
 		if (!snmp_trapcommunity)

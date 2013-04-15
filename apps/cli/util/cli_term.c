@@ -29,6 +29,8 @@ extern "C" {
 
 ST_CLI_TERM m_stCliTerm;
 
+extern T_DBS_DEV_INFO *dbsdev;
+
 static struct termios stored_settings;
 ULONG  CLI_SendToTerm ( )
 {
@@ -236,7 +238,7 @@ _VOID    CLI_TermLogin(void)
 
 	for( i=1; i<=3; i++ )
 	{
-		if( 0 == dbsGetCliRole(i, &role) )
+		if( 0 == dbsGetCliRole(dbsdev, i, &role) )
 		{
 			roles.role[i-1].id = role.id;
 			strcpy(roles.role[i-1].col_user, role.col_user);

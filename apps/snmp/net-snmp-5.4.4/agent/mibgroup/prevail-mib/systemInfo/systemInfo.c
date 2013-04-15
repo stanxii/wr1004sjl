@@ -66,7 +66,7 @@ void load_systemInfo(void)
 {
 	st_dbsSysinfo row;
 	
-	if( CMM_SUCCESS == dbsGetSysinfo(1, &row) )
+	if( CMM_SUCCESS == dbsGetSysinfo(dbsdev, 1, &row) )
 	{
 		systemInfo_falshSize = row.col_flashsize;
 		systemInfo_sdramSize = row.col_ramsize;
@@ -82,7 +82,7 @@ void load_systemInfo(void)
 	}
 	else
 	{
-		dbs_sys_log(DBS_LOG_ERR, "snmp load_systemInfo failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "snmp load_systemInfo failed");
 	}
 	
 	

@@ -84,7 +84,7 @@ int ihp_DecodeNetworkInfoStats (const uint8_t buffer [], size_t length, ihpapi_r
 
 {
 	
-	int i=0;
+	//int i=0;
 	
 	
 	struct vs_nw_info_stats_v1_cnf 
@@ -112,7 +112,7 @@ int ihp_DecodeNetworkInfoStats (const uint8_t buffer [], size_t length, ihpapi_r
 	}
 	*confirm = (struct vs_nw_info_stats_v1_cnf *)(buffer);
 	ihpapi_getNetworkInfoStatsData_t * message = & result->data.netInfoStats;
-	v1sta_t  * pv1sta = message->nwinfostats;
+	//v1sta_t  * pv1sta = (v1sta_t  *)(message->nwinfostats);
 	
 	if (length < sizeof (struct network_v1_s)) 
 	{

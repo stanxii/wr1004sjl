@@ -32,6 +32,9 @@ uint8_t OSA [6] =
 static MMEAD_BBLOCK_QUEUE bblock;
 int MMEAD_MODULE_DEBUG_ENABLE = 0;
 
+/* 与DBS  通讯的设备文件*/
+T_DBS_DEV_INFO *dbsdev = NULL;
+
 void hexdump (const unsigned char memory [], size_t length, FILE *fp) ;
 void MME_Atheros_ProcessGetTopology(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK);
 void MME_Atheros_ProcessGetTopologyStats(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK);
@@ -1417,7 +1420,7 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 			break;
 		default:
 			/* 对于不支持的消息类型应该给予应答以便让请求者知道 */
-			dbs_sys_log(DBS_LOG_ERR, "mmead ComReqManager->MMEAD_ProcessAck[CMM_UNKNOWN_MMTYPE]");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead ComReqManager->MMEAD_ProcessAck[CMM_UNKNOWN_MMTYPE]");
 			MMEAD_ProcessAck(CMM_UNKNOWN_MMTYPE, this, NULL, 0);
 			break;
 	}
@@ -1549,8 +1552,8 @@ void MMEAD_ProcForExit(int n)
 	//printf("Threads exited !\n");
 	
 #endif
-	dbs_sys_log(DBS_LOG_INFO, "MMEAD_ProcForExit : module mmead exit");
-	dbsClose();
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "MMEAD_ProcForExit : module mmead exit");
+	dbsClose(dbsdev);
 	/* 关闭socket接口 */
 	close(this->sk.skfd);
 	
@@ -1574,9 +1577,12 @@ int main(void)
 	T_Msg_Header_MMEAD *h = NULL;
 	MMEAD_BBLOCK_QUEUE *this = &bblock;
 
-	if( 0 != dbsOpen(MID_MMEAD) )
+	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
+	dbsdev = dbsOpen(MID_MMEAD);
+	if( NULL == dbsdev )
 	{
-		return -1;
+		fprintf(stderr,"ERROR: mmead->dbsOpen error, exited !\n");
+		return CMM_CREATE_SOCKET_ERROR;
 	}
 
 	signal(SIGTERM, MMEAD_ProcForExit);
@@ -1584,8 +1590,8 @@ int main(void)
 	if( get_mac_addr(LOCAL_INTERFACE0, OSA) != 0 )
 	{
 		fprintf(stderr, "ERROR: mmead->get_mac_addr, exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "mmead get_mac_addr error, exited");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead get_mac_addr error, exited");
+		dbsClose(dbsdev);
 		return -1;
 	}	
 
@@ -1605,8 +1611,8 @@ int main(void)
 	if( ( this->sk.skfd = socket(PF_INET, SOCK_DGRAM, 0) ) < 0 )
 	{
 		fprintf(stderr, "ERROR: mmead->socket, exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "mmead create socket error, exited");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead create socket error, exited");
+		dbsClose(dbsdev);
 		return -1;
 	}
 
@@ -1618,8 +1624,8 @@ int main(void)
 	if (bind(this->sk.skfd, (struct sockaddr*)&MmeadAddr, sizeof(MmeadAddr))<0)
 	{
 		fprintf(stderr, "ERROR: mmead->bind, exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "mmead binding socket error, exited");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead binding socket error, exited");
+		dbsClose(dbsdev);
 		return -1;
 	}
 
@@ -1644,14 +1650,14 @@ int main(void)
 	if( MME_InitSocket(&MME_SK, EOC_PROG_ATHEROS) != 0 )
 	{
 		fprintf(stderr, "ERROR: mmead->MME_InitSocket, exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "mmead init mme socket error, exited");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead init mme socket error, exited");
+		dbsClose(dbsdev);
 		return -1;
 	}
 
 #endif
 	
-	dbs_sys_log(DBS_LOG_INFO, "starting module mmead success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module mmead success");
 	printf("Starting module MMEAD		......		[OK]\n");
 
 	FromAddrSize = sizeof(this->sk.from);
@@ -1681,7 +1687,7 @@ int main(void)
 		if ( -1 == rev_len )
 		{
 			fprintf(stderr, "ERROR: mmead->recvfrom, continue !\n");
-			dbs_sys_log(DBS_LOG_ERR, "mmead call recvfrom error, continue");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead call recvfrom error, continue");
 		}		
 		else
 		{
@@ -1691,7 +1697,7 @@ int main(void)
 				/* 对于MMEAD_MSG_ID不正确的请求不作应答，请求方
 				等待接收时需要进行select，以免进程阻塞*/
 				fprintf(stderr, "ERROR: mmead->recvfrom[Non-matched msg], skip !\n");
-				dbs_sys_log(DBS_LOG_WARNING, "Non-matched msg revieved by MMEAD, skip");
+				dbs_sys_log(dbsdev, DBS_LOG_WARNING, "Non-matched msg revieved by MMEAD, skip");
 			}
 			else
 			{
@@ -1711,8 +1717,8 @@ int main(void)
 	}
 
 	/* 不要在这个后面添加代码，执行不到滴*/
-	dbs_sys_log(DBS_LOG_INFO, "module mmead exit");
-	dbsClose();
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "module mmead exit");
+	dbsClose(dbsdev);
 	return 0;
 }
 

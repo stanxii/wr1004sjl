@@ -247,15 +247,15 @@ int ihpapi_v1_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * resul
 {
 	extern struct SeqCB scb;
 	int rc = -1;
-	int i=0;
+	//int i=0;
 	uint8_t OUI [3] = 
 	{
 		0x00,
 		0xB0,
 		0x52 
 	};
-	TxInfo *tcb = &scb.tcb;
-	BlockInfo block;
+	//TxInfo *tcb = &scb.tcb;
+	//BlockInfo block;
 	struct header_v1_cnf * header = (struct header_v1_cnf *)(buffer);
 	memset (result, 0, sizeof (* result));
 	result->opCode = IHPAPI_OPCODE_NOOP;

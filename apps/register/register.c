@@ -88,7 +88,7 @@ void RegSignalProcessHandle(int n)
 	/* 发送系统关闭的告警*/
 	cbat_system_sts_notification(0);
 	/* 关闭socket接口 */
-	dbs_sys_log(DBS_LOG_INFO, "SignalProcessHandle : module register exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "SignalProcessHandle : module register exit");
 	msg_mmead_destroy();
 	msg_alarm_destroy();
 	msg_tm_destroy();
@@ -96,74 +96,6 @@ void RegSignalProcessHandle(int n)
 	//printf("\nRegister exited !\n");
 	exit(0);
 }
-
-#if 0
-BOOLEAN isCnuAuthorized(uint32_t clt_index, uint32_t cnu_index)
-{
-	uint32_t userType = 0;
-	uint32_t anonyAccSts = 0;
-	uint32_t userAccSts = 0;
-	
-	/* 获取该CNU的用户类型*/
-	if( CMM_SUCCESS == db_get_user_type(clt_index, cnu_index, &userType))
-	{
-		/* 匿名用户*/
-		if( 0 == userType )
-		{		
-			/* 获取匿名用户接入使能状态*/
-			if( CMM_SUCCESS != db_get_anonymous_access_sts(&anonyAccSts))
-			{
-				perror("ERROR: isCnuAtherized->db_get_anonymous_access_sts !\n");
-				return BOOL_FALSE;
-			}
-			else if( anonyAccSts == 0 )
-			{
-				return BOOL_FALSE;
-			}
-			else
-			{
-				/* 获取该用户接入使能状态*/
-				if( CMM_SUCCESS != db_get_user_access_sts(clt_index, cnu_index, &userAccSts))
-				{
-					perror("ERROR: isCnuAtherized->db_get_user_access_sts !\n");
-					return BOOL_FALSE;
-				}
-				else if( userAccSts == 0 )
-				{					
-					return BOOL_FALSE;
-				}
-				else
-				{
-					return BOOL_TRUE;
-				}
-			}
-		}
-		else
-		{
-			/* 知名用户*/
-			/* 获取该用户接入使能状态*/
-			if( CMM_SUCCESS != db_get_user_access_sts(clt_index, cnu_index, &userAccSts))
-			{
-				perror("ERROR: isCnuAtherized->db_get_user_access_sts !\n");
-				return BOOL_FALSE;
-			}
-			else if( userAccSts == 0 )
-			{
-				return BOOL_FALSE;
-			}
-			else
-			{
-				return BOOL_TRUE;
-			}
-		}
-	}
-	else
-	{
-		perror("ERROR: isCnuAtherized->db_get_user_type !\n");
-		return BOOL_FALSE;
-	}
-}
-#endif
 
 BOOLEAN isCnuIndexOnUsed(uint32_t clt_index, uint32_t cnu_index)
 {
@@ -203,7 +135,7 @@ int set_cnu_pro_sync(uint32_t clt_index, uint32_t cnu_index, BOOLEAN status)
 	st_iValue.len = sizeof(uint32_t);
 	st_iValue.integer = flag;
 	
-	if( CMM_SUCCESS != dbsUpdateInteger(&st_iValue))
+	if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &st_iValue))
 	{
 		perror("ERROR: set_cnu_pro_sync->dbsUpdateInteger !\n");
 		return CMM_FAILED;
@@ -266,7 +198,7 @@ void refresh_signon_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 		this->tb_cnu[cnu_index-1].TxRate = 0;
 		db_update_cnu(cnu_index, &cnu);
 		/* 写系统日志*/
-		dbs_sys_log(DBS_LOG_WARNING, "refresh_signon_cnu encountered cnu with conflict mac address");
+		dbs_sys_log(dbsdev, DBS_LOG_WARNING, "refresh_signon_cnu encountered cnu with conflict mac address");
 		/* 发送告警*/
 		fprintf(stderr, "refresh_signon_cnu mac address conflicting !\n");
 	}
@@ -359,7 +291,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 				cnu.col_model = activeCnu->DevType;
 				/* 这里假定设备类型变更则一定用重新发配置*/
 				cnu.col_synch = 0;
-				if( CMM_SUCCESS != dbsUpdateCnu(cnu_index, &cnu) )
+				if( CMM_SUCCESS != dbsUpdateCnu(dbsdev, cnu_index, &cnu) )
 				{
 					perror("ERROR: do_cnu_auto_config->dbsUpdateCnu !\n");
 					/* 发送CNU放弃自动配置的告警*/
@@ -378,7 +310,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 						iValue.ci.colType = DBS_INTEGER;
 						iValue.integer = 12;
 						iValue.len = sizeof(int32_t);
-						if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+						if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 						{
 							perror("ERROR: do_cnu_auto_config->dbsUpdateInteger !\n");
 							/* 发送CNU放弃自动配置的告警*/
@@ -393,7 +325,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 				printf("Warnning: fixed non-matched cnu type %d at index %d/%d\n", 
 					activeCnu->DevType, clt_index, cnu_index);
 				/* 写系统日志*/
-				dbs_sys_log(DBS_LOG_WARNING, "do_cnu_auto_config encountered cnu with conflict mac address");
+				dbs_sys_log(dbsdev, DBS_LOG_WARNING, "do_cnu_auto_config encountered cnu with conflict mac address");
 				/* 继续进入下面的自动配置流程*/
 			}			
 			/* 3. 如果发现的设备类型不合法则踢下线；*/
@@ -414,7 +346,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 				}
 				#endif
 				/* 写系统日志*/
-				dbs_sys_log(DBS_LOG_WARNING, "do_cnu_auto_config encountered invalid cnu with conflict mac address");
+				dbs_sys_log(dbsdev, DBS_LOG_WARNING, "do_cnu_auto_config encountered invalid cnu with conflict mac address");
 				/* 退出自动配置流程*/
 				return;
 			}
@@ -536,177 +468,6 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 		}		
 	}
 }
-
-#if 0
-void do_anonymous_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO activeCnu)
-{
-	uint32_t anonyAccSts = 0;
-	uint32_t userAccSts = 0;
-	uint32_t autoCfgSts = 0;
-	uint32_t userAutoCfgSts = 0;
-	//st_dbsCnu cnu;
-	T_TOPOLOGY_INFO *this = &topEntry;
-
-	//printf("@@ do_anonymous_register @@\n");
-
-	/* 获取匿名用户接入使能状态*/
-	if( CMM_SUCCESS != db_get_anonymous_access_sts(&anonyAccSts))
-	{
-		perror("ERROR: do_anonymous_register->db_get_anonymous_access_sts !\n");
-		return ;
-	}
-	/* 获取该用户接入使能状态*/
-	if( CMM_SUCCESS != db_get_user_access_sts(clt_index, cnu_index, &userAccSts))
-	{
-		perror("ERROR: do_anonymous_register->db_get_user_access_sts !\n");
-		return ;
-	}
-
-	if(anonyAccSts)
-	{
-		if(userAccSts)
-		{
-			/* 获取全局自动配置使能状态*/
-			if( CMM_SUCCESS != db_get_auto_config_sts(&autoCfgSts))
-			{
-				perror("ERROR: do_anonymous_register->db_get_auto_config_sts !\n");
-				return ;
-			}
-			else
-			{
-				if( autoCfgSts == 0 )
-				{
-					refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
-				}
-				else
-				{
-					/* 获取该用户自动配置使能状态*/
-					if( CMM_SUCCESS != db_get_user_auto_config_sts(clt_index, cnu_index, &userAutoCfgSts))
-					{
-						perror("ERROR: do_anonymous_register->db_get_user_auto_config_sts !\n");
-						return ;
-					}
-					else
-					{
-						if( userAutoCfgSts == 0 )
-						{
-							refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
-						}
-						else
-						{
-							/* 自动配置*/
-							do_cnu_auto_config(clt_index, cnu_index, &activeCnu);
-						}
-					}
-				}
-			}
-		}
-		else
-		{
-			/* 发送MME禁止该用户接入*/
-			if( CMM_SUCCESS == msg_reg_mmead_block_user(activeCnu.DevType, activeCnu.Mac) )
-			{
-				/* 发送告警*/
-				cnu_block_notification(clt_index, cnu_index, activeCnu.Mac, BOOL_TRUE);
-			}
-			else
-			{
-				/* 发送告警*/
-				cnu_block_notification(clt_index, cnu_index, activeCnu.Mac, BOOL_FALSE);
-			}
-			refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
-			return ;
-		}
-	}
-	else
-	{
-		/* 发送MME禁止该用户接入*/
-		if( CMM_SUCCESS == msg_reg_mmead_block_user(activeCnu.DevType, activeCnu.Mac) )
-		{
-			/* 发送告警*/
-			cnu_block_notification(clt_index, cnu_index, activeCnu.Mac, BOOL_TRUE);
-		}
-		else
-		{
-			/* 发送告警*/
-			cnu_block_notification(clt_index, cnu_index, activeCnu.Mac, BOOL_FALSE);
-		}
-		refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
-		return ;
-	}	
-}
-
-void do_user_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO activeCnu)
-{
-	uint32_t userAccSts = 0;
-	uint32_t autoCfgSts = 0;
-	uint32_t userAutoCfgSts = 0;
-	//st_dbsCnu cnu;
-	T_TOPOLOGY_INFO *this = &topEntry;
-
-	//printf("@@ do_user_register @@\n");
-	
-	/* 获取该用户接入使能状态*/
-	if( CMM_SUCCESS != db_get_user_access_sts(clt_index, cnu_index, &userAccSts))
-	{
-		perror("ERROR: do_user_register->db_get_user_access_sts !\n");
-		return ;
-	}
-
-	if( 0 == userAccSts )
-	{
-		/* 发送MME禁止该用户接入*/
-		if( CMM_SUCCESS == msg_reg_mmead_block_user(activeCnu.DevType, activeCnu.Mac) )
-		{
-			/* 发送告警*/
-			cnu_block_notification(clt_index, cnu_index, activeCnu.Mac, BOOL_TRUE);
-		}
-		else
-		{
-			/* 发送告警*/
-			cnu_block_notification(clt_index, cnu_index, activeCnu.Mac, BOOL_FALSE);
-		}
-		refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
-	}
-	else
-	{
-		/* 获取全局自动配置使能状态*/
-		if( CMM_SUCCESS != db_get_auto_config_sts(&autoCfgSts))
-		{
-			perror("ERROR: do_user_register->db_get_auto_config_sts !\n");
-			return ;
-		}
-		else
-		{
-			if( autoCfgSts == 0 )
-			{
-				refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
-			}
-			else
-			{
-				/* 获取该用户自动配置使能状态*/
-				if( CMM_SUCCESS != db_get_user_auto_config_sts(clt_index, cnu_index, &userAutoCfgSts))
-				{
-					perror("ERROR: do_user_register->db_get_user_auto_config_sts !\n");
-					return ;
-				}
-				else
-				{
-					if( userAutoCfgSts == 0 )
-					{
-						refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
-					}
-					else
-					{
-						/* 自动配置*/
-						do_cnu_auto_config(clt_index, cnu_index, &activeCnu);
-					}
-				}
-			}
-		}
-	}
-}
-#endif
 
 void refresh_active_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO activeCnu)
 {
@@ -1038,7 +799,7 @@ int __isNewCnuMacaddr(uint8_t mac[])
 		strValue.ci.row = i;
 		strValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_MAC;
 		strValue.ci.colType = DBS_TEXT;
-		if( CMM_SUCCESS != dbsGetText(&strValue) )
+		if( CMM_SUCCESS != dbsGetText(dbsdev, &strValue) )
 		{
 			return 0;
 		}
@@ -1082,7 +843,7 @@ void do_create_cnu(uint8_t macaddr[])
 	if( !__isNewCnuMacaddr(macaddr) )
 	{
 		printf("\r\n\r\n  create entry for cnu %s failed !\n", cnu.col_mac);
-		dbs_sys_log(DBS_LOG_ERR, "register create cnu error: mac conflict !");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "register create cnu error: mac conflict !");
 		return;
 	}
 
@@ -1092,7 +853,7 @@ void do_create_cnu(uint8_t macaddr[])
 	{		
 		/* CNU 表已满，禁止添加*/
 		printf("\r\n\r\n  create entry for cnu %s failed !\n", cnu.col_mac);
-		dbs_sys_log(DBS_LOG_ERR, "register create cnu error: no cnu entry !");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "register create cnu error: no cnu entry !");
 		return;
 	}
 	else
@@ -1109,144 +870,18 @@ void do_create_cnu(uint8_t macaddr[])
 			this->tb_cnu[idle-1].TxRate = 0;
 			this->tb_cnu[idle-1].OnUsed = BOOL_TRUE;
 			db_fflush();
-			dbs_sys_log(DBS_LOG_INFO, "module register create entry for cnu success !");
+			dbs_sys_log(dbsdev, DBS_LOG_INFO, "module register create entry for cnu success !");
 			return;
 		}
 		else
 		{
 			printf("\r\n\r\n  create entry for cnu %s error !\n", cnu.col_mac);
-			dbs_sys_log(DBS_LOG_ERR, "register create cnu error: system error !");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "register create cnu error: system error !");
 			return;
 		}
 	}	
 }
 
-#if 0
-int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
-{
-	int idle = 0;
-	int invalidCnuAccessEn = BOOL_FALSE;
-	uint8_t supCnuMac0[6] = {0x30, 0x71, 0xB2, 0x00, 0x00, 0x10};
-	uint8_t supCnuMac1[6] = {0x00, 0x1E, 0xE3, 0x20, 0x11, 0x01};
-	st_dbsCnu cnu;
-	T_TOPOLOGY_INFO *this = &topEntry;
-
-	//printf("\n@@try_to_add_cnu\n");
-
-	/* 判断是否为非法用户*/
-	if( ! boardapi_isCnuSupported(activeCnu.DevType) )
-	{		
-		/* 发送非法设备接入告警*/
-		/* 通知告警管理模块*/
-		lllegal_cnu_register_notification(1, activeCnu.Mac);
-		/* 禁止添加该设备*/
-		if( invalidCnuAccessEn == BOOL_FALSE )
-		{
-			if( CMM_SUCCESS != msg_reg_mmead_bootout_dev(this->tb_clt.Mac, activeCnu.Mac) )
-			{
-				
-				lllegal_cnu_kick_off_notification(1, activeCnu.Mac, BOOL_FALSE);
-			}
-			else
-			{
-				lllegal_cnu_kick_off_notification(1, activeCnu.Mac, BOOL_TRUE);
-			}
-		}
-		return 0;
-	}
-
-	idle = find_idle();
-	
-	if( 0 == idle )
-	{
-		/* 发送CNU用户数量超限的告警*/
-		cnu_exceed_notification(1);
-		/* 禁止添加该设备*/
-		if( CMM_SUCCESS != msg_reg_mmead_bootout_dev(this->tb_clt.Mac, activeCnu.Mac) )
-		{
-			
-			lllegal_cnu_kick_off_notification(1, activeCnu.Mac, BOOL_FALSE);
-		}
-		else
-		{
-			lllegal_cnu_kick_off_notification(1, activeCnu.Mac, BOOL_TRUE);
-		}
-	}
-	else
-	{
-		/* 先将该CNU的信息添加至网元数据库*/
-		cnu.id = idle;
-		cnu.col_model = activeCnu.DevType;
-		sprintf(cnu.col_mac, "%02X:%02X:%02X:%02X:%02X:%02X", 
-			activeCnu.Mac[0], activeCnu.Mac[1], activeCnu.Mac[2], 
-			activeCnu.Mac[3], activeCnu.Mac[4], activeCnu.Mac[5]
-		);
-		//memcpy((char *)(cnu.mac), (const char *)(activeCnu.Mac), 6);
-		cnu.col_sts = 0;		
-		/* 如果发现是超级终端则自动添加为具名用户*/
-		if( (memcmp(supCnuMac0, activeCnu.Mac, 6) == 0) || (memcmp(supCnuMac1, activeCnu.Mac, 6) == 0))
-		{
-			cnu.col_auth = 1;	
-			cnu.col_synch = BOOL_FALSE;
-		}
-		else
-		{
-			cnu.col_auth = 0;
-			/* 解决移机后配置会被局端作为匿名用户而覆盖的问题*/
-			/* 用户希望在A局点下开通之后直接拿到B局点下就可以使用*/
-			/* 如下2种情况可以正常移机使用*/
-			/* 1. 终端移至局点B时如果是一个新用户，此时配置不会覆盖*/
-			/* 2. 终端移至局点B是如果是一个未经离线配置的离线用户时*/
-			/* 如下2种情况仍然存在移机后配置被覆盖的情况:*/
-			/* 1. 终端在局点B下已经是一个离线用户，并且进行过离线配置*/
-			/* 2. 终端在局点B下已经是一个预开户的用户*/
-			cnu.col_synch = BOOL_TRUE;
-		}
-		strcpy(cnu.col_ver, "V4.1.0.1");
-		cnu.col_rx = 0;
-		cnu.col_tx = 0;
-		strcpy(cnu.col_snr, "0%");
-		strcpy(cnu.col_bpc, "0%");
-		strcpy(cnu.col_att, "0dB");
-		//cnu.col_synch = BOOL_FALSE;
-		cnu.col_row_sts = BOOL_TRUE;
-
-		if( 1 == cnu.col_auth )
-		{
-			if( CMM_SUCCESS == db_new_su(idle, &cnu))
-			{
-				/* 同步数据*/
-				this->tb_cnu[idle-1].online = DEV_STS_OFFLINE;
-				this->tb_cnu[idle-1].DevType = activeCnu.DevType;
-				memcpy((char *)(this->tb_cnu[idle-1].Mac), (const char *)(activeCnu.Mac), 6);
-				this->tb_cnu[idle-1].OnUsed = BOOL_TRUE;
-				db_fflush();
-			}
-			else
-			{
-				idle = 0;
-			}			
-		}
-		else
-		{
-			if( CMM_SUCCESS == db_new_cnu(idle, &cnu))
-			{
-				/* 同步数据*/
-				this->tb_cnu[idle-1].online = DEV_STS_OFFLINE;
-				this->tb_cnu[idle-1].DevType = activeCnu.DevType;
-				memcpy((char *)(this->tb_cnu[idle-1].Mac), (const char *)(activeCnu.Mac), 6);
-				this->tb_cnu[idle-1].OnUsed = BOOL_TRUE;
-				db_fflush();
-			}
-			else
-			{
-				idle = 0;
-			}
-		}
-	}
-	return idle;
-} 
-#else
 int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 {
 	int idle = 0;
@@ -1379,7 +1014,7 @@ int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 	}
 	return idle;
 } 
-#endif
+
 /********************************************************************************************
 *	函数名称:try_to_register_new_cun
 *	函数功能:完成新发现设备的注册
@@ -1887,20 +1522,21 @@ int init_nelib(void)
 int main(void)
 {	
 	/*创建与数据库模块通讯的外部SOCKET接口*/
-	if( CMM_SUCCESS != reg_dbsOpen() )
+	dbsdev = reg_dbsOpen();
+	if( NULL == dbsdev )
 	{
-		perror("Register->msg_db_init error, exited !\n");
+		fprintf(stderr,"ERROR: register->dbsOpen error, exited !\n");
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
 	/* Waiting for mmead init */
-	dbsWaitModule(MF_MMEAD|MF_ALARM|MF_TM);
+	dbsWaitModule(dbsdev, MF_MMEAD|MF_ALARM|MF_TM);
 	
 	/*创建与MMEAD模块通讯的外部SOCKET接口*/
 	if( CMM_SUCCESS != msg_mmead_init() )
 	{
 		perror("Register->msg_mmead_init error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module register msg_mmead_init error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module register msg_mmead_init error, exited !");
 		reg_dbsClose();
 		return CMM_CREATE_SOCKET_ERROR;
 	}
@@ -1909,7 +1545,7 @@ int main(void)
 	if( CMM_SUCCESS != msg_alarm_init() )
 	{
 		perror("Register->msg_alarm_init error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module register msg_alarm_init error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module register msg_alarm_init error, exited !");
 		reg_dbsClose();
 		return CMM_CREATE_SOCKET_ERROR;
 	}	
@@ -1918,7 +1554,7 @@ int main(void)
 	if( CMM_SUCCESS != msg_tm_init() )
 	{
 		perror("Register->msg_tm_init error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module register msg_tm_init error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module register msg_tm_init error, exited !");
 		reg_dbsClose();
 		return CMM_CREATE_SOCKET_ERROR;
 	}
@@ -1927,7 +1563,7 @@ int main(void)
 	if( CMM_SUCCESS != msg_regi_init() )
 	{
 		perror("Register->msg_regi_init error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module register msg_regi_init error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module register msg_regi_init error, exited !");
 		reg_dbsClose();
 		return CMM_CREATE_SOCKET_ERROR;
 	}
@@ -1936,7 +1572,7 @@ int main(void)
 	if( init_nelib() != CMM_SUCCESS )
 	{
 		perror("Register->init_nelib error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module register init_nelib error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module register init_nelib error, exited !");
 		reg_dbsClose();
 		return CMM_FAILED;
 	}
@@ -1952,13 +1588,13 @@ int main(void)
 	fprintf(stderr, "				SUCCESS\n");
 	fprintf(stderr, "====================================================================\n# \n# \n# ");
 
-	dbs_sys_log(DBS_LOG_INFO, "starting module register success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module register success");
 	
 	/* 循环处理注册事件*/
 	ProcessRegist();
 
 	/* 不要在这个后面添加代码，执行不到滴*/
-	dbs_sys_log(DBS_LOG_INFO, "SignalProcessHandle : module register exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "SignalProcessHandle : module register exit");
 	msg_mmead_destroy();
 	msg_alarm_destroy();
 	msg_tm_destroy();

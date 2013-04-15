@@ -18,11 +18,13 @@
 #include "cli_cmm.h"
 #include <dbsapi.h>
 
+extern T_DBS_DEV_INFO *dbsdev;
+
 ULONG CLI_CommDestroy(void)
 {
-	dbs_sys_log(DBS_LOG_INFO, "module cli exited");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "module cli exited");
 	destroy_cli_cmm();
-	dbsClose();
+	dbsClose(dbsdev);
 	return CMM_SUCCESS;
 }
 
@@ -36,20 +38,21 @@ ULONG CLI_CommDestroy(void)
 ULONG CLI_CommInit()
 {
 	/* 打开数据库模块接口*/
-	if( CMM_SUCCESS != dbsNoWaitOpen(MID_CLI) )
+	dbsdev = dbsNoWaitOpen(MID_CLI);
+	if( NULL == dbsdev )
 	{
-		fprintf(stderr, "ERROR: CLI_CommInit->dbsNoWaitOpen failed !\n");
+		fprintf(stderr,"ERROR: cli->dbsNoWaitOpen error, exited !\n");
 		return CMM_FAILED;
 	}
 	/* 消息模块的注册 */
 	if( init_cli_cmm() != CMM_SUCCESS )  /* 通讯初始化失败 */
 	{
-		dbs_sys_log(DBS_LOG_EMERG, "module cli init_cli_cmm error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cli init_cli_cmm error, exited !");
 		fprintf(stderr, "ERROR: CLI_CommInit->init_cli_cmm failed !\n");
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
-	dbs_sys_log(DBS_LOG_INFO, "starting module cli success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module cli success");
 	return CMM_SUCCESS;
 }
 

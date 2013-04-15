@@ -54,7 +54,7 @@
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.2.4.1-cr0"
+#define SYSINFO_APP_VERSION		"v1.2.4.2-cr2"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -406,7 +406,7 @@ enum
 	MID_DBA,
 	MID_REGISTER,
 	MID_MMEAD,
-	MID_SQL,
+	MID_SQL,			/*10*/
 	MID_TEMPLATE,
 	MID_DBS,
 	MID_DBS_TESTER,
@@ -414,6 +414,11 @@ enum
 	MID_TM_TESTER,
 	MID_SYSEVENT,
 	MID_DSDT_TESTER,
+	MID_AT91BTN,
+	MID_ATM,
+	MID_SYSINDI,		/*20*/
+	MID_SYSLED,
+	MID_WDTIMER,
 	/* 警告: 模块定义不要超过32个*/
 	MID_OTHER = 32
 };
@@ -1262,6 +1267,15 @@ typedef struct
 	uint8_t b[MAX_UDP_SIZE];
 }BBLOCK_QUEUE;
 
+/* DBS */
+typedef struct
+{
+	T_UDP_SK_INFO channel;
+	uint16_t srcmod;
+	uint32_t blen;
+	uint8_t buf[MAX_UDP_SIZE];
+}T_DBS_DEV_INFO;
+
 /*==============================================================*/
 
 #pragma pack (push, 1)
@@ -1515,6 +1529,49 @@ typedef struct
 	uint8_t BUF[0];		/*消息体内容*/
 }
 T_REQ_Msg_MMEAD;
+
+/* new mmets struct defined by frank */
+/*****************************************************************************************************/
+/* mmets 请求消息头定义*/
+typedef struct
+{
+	uint16_t M_TYPE;		/*标示MMEAD MSG报文类型,必须为0xCC08*/
+	uint16_t DEV_TYPE;	/*设备类型,该字段用作硬件兼容处理*/
+	uint16_t MM_TYPE;	/*消息类型，标示具体的消息*/
+	uint8_t fragment;		/*是否存在更多分片*/
+	uint8_t ODA[6];		/*目的MAC地址*/
+	uint32_t LEN;			/*消息体的长度*/
+}
+T_MMETS_REQ_HEADER;
+
+/* mmets 请求消息结构定义*/
+typedef struct
+{
+	T_MMETS_REQ_HEADER header;	/* 请求消息头*/
+	uint8_t body[0];				/* 请求消息体内容*/
+}
+T_MMETS_REQ_MSG;
+
+/* mmets 应答消息头定义*/
+typedef struct
+{
+	uint16_t M_TYPE;		/*标示MMEAD MSG报文类型,必须为0xCC08*/
+	uint16_t DEV_TYPE;	/*设备类型,该字段用作硬件兼容处理*/
+	uint16_t MM_TYPE;	/*消息类型，标示具体的消息*/
+	uint8_t fragment;		/*是否存在更多分片*/
+	uint32_t LEN;			/*消息体的长度，包括result + body 的长度*/
+	uint16_t result;		/*处理状态*/
+}
+T_MMETS_ACK_HEADER;
+
+/* mmets 应答消息结构定义*/
+typedef struct
+{
+	T_MMETS_ACK_HEADER header;	/* 应答消息头*/
+	uint8_t body[0];				/* 应答消息体内容*/
+}
+T_MMETS_ACK_MSG;
+/*****************************************************************************************************/
 
 typedef struct 
 {

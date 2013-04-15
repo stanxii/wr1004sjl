@@ -3,13 +3,17 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <public.h>
-#include "sm2dbsMutex.h"
+#include <dbsapi.h>
+//#include "sm2dbsMutex.h"
 #include "systemStsControl.h"
 #include "sysMonitor2cmm.h"
 #include "sysMonitor.h"
 #include "at91ButtonProcessor.h"
 
 static int at91btns_fd = 0;
+
+/* 与DBS  通讯的设备文件*/
+static T_DBS_DEV_INFO *dbsdev = NULL;
 
 void at91btnsSyncHandler(int args)
 {
@@ -51,22 +55,33 @@ void *at91ButtonProcessor(void)
 	fd_set rds;
 	T_UDP_SK_INFO myCmmSk;
 
+	/* DBS设计变更，支持多线程操作，初始化时在每个线程中独享消息接口*/
+	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
+	dbsdev = dbsNoWaitOpen(MID_AT91BTN);
+	if( NULL == dbsdev )
+	{
+		fprintf(stderr,"ERROR: at91ButtonProcessor->dbsOpen error, exited !\n");
+		return (void *)0;
+	}
+	
 	if( CMM_SUCCESS != init_at91btns() )
 	{
 		fprintf(stderr, "at91buttonProcessor init_at91btns failed\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "at91buttonProcessor init_at91btns failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "at91buttonProcessor init_at91btns failed");
+		dbsClose(dbsdev);
 		return (void *)0;
 	}
 	else if( CMM_SUCCESS != sysMonitor2cmm_init(&myCmmSk) )
 	{
 		fprintf(stderr, "at91buttonProcessor sysMonitor2cmm_init failed\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "at91buttonProcessor sysMonitor2cmm_init failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "at91buttonProcessor sysMonitor2cmm_init failed");
+		dbsClose(dbsdev);
 		return (void *)0;
 	}
 
 	//printf("sysMonitor->at91buttonProcessor start\n");
 	fprintf(stderr, "Starting thread at91ButtonProcessor	......	[OK]\n");
-	dbs_mutex_sys_log(DBS_LOG_INFO, "starting thread at91buttonProcessor success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting thread at91buttonProcessor success");
 
 	for (;;)
 	{
@@ -142,9 +157,12 @@ void *at91ButtonProcessor(void)
 			}
 		}
 	}
-	
+
+	/* 不要在这个后面添加代码，执行不到滴*/
+	printf("thread at91ButtonProcessor exit !\n");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "INFO: thread at91ButtonProcessor exit");	
 	sysMonitor2cmm_destroy(&myCmmSk);
-	
+	dbsClose(dbsdev);
 	return (void *)0;
 }
 

@@ -3,7 +3,9 @@
 
 #include <public.h>
 
-int reg_dbsOpen(void);
+extern T_DBS_DEV_INFO *dbsdev;
+
+T_DBS_DEV_INFO * reg_dbsOpen(void);
 int reg_dbsClose(void);
 int db_init_clt(int index);
 int db_init_cnu(int index);

@@ -21,7 +21,7 @@ int __sysMonitor2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 	sendn = sendto(sk->sk, buf, len, 0, (struct sockaddr *)&(sk->skaddr), sizeof(struct sockaddr));
 	if ( -1 == sendn )
 	{
-		dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm sendto failed");
+		//dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm sendto failed");
 		return CMM_FAILED;
 	}
 
@@ -39,7 +39,7 @@ int __sysMonitor2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 		ret = select(sk->sk + 1, &fdsr, NULL, NULL, &tv);
 		if( ret <= 0 )
 		{
-			dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm select failed");
+			//dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm select failed");
 			return CMM_FAILED;
 		}
 		// check whether a new connection comes
@@ -49,7 +49,7 @@ int __sysMonitor2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 			rev_len = recvfrom(sk->sk, buf, MAX_UDP_SIZE, 0, (struct sockaddr *)&from, &FromAddrSize);
 			if ( -1 == rev_len )
 			{
-				dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm recvfrom failed");
+				//dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm recvfrom failed");
 				return CMM_FAILED;
 			}
 			else
@@ -59,12 +59,12 @@ int __sysMonitor2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 				{
 					fprintf(stderr, "WARNNING: sysMonitor2cmm: msgType[%d!=%d], [continue] !\n", 
 						ack->HEADER.usMsgType, msgType);
-					dbs_mutex_sys_log(DBS_LOG_WARNING, "sysMonitor2cmm received non-mached msg type");
+					//dbs_mutex_sys_log(DBS_LOG_WARNING, "sysMonitor2cmm received non-mached msg type");
 					continue;
 				}
 				else if( ack->result != CMM_SUCCESS )
 				{	
-					dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm recvfrom result error");
+					//dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm recvfrom result error");
 					return  ack->result ;
 				}
 				else
@@ -75,7 +75,7 @@ int __sysMonitor2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 		}
 		else
 		{
-			dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm FD_ISSET failed");
+			//dbs_mutex_sys_log(DBS_LOG_CRIT, "sysMonitor2cmm FD_ISSET failed");
 			return CMM_FAILED;
 		}
 	}

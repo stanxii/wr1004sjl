@@ -105,7 +105,7 @@ int write_readCommunity(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, snmpGroup_readCommunity);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -162,7 +162,7 @@ int write_writeCommunity(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, snmpGroup_writeCommunity);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -218,7 +218,7 @@ int write_trapCommunity(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, snmpGroup_trapCommunity);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -278,7 +278,7 @@ int write_trapServerIpAddress(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, snmpGroup_trapServerAddress);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -329,7 +329,7 @@ int write_trapServerport(int action,
 			iValue.len = sizeof(uint32_t);
 			iValue.integer = snmpGroup_trapServerPort;
 
-			ret = dbsUpdateInteger(&iValue);
+			ret = dbsUpdateInteger(dbsdev, &iValue);
 			
 			if( SNMP_ERR_NOERROR != ret )
 			{
@@ -349,7 +349,7 @@ int load_snmpGroup(void)
 {
 	st_dbsSnmp snmpConfig;	
 
-	if( 0 == dbsGetSnmp(1, &snmpConfig) )
+	if( 0 == dbsGetSnmp(dbsdev, 1, &snmpConfig) )
 	{
 		strcpy(snmpGroup_snmpVersion, "snmpV2");
 		strcpy(snmpGroup_readCommunity, snmpConfig.col_rdcom);
@@ -361,7 +361,7 @@ int load_snmpGroup(void)
 	}
 	else
 	{
-		dbs_sys_log(DBS_LOG_ERR, "snmp load_snmpGroup failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "snmp load_snmpGroup failed");
 		strcpy(snmpGroup_snmpVersion, "snmpV2");
 		strcpy(snmpGroup_readCommunity, "public");
 		strcpy(snmpGroup_writeCommunity, "private");

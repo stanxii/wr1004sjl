@@ -5,6 +5,7 @@
 
 static T_UDP_SK_INFO SK_CLI2CMM;
 
+extern T_DBS_DEV_INFO *dbsdev;
 #if 0
 int __cli2cmm_send(unsigned short MsgType, unsigned char *buf, unsigned int len)
 {
@@ -209,7 +210,7 @@ int __cli2cmm_comm(uint8_t *buf, uint32_t len)
 	sendn = sendto(sk->sk, buf, len, 0, (struct sockaddr *)&(sk->skaddr), sizeof(struct sockaddr));
 	if ( -1 == sendn )
 	{
-		dbs_sys_log(DBS_LOG_CRIT, "cli call __cli2cmm_comm sendto failed");
+		dbs_sys_log(dbsdev, DBS_LOG_CRIT, "cli call __cli2cmm_comm sendto failed");
 		return CMM_FAILED;
 	}
 
@@ -236,7 +237,7 @@ int __cli2cmm_comm(uint8_t *buf, uint32_t len)
 			rev_len = recvfrom(sk->sk, buf, MAX_UDP_SIZE, 0, (struct sockaddr *)&from, &FromAddrSize);
 			if ( -1 == rev_len )
 			{
-				dbs_sys_log(DBS_LOG_CRIT, "cli call __cli2cmm_comm recvfrom failed");
+				dbs_sys_log(dbsdev, DBS_LOG_CRIT, "cli call __cli2cmm_comm recvfrom failed");
 				return CMM_FAILED;
 			}
 			else
@@ -246,12 +247,12 @@ int __cli2cmm_comm(uint8_t *buf, uint32_t len)
 				{
 					fprintf(stderr, "WARNNING: cli __cli2cmm_comm: msgType[%d!=%d], [continue] !\n", 
 						ack->HEADER.usMsgType, msgType);
-					dbs_sys_log(DBS_LOG_WARNING, "cli __cli2cmm_comm received non-mached msgtype");
+					dbs_sys_log(dbsdev, DBS_LOG_WARNING, "cli __cli2cmm_comm received non-mached msgtype");
 					continue;
 				}
 				else if( ack->result != CMM_SUCCESS )
 				{	
-					dbs_sys_log(DBS_LOG_CRIT, "cli call __cli2cmm_comm recvfrom result error");
+					dbs_sys_log(dbsdev, DBS_LOG_CRIT, "cli call __cli2cmm_comm recvfrom result error");
 					return  ack->result ;
 				}
 				else
@@ -262,7 +263,7 @@ int __cli2cmm_comm(uint8_t *buf, uint32_t len)
 		}
 		else
 		{
-			dbs_sys_log(DBS_LOG_CRIT, "cli call __cli2cmm_comm FD_ISSET failed");
+			dbs_sys_log(dbsdev, DBS_LOG_CRIT, "cli call __cli2cmm_comm FD_ISSET failed");
 			return CMM_FAILED;
 		}
 	}

@@ -20,6 +20,8 @@
 #include "../include/public.h"
 #include "../dbs/include/dbsapi.h"
 
+static T_DBS_DEV_INFO *dev = NULL;
+
 void __tmTester_usage(void)
 {
 	printf("\nParameter error:\n");
@@ -40,8 +42,8 @@ void tmTester_signalProcessHandle(int n)
 {
 	printf("\n\n==================================================================\n");
 	fprintf(stderr, "INFO: tmTester_signalProcessHandle close tmTester !\n");
-	dbs_sys_log(DBS_LOG_INFO, "tmTester_signalProcessHandle : module tmTester exit");
-	dbsClose();		
+	dbs_sys_log(dev, DBS_LOG_INFO, "tmTester_signalProcessHandle : module tmTester exit");
+	dbsClose(dev);		
 	exit(0);
 }
 
@@ -515,14 +517,17 @@ int main(int argc, char *argv[])
 		__tmTester_usage();
 		return 0;
 	}
-	if( 0 != dbsOpen(MID_TM_TESTER) )
+
+	dev = dbsNoWaitOpen(MID_DBS_TESTER);
+	if( NULL == dev )
 	{
 		return 0;
 	}
+	
 	if( 0 != __tmTester_init_socket(&sk) )
 	{
-		dbs_sys_log(DBS_LOG_ERR, "tmTester_init_socket error");
-		dbsClose();
+		dbs_sys_log(dev, DBS_LOG_ERR, "tmTester_init_socket error");
+		dbsClose(dev);
 		return 0;
 	}
 
@@ -579,8 +584,8 @@ int main(int argc, char *argv[])
 		__tmTester_usage();
 	}
 	printf("\n\n==================================================================\n");
-	dbs_sys_log(DBS_LOG_INFO, "module tmTester exit");
-	dbsClose();
+	dbs_sys_log(dev, DBS_LOG_INFO, "module tmTester exit");
+	dbsClose(dev);
 	__tmTester_close_socket(&sk);
 	return 0;
 }

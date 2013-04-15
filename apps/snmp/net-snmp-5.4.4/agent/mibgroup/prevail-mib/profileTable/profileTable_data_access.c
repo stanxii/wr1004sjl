@@ -13,7 +13,7 @@
 
 /* include our parent header */
 #include "profileTable.h"
-
+#include <snmp2cmm.h>
 
 #include "profileTable_data_access.h"
 
@@ -213,9 +213,9 @@ profileTable_container_load(netsnmp_container *container)
 	for( tblid=1; tblid<=MAX_CNU_AMOUNT_LIMIT; tblid++ )
 	{
 		/* 从数据库获取数据*/
-		if( CMM_SUCCESS != dbsGetProfile(tblid,  &row) )
+		if( CMM_SUCCESS != dbsGetProfile(dbsdev, tblid,  &row) )
 		{
-			dbs_sys_log(DBS_LOG_ERR, "profileTable_container_load dbsGetProfile failed");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "profileTable_container_load dbsGetProfile failed");
 			return MFD_RESOURCE_UNAVAILABLE;
 		}
 

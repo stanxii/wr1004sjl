@@ -10,6 +10,7 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
  /* modified by frank */
 #include <dbsapi.h>
+#include <snmp2cmm.h>
 
 /* include our parent header */
 #include "cltproTable.h"
@@ -215,9 +216,9 @@ cltproTable_container_load(netsnmp_container *container)
 	for( cltproTid=1; cltproTid<=MAX_CLT_AMOUNT_LIMIT; cltproTid++ )
 	{
 		/* 从数据库获取数据*/
-		if( CMM_SUCCESS != dbsGetCltconf(cltproTid,  &row) )
+		if( CMM_SUCCESS != dbsGetCltconf(dbsdev, cltproTid,  &row) )
 		{
-			dbs_sys_log(DBS_LOG_ERR, "cltproTable_container_load dbsGetCltconf failed");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "cltproTable_container_load dbsGetCltconf failed");
 			return MFD_RESOURCE_UNAVAILABLE;
 		}
 

@@ -8,9 +8,13 @@
 #include <assert.h>
 #include <public.h>
 #include <boardapi.h>
-#include "sm2dbsMutex.h"
+#include <dbsapi.h>
+//#include "sm2dbsMutex.h"
 #include "systemStsControl.h"
 #include "sysindiProcessor.h"
+
+/* 与DBS  通讯的设备文件*/
+static T_DBS_DEV_INFO *dbsdev = NULL;
 
 /* 该线程的消息调试开关变量*/
 static int SYSINDIPROCESSOR_MSG_DEBUG_ENABLE = 0;
@@ -62,7 +66,7 @@ void sysindi_reply(BBLOCK_QUEUE *this)
 	sendn = sendto(this->sk.sk, this->b, this->blen, 0, (struct sockaddr *)&(this->sk.skaddr), sizeof(this->sk.skaddr));
 	if( sendn <= 0 )
 	{
-		dbs_mutex_sys_log(DBS_LOG_ERR, "sysindi_reply sendto error");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "sysindi_reply sendto error");
 	}
 }
 
@@ -187,16 +191,26 @@ void *sysindiProcessor(void)
 
 	assert( NULL != this );
 
+	/* DBS设计变更，支持多线程操作，初始化时在每个线程中独享消息接口*/
+	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
+	dbsdev = dbsNoWaitOpen(MID_SYSINDI);
+	if( NULL == dbsdev )
+	{
+		fprintf(stderr,"ERROR: sysindiProcessor->dbsOpen error, exited !\n");
+		return (void *)0;
+	}
+
 	/* 创建外部通讯UDP SOCKET */
 	if( CMM_SUCCESS != sysindi_init() )
 	{
 		fprintf(stderr, "sysMonitor init sysindiProcessor failed\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "sysMonitor init sysindiProcessor failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "sysMonitor init sysindiProcessor failed");
+		dbsClose(dbsdev);
 		return (void *)0;
 	}
 
 	fprintf(stderr, "Starting thread sysindiProcessor	......	[OK]\n");
-	dbs_mutex_sys_log(DBS_LOG_INFO, "starting thread sysindiProcessor success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting thread sysindiProcessor success");
 
 	while(1)
 	{
@@ -210,12 +224,12 @@ void *sysindiProcessor(void)
 		h = (T_COM_MSG_HEADER_REQ *)(this->b);
 		if( h->ucMsgAttrib != MSG_ATTRIB_REQ)
 		{
-			dbs_mutex_sys_log(DBS_LOG_WARNING, "sysMonitor->sysindiProcessor: NOT MSG_ATTRIB_REQ");
+			dbs_sys_log(dbsdev, DBS_LOG_WARNING, "sysMonitor->sysindiProcessor: NOT MSG_ATTRIB_REQ");
 			continue;
 		}
 		if( h->usDstMID != MID_SYSMONITOR)
 		{
-			dbs_mutex_sys_log(DBS_LOG_WARNING, "sysMonitor->sysindiProcessor: NOT MID_SYSMONITOR");
+			dbs_sys_log(dbsdev, DBS_LOG_WARNING, "sysMonitor->sysindiProcessor: NOT MID_SYSMONITOR");
 			continue;
 		}
 
@@ -230,14 +244,18 @@ void *sysindiProcessor(void)
 			default:
 			{
 				/* 对于不支持的消息类型应该给予应答以便让请求者知道 */
-				dbs_mutex_sys_log(DBS_LOG_ERR, "sysMonitor->sysindiProcessor: CMM_UNKNOWN_MMTYPE");
+				dbs_sys_log(dbsdev, DBS_LOG_ERR, "sysMonitor->sysindiProcessor: CMM_UNKNOWN_MMTYPE");
 				sysindi_reply(sysindi_error(this, CMM_UNKNOWN_MMTYPE));
 				break;
 			}
 		}
 	}	
-	
+
+	/* 不要在这个后面添加代码，执行不到滴*/
+	printf("thread sysindiProcessor exit !\n");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "INFO: thread sysindiProcessor exit");
 	sysindi_destroy();
+	dbsClose(dbsdev);
 	return (void *)0;
 }
 

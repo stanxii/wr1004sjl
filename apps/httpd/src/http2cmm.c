@@ -3,6 +3,7 @@
 #include <wecplatform.h>
 #include "syscall.h"
 #include "http2cmm.h"
+#include <http2dbs.h>
 #include <dbsapi.h>
 #include <boardapi.h>
 
@@ -78,7 +79,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 		return 0;
 	}
 
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		return 0;
 	}	
@@ -87,7 +88,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 		return 0;
 	}
 
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		return 0;
 	}	
@@ -151,7 +152,7 @@ int __http2cmm_comm(uint8_t *buf, uint32_t len)
 	sendn = sendto(sk->sk, buf, len, 0, (struct sockaddr *)&(sk->skaddr), sizeof(struct sockaddr));
 	if ( -1 == sendn )
 	{
-		dbs_sys_log(DBS_LOG_CRIT, "httpd call __http2cmm_comm sendto failed");
+		dbs_sys_log(dbsdev, DBS_LOG_CRIT, "httpd call __http2cmm_comm sendto failed");
 		return CMM_FAILED;
 	}
 
@@ -169,7 +170,7 @@ int __http2cmm_comm(uint8_t *buf, uint32_t len)
 		ret = select(sk->sk + 1, &fdsr, NULL, NULL, &tv);
 		if( ret <= 0 )
 		{
-			dbs_sys_log(DBS_LOG_CRIT, "httpd call __http2cmm_comm select failed");
+			dbs_sys_log(dbsdev, DBS_LOG_CRIT, "httpd call __http2cmm_comm select failed");
 			return CMM_FAILED;
 		}
 		// check whether a new connection comes
@@ -179,7 +180,7 @@ int __http2cmm_comm(uint8_t *buf, uint32_t len)
 			rev_len = recvfrom(sk->sk, buf, MAX_UDP_SIZE, 0, (struct sockaddr *)&from, &FromAddrSize);
 			if ( -1 == rev_len )
 			{
-				dbs_sys_log(DBS_LOG_CRIT, "httpd call __http2cmm_comm recvfrom failed");
+				dbs_sys_log(dbsdev, DBS_LOG_CRIT, "httpd call __http2cmm_comm recvfrom failed");
 				return CMM_FAILED;
 			}
 			else
@@ -189,12 +190,12 @@ int __http2cmm_comm(uint8_t *buf, uint32_t len)
 				{
 					fprintf(stderr, "WARNNING: __http2cmm_comm: msgType[%d!=%d], [continue] !\n", 
 						ack->HEADER.usMsgType, msgType);
-					dbs_sys_log(DBS_LOG_WARNING, "__http2cmm_comm received non-mached msg type");
+					dbs_sys_log(dbsdev, DBS_LOG_WARNING, "__http2cmm_comm received non-mached msg type");
 					continue;
 				}
 				else if( ack->result != CMM_SUCCESS )
 				{	
-					dbs_sys_log(DBS_LOG_CRIT, "httpd call __http2cmm_comm recvfrom result error");
+					dbs_sys_log(dbsdev, DBS_LOG_CRIT, "httpd call __http2cmm_comm recvfrom result error");
 					return  ack->result ;
 				}
 				else
@@ -205,7 +206,7 @@ int __http2cmm_comm(uint8_t *buf, uint32_t len)
 		}
 		else
 		{
-			dbs_sys_log(DBS_LOG_CRIT, "httpd call __http2cmm_comm FD_ISSET failed");
+			dbs_sys_log(dbsdev, DBS_LOG_CRIT, "httpd call __http2cmm_comm FD_ISSET failed");
 			return CMM_FAILED;
 		}
 	}
@@ -713,7 +714,7 @@ int http2cmm_doSpeedLimitSettings( PWEB_NTWK_VAR pWebVar )
 	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(pWebVar->cnuid,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
 	{
 		return CMM_FAILED;
 	}	
@@ -784,7 +785,7 @@ int http2cmm_doShutdownSettings( PWEB_NTWK_VAR pWebVar )
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(pWebVar->cnuid,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
 	{
 		return CMM_FAILED;
 	}	
@@ -827,7 +828,7 @@ int http2cmm_doCnuVlanSettings( PWEB_NTWK_VAR pWebVar )
 	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(pWebVar->cnuid,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
 	{
 		return CMM_FAILED;
 	}	
@@ -922,7 +923,7 @@ int http2cmm_doSFilterSettings( PWEB_NTWK_VAR pWebVar )
 	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(pWebVar->cnuid,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
 	{
 		return CMM_FAILED;
 	}	
@@ -969,7 +970,7 @@ int http2cmm_doAgTimeSettings( PWEB_NTWK_VAR pWebVar )
 	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(pWebVar->cnuid,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
 	{
 		return CMM_FAILED;
 	}	
@@ -1007,7 +1008,7 @@ int http2cmm_doMacLimiting( PWEB_NTWK_VAR pWebVar )
 	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(pWebVar->cnuid,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
 	{
 		return CMM_FAILED;
 	}	

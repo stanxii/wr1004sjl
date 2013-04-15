@@ -14,6 +14,7 @@
 #include <dbsapi.h>
 #include <boardapi.h>
 #include "reg_alarm.h"
+#include "reg_dbs.h"
 
 T_UDP_SK_INFO SK_ALARM;
 
@@ -280,14 +281,14 @@ void cbat_system_sts_notification(uint8_t status)
 	sCbatIpaddr.ci.row = 1;
 	sCbatIpaddr.ci.col = DBS_SYS_TBL_NETWORK_COL_ID_IP;
 	sCbatIpaddr.ci.colType = DBS_TEXT;
-	if( CMM_SUCCESS != dbsGetText(&sCbatIpaddr) ) return;
+	if( CMM_SUCCESS != dbsGetText(dbsdev, &sCbatIpaddr) ) return;
 
 	/* 获取CBAT 的设备类型*/
 	iDevType.ci.tbl = DBS_SYS_TBL_ID_SYSINFO;
 	iDevType.ci.row = 1;
 	iDevType.ci.col = DBS_SYS_TBL_SYSINFO_COL_ID_MODEL;
 	iDevType.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iDevType) ) return;	
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iDevType) ) return;	
 
 	memset(&alarm_desc, 0, sizeof(T_ALARM_DESC));
 	

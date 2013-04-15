@@ -30,6 +30,7 @@ apps += cmm
 apps += httpd
 apps += mmead
 apps += register
+#apps += regi
 apps += template
 apps += sysMonitor
 apps += tests

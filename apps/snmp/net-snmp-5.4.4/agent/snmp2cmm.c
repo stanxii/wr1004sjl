@@ -8,6 +8,7 @@
 
 #include "snmp2cmm.h"
 
+T_DBS_DEV_INFO *dbsdev = NULL;
 
 static T_UDP_SK_INFO SK_AGENT_CMM;
 

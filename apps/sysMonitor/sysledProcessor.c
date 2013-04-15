@@ -1,11 +1,15 @@
 #include<public.h>
+#include <dbsapi.h>
 #include <fcntl.h>
 #include "sysMonitor.h"
 #include "systemStsControl.h"
 #include "sysledProcessor.h"
-#include "sm2dbsMutex.h"
+//#include "sm2dbsMutex.h"
 
 static int sysled_fd = 0;
+
+/* 与DBS  通讯的设备文件*/
+static T_DBS_DEV_INFO *dbsdev = NULL;
 
 void set_sysled(int status)
 {
@@ -54,15 +58,25 @@ void *sysledProcessor(void)
 	int ledsts = 0;
 	int fsgap = 800000;
 
+	/* DBS设计变更，支持多线程操作，初始化时在每个线程中独享消息接口*/
+	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
+	dbsdev = dbsNoWaitOpen(MID_SYSLED);
+	if( NULL == dbsdev )
+	{
+		fprintf(stderr,"ERROR: sysledProcessor->dbsOpen error, exited !\n");
+		return (void *)0;
+	}
+
 	if( CMM_SUCCESS != init_sysled() )
 	{
 		fprintf(stderr, "sysledProcessor->init_sysled() failed\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "sysledProcessor->init_sysled() failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "sysledProcessor->init_sysled() failed");
+		dbsClose(dbsdev);
 		return (void *)0;
 	}
 	
 	fprintf(stderr, "Starting thread sysledProcessor 	......	[OK]\n");
-	dbs_mutex_sys_log(DBS_LOG_INFO, "starting thread sysledProcessor success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting thread sysledProcessor success");
 	
 	for (;;)
 	{
@@ -113,7 +127,11 @@ void *sysledProcessor(void)
 		usleep(fsgap);
 	}
 
+	/* 不要在这个后面添加代码，执行不到滴*/
+	printf("thread sysledProcessor exit !\n");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "INFO: thread sysledProcessor exit");
 	destroy_sysled();
+	dbsClose(dbsdev);
 	return (void *)0;
 }
 

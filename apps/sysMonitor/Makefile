@@ -19,7 +19,7 @@ FLASHFSDIR = ${ROOTDIR}/apps/flashfs
 BIN_PATH = $(FLASHFSDIR)/app
 
 OBJ = systemStsControl.o
-OBJ += sm2dbsMutex.o
+#OBJ += sm2dbsMutex.o
 OBJ += sysMonitor2cmm.o
 OBJ += sysMonitor2alarm.o
 OBJ += at91ButtonProcessor.o
@@ -35,7 +35,7 @@ all:build install
 
 build:
 	$(CC) $(CFLAGS) $(IFLAGS) -c systemStsControl.c
-	$(CC) $(CFLAGS) $(IFLAGS) -c sm2dbsMutex.c
+#	$(CC) $(CFLAGS) $(IFLAGS) -c sm2dbsMutex.c
 	$(CC) $(CFLAGS) $(IFLAGS) -c sysMonitor2cmm.c
 	$(CC) $(CFLAGS) $(IFLAGS) -c sysMonitor2alarm.c
 	$(CC) $(CFLAGS) $(IFLAGS) -c at91ButtonProcessor.c

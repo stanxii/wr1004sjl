@@ -26,7 +26,7 @@
 GT_SYS_CONFIG   cfg;
 GT_QD_DEV       diagDev;
 GT_QD_DEV       *dev = &diagDev;
-
+extern T_DBS_DEV_INFO *dbsdev;
 
 GT_BOOL MV88E6171R_SMI_READ (GT_QD_DEV* dev, unsigned int portNumber , unsigned int MIIReg,
                         unsigned int* value)
@@ -381,7 +381,7 @@ GT_STATUS dsdtInitMgmtVlan(void)
 {
 	st_dbsNetwork networkinfo;
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &networkinfo) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
 	{
 		printf("dbsGetNetwork return Failed\n");
 		return GT_FAIL;

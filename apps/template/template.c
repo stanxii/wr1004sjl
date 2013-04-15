@@ -20,6 +20,9 @@ BBLOCK_QUEUE bblock;
 T_UDP_SK_INFO CMM_SK;
 int TEMPLATE_DEBUG_ENABLE = 0;
 
+/* 与DBS  通讯的设备文件*/
+T_DBS_DEV_INFO *dbsdev = NULL;
+
 /********************************************************************************************
 *	函数名称:debug_dump_msg
 *	函数功能:调试用API，以十六进制的方式将缓冲区的内容输出到
@@ -58,7 +61,7 @@ void TmCoreProcessAck(BBLOCK_QUEUE *this)
 	sendn = sendto(this->sk.sk, this->b, this->blen, 0, (struct sockaddr *)&(this->sk.skaddr), sizeof(this->sk.skaddr));
 	if( sendn <= 0 )
 	{
-		dbs_sys_log(DBS_LOG_ERR, "tm->TmCoreProcessAck->sendto");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "tm->TmCoreProcessAck->sendto");
 	}
 }
 
@@ -89,437 +92,6 @@ BBLOCK_QUEUE * TmCoreError(BBLOCK_QUEUE *this, uint32_t ErrorCode)
 	
 	return this;
 }
-
-
-
-
-
-
-#if 0
-
-/********************************************************************************************
-*	函数名称:TmCoreDestroyConfig
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreGetAutoConfigSts(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_HEADER_REQ *request = (T_COM_MSG_HEADER_REQ *)(this->b);
-	T_COM_MSG_HEADER_ACK confirm;
-	uint32_t status = 0;
-
-	ret = tm_get_auto_config_sts(&status);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->ulRequestID;
-	confirm.usSrcMID = request->usDstMID;
-	confirm.usDstMID = request->usSrcMID;
-	confirm.usMsgType = request->usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = sizeof(uint32_t);
-	
-	this->blen = sizeof(confirm)+sizeof(uint32_t);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	memcpy((void *)((this->b)+sizeof(confirm)), (void *)&status, sizeof(uint32_t));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreDestroyConfig
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreSetAutoConfigEn(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_HEADER_REQ *request = (T_COM_MSG_HEADER_REQ *)(this->b);
-	T_COM_MSG_HEADER_ACK confirm;
-
-	ret = tm_set_auto_config_sts(BOOL_TRUE);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->ulRequestID;
-	confirm.usSrcMID = request->usDstMID;
-	confirm.usDstMID = request->usSrcMID;
-	confirm.usMsgType = request->usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = 0;
-	
-	this->blen = sizeof(confirm);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreSetAutoConfigDis
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreSetAutoConfigDis(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_HEADER_REQ *request = (T_COM_MSG_HEADER_REQ *)(this->b);
-	T_COM_MSG_HEADER_ACK confirm;
-
-	ret = tm_set_auto_config_sts(BOOL_FALSE);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->ulRequestID;
-	confirm.usSrcMID = request->usDstMID;
-	confirm.usDstMID = request->usSrcMID;
-	confirm.usMsgType = request->usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = 0;
-	
-	this->blen = sizeof(confirm);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreGetUserAutoConfigSts
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreGetUserAutoConfigSts(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	stUserAutoConfigInfo userAutoConfinfo;
-	T_COM_MSG_HEADER_ACK confirm;
-
-	if( request->HEADER.ulBodyLength == sizeof(stUserAutoConfigInfo) )
-	{
-		memcpy((void *)&userAutoConfinfo, (void *)request->BUF, request->HEADER.ulBodyLength);
-		ret = tm_get_user_auto_config_sts(&userAutoConfinfo);
-	}	
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = sizeof(stUserAutoConfigInfo);
-	
-	this->blen = sizeof(confirm)+sizeof(stUserAutoConfigInfo);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	memcpy((void *)((this->b)+sizeof(confirm)), (void *)&userAutoConfinfo, sizeof(stUserAutoConfigInfo));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreSetUserAutoConfigEn
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreSetUserAutoConfigEn(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	stUserAutoConfigInfo userAutoConfinfo;
-	T_COM_MSG_HEADER_ACK confirm;
-
-	if( request->HEADER.ulBodyLength == sizeof(stUserAutoConfigInfo) )
-	{
-		memcpy((void *)&userAutoConfinfo, (void *)request->BUF, request->HEADER.ulBodyLength);
-		userAutoConfinfo.status = BOOL_TRUE;
-		ret = tm_set_user_auto_config_sts(&userAutoConfinfo);
-	}	
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = sizeof(stUserAutoConfigInfo);
-	
-	this->blen = sizeof(confirm)+sizeof(stUserAutoConfigInfo);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	memcpy((void *)((this->b)+sizeof(confirm)), (void *)&userAutoConfinfo, sizeof(stUserAutoConfigInfo));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreSetUserAutoConfigDis
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreSetUserAutoConfigDis(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	stUserAutoConfigInfo userAutoConfinfo;
-	T_COM_MSG_HEADER_ACK confirm;
-
-	if( request->HEADER.ulBodyLength == sizeof(stUserAutoConfigInfo) )
-	{
-		memcpy((void *)&userAutoConfinfo, (void *)request->BUF, request->HEADER.ulBodyLength);
-		userAutoConfinfo.status = BOOL_FALSE;
-		ret = tm_set_user_auto_config_sts(&userAutoConfinfo);
-	}	
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = sizeof(stUserAutoConfigInfo);
-	
-	this->blen = sizeof(confirm)+sizeof(stUserAutoConfigInfo);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	memcpy((void *)((this->b)+sizeof(confirm)), (void *)&userAutoConfinfo, sizeof(stUserAutoConfigInfo));
-	
-	return this;
-}
-
-
-
-/********************************************************************************************
-*	函数名称:TmCoreDeleteTmById
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreDeleteTmById(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	T_COM_MSG_HEADER_ACK confirm;
-	uint32_t tid = *(uint32_t *)(request->BUF);
-
-	ret = tm_del_template(tid);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = sizeof(uint32_t);
-	
-	this->blen = sizeof(confirm)+sizeof(uint32_t);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	memcpy((void *)((this->b)+sizeof(confirm)), (void *)&tid, sizeof(uint32_t));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreNewTm
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreNewTm(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	T_COM_MSG_HEADER_ACK confirm;
-	T_szTemplate *szTm = (T_szTemplate *)(request->BUF);
-
-	ret = tm_new_template(szTm);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = 0;
-	
-	this->blen = sizeof(confirm);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreRedefinitionUser
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreRedefinitionUser(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	T_COM_MSG_HEADER_ACK confirm;
-	stTmNewUserInfo *szTmNewUser = (stTmNewUserInfo *)(request->BUF);
-
-	ret = tm_edit_user(szTmNewUser);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = 0;
-	
-	this->blen = sizeof(confirm);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	
-	return this;
-}
-
-
-
-
-
-/********************************************************************************************
-*	函数名称:TmCoreGetCnuTid
-*	函数功能:根据输入的CNU信息，删除长期不上线的用户
-*	作者:may2250
-*	时间:2010-12-30
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreGetCnuTid(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint16_t ret = CMM_FAILED;
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	T_COM_MSG_HEADER_ACK confirm;
-	stTmNewUserInfo *szTmUser = (stTmNewUserInfo *)(request->BUF);
-	stTmNewUserInfo st_CnuTidInfo;	
-	int tid = 0;
-
-	ret = get_user_tid(szTmUser->clt, szTmUser->cnu, &tid);
-	st_CnuTidInfo.clt = szTmUser->clt;
-	st_CnuTidInfo.cnu = szTmUser->cnu;
-	st_CnuTidInfo.tid = tid;
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = sizeof(stTmNewUserInfo);
-	
-	this->blen = sizeof(confirm) + confirm.ulBodyLength;
-	
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	memcpy((void *)(this->b+sizeof(confirm)), (void *)&st_CnuTidInfo, confirm.ulBodyLength);
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreGetTmById
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreGetTmById(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	uint32_t tid = *(uint32_t *)(request->BUF);
-	
-	T_COM_MSG_HEADER_ACK confirm;
-	
-	st_dbsProfile profile;
-	profile.id = tid;
-
-	ret = tm_get_template(&profile);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = sizeof(st_dbsProfile);
-	
-	this->blen = sizeof(confirm)+sizeof(st_dbsProfile);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	memcpy((void *)((this->b)+sizeof(confirm)), (void *)&profile, sizeof(st_dbsProfile));
-	
-	return this;
-}
-
-/********************************************************************************************
-*	函数名称:TmCoreGetTmById
-*	函数功能:根据输入的CNU信息，销毁之前为该CNU自动生成的配置
-*	作者:frank
-*	时间:2010-12-07
-*********************************************************************************************/
-BBLOCK_QUEUE * TmCoreWriteTmById(BBLOCK_QUEUE *this)
-{
-	assert(NULL != this);
-
-	uint32_t ret = CMM_FAILED;
-	
-	T_COM_MSG_PACKET_REQ *request = (T_COM_MSG_PACKET_REQ *)(this->b);
-	st_dbsProfile *profile = (st_dbsProfile *)(request->BUF);
-	
-	T_COM_MSG_HEADER_ACK confirm;	
-
-	ret = tm_write_template(profile);
-
-	confirm.ucMsgAttrib = MSG_ATTRIB_ACK;
-	confirm.ulRequestID = request->HEADER.ulRequestID;
-	confirm.usSrcMID = request->HEADER.usDstMID;
-	confirm.usDstMID = request->HEADER.usSrcMID;
-	confirm.usMsgType = request->HEADER.usMsgType;
-	confirm.ucFlag = 0;
-	confirm.result = ret;
-	confirm.ulBodyLength = 0;
-	
-	this->blen = sizeof(confirm);
-	memcpy((void *)this->b, (void *)&confirm, sizeof(confirm));
-	
-	return this;
-}
-
-#endif
 
 /********************************************************************************************
 *	函数名称:TmCoreAutoGenCrc
@@ -1152,12 +724,12 @@ void processManager(BBLOCK_QUEUE *this)
 		h = (T_COM_MSG_HEADER_REQ *)(this->b);
 		if( h->ucMsgAttrib != MSG_ATTRIB_REQ)
 		{
-			dbs_sys_log(DBS_LOG_WARNING, "tm->processManager: NOT MSG_ATTRIB_REQ");
+			dbs_sys_log(dbsdev, DBS_LOG_WARNING, "tm->processManager: NOT MSG_ATTRIB_REQ");
 			continue;
 		}
 		if( h->usDstMID != MID_TEMPLATE)
 		{
-			dbs_sys_log(DBS_LOG_WARNING, "tm->processManager: NOT MID_TEMPLATE");
+			dbs_sys_log(dbsdev, DBS_LOG_WARNING, "tm->processManager: NOT MID_TEMPLATE");
 			continue;
 		}
 
@@ -1257,7 +829,7 @@ void processManager(BBLOCK_QUEUE *this)
 			#endif
 			default:
 				/* 对于不支持的消息类型应该给予应答以便让请求者知道 */
-				dbs_sys_log(DBS_LOG_ERR, "tm->processManager: CMM_UNKNOWN_MMTYPE");
+				dbs_sys_log(dbsdev, DBS_LOG_ERR, "tm->processManager: CMM_UNKNOWN_MMTYPE");
 				TmCoreProcessAck(TmCoreError(this, CMM_UNKNOWN_MMTYPE));
 				break;
 		}
@@ -1273,10 +845,10 @@ void processManager(BBLOCK_QUEUE *this)
 void TmSignalProcessHandle(int n)
 {
 	BBLOCK_QUEUE *this = &bblock;
-	dbs_sys_log(DBS_LOG_INFO, "TmSignalProcessHandle: module tm exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "TmSignalProcessHandle: module tm exit");
 	close_socket_ext(&(this->sk));
 	tm2reg_destroy();
-	dbsClose();	
+	dbsClose(dbsdev);	
 	exit(0);
 }
 
@@ -1291,17 +863,20 @@ int main(void)
 {
 	BBLOCK_QUEUE *this = &bblock;
 
-	if( 0 != dbsOpen(MID_TEMPLATE) )
+	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
+	dbsdev = dbsOpen(MID_TEMPLATE);
+	if( NULL == dbsdev )
 	{
-		return -1;
+		fprintf(stderr,"ERROR: tmCore->dbsOpen error, exited !\n");
+		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
 	/* 创建外部通讯UDP SOCKET */
 	if( CMM_SUCCESS != init_socket_ext(&(this->sk)) )
 	{
 		fprintf(stderr, "ERROR: tm->init_socket_ext, exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "tm init_socket_ext error, exit");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "tm init_socket_ext error, exit");
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 
@@ -1309,26 +884,26 @@ int main(void)
 	if( CMM_SUCCESS != tm2reg_init() )
 	{
 		fprintf(stderr, "ERROR: tm->tm2reg_init, exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "tm tm2reg_init error, exit");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "tm tm2reg_init error, exit");
 		close_socket_ext(&(this->sk));
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
 	/* 注册异常退出句柄函数*/
 	signal(SIGTERM, TmSignalProcessHandle);
 
-	dbs_sys_log(DBS_LOG_INFO, "starting module tm success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module tm success");
 	printf("Starting module TMCore		......		[OK]\n");
 
 	/* 循环处理外部请求*/
 	processManager(this);
 
 	/* 不要在这个后面添加代码，执行不到滴*/
-	dbs_sys_log(DBS_LOG_INFO, "module tm exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "module tm exit");
 	tm2reg_destroy();
 	close_socket_ext(&(this->sk));
-	dbsClose();	
+	dbsClose(dbsdev);	
 	return 0;
 }
 

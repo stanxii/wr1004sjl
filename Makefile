@@ -29,19 +29,19 @@ wec9720ek_xd25:wec9720ek_xd25_config uboot kernel apps
 wr1004sjl:wr1004sjl_config uboot kernel apps
 
 wr1004sjl_config:
-	echo "#define CFG_USE_PLATFORM_WR1004SJL 1"	>>$(DIR_INC)/config.h
+	echo "#define CFG_USE_PLATFORM_WR1004SJL 1" >$(DIR_INC)/config.h
 	@echo "... use platform device wr1004sjl"
 
 wec9720ek_c22_config:
-	echo "#define CFG_USE_PLATFORM_WEC9720EK_C22 1"	>>$(DIR_INC)/config.h
+	echo "#define CFG_USE_PLATFORM_WEC9720EK_C22 1" >$(DIR_INC)/config.h
 	@echo "... use platform device wec9720ek c22"
 
 wec9720ek_s220_config:
-	echo "#define CFG_USE_PLATFORM_WEC9720EK_S220 1"	>>$(DIR_INC)/config.h
+	echo "#define CFG_USE_PLATFORM_WEC9720EK_S220 1" >$(DIR_INC)/config.h
 	@echo "... use platform device wec9720ek s220"
 
 wec9720ek_xd25_config:
-	echo "#define CFG_USE_PLATFORM_WEC9720EK_XD25 1"	>>$(DIR_INC)/config.h
+	echo "#define CFG_USE_PLATFORM_WEC9720EK_XD25 1" >$(DIR_INC)/config.h
 	@echo "... use platform device wec9720ek xd25"
 
 apps:

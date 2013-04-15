@@ -23,6 +23,7 @@
 
 #include <msApi.h>
 #include <public.h>
+#include <dbsapi.h>
 #include <wecplatform.h>
 
 #include "msSample.h"
@@ -39,6 +40,7 @@
 GT_SYS_CONFIG   cfg;
 GT_QD_DEV       diagDev;
 GT_QD_DEV       *dev = &diagDev;
+static T_DBS_DEV_INFO *dbsdev = NULL;
 
 void dsdTester_usage(void)
 {
@@ -74,8 +76,8 @@ void dsdTester_signalProcessHandle(int n)
 {
 	printf("\n\n==================================================================\n");
 	fprintf(stderr, "INFO: dsdTester_signalProcessHandle close progress !\n");
-	dbs_sys_log(DBS_LOG_INFO, "dsdTester_signalProcessHandle : module dsdTester exit");
-	dbsClose();		
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "dsdTester_signalProcessHandle : module dsdTester exit");
+	dbsClose(dbsdev);		
 	exit(0);
 }
 
@@ -567,7 +569,7 @@ GT_STATUS dsdTester_initMgmtVlan(void)
 {
 	st_dbsNetwork networkinfo;
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &networkinfo) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
 	{
 		printf("dbsGetNetwork return Failed\n");
 		return GT_FAIL;
@@ -798,7 +800,7 @@ GT_STATUS dsdTester_addAtherosMulticastAddressToAllCablePort(void)
                                 Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
 	
 	/* get mgmt-vlan status */
-	if( CMM_SUCCESS != dbsGetNetwork(1, &networkinfo) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
 	{
 		printf("dbsGetNetwork return Failed\n");
 		return GT_FAIL;
@@ -1630,7 +1632,8 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if( 0 != dbsNoWaitOpen(MID_DSDT_TESTER) )
+	dbsdev = dbsNoWaitOpen(MID_DSDT_TESTER);
+	if( NULL == dbsdev )
 	{
 		return 0;
 	}
@@ -1639,7 +1642,7 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, dsdTester_signalProcessHandle);
 	signal(SIGINT, dsdTester_signalProcessHandle);
 
-	dbs_sys_log(DBS_LOG_INFO, "starting module dsdTester success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module dsdTester success");
 	printf("Starting module dsdTester	......		[OK]\n\n");
 	printf("\n==================================================================\n\n");
 
@@ -1997,8 +2000,8 @@ int main(int argc, char *argv[])
 DSDT_END:
 	
 	printf("\n\n==================================================================\n\n");
-	dbs_sys_log(DBS_LOG_INFO, "module dsdTester exit");
-	dbsClose();
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "module dsdTester exit");
+	dbsClose(dbsdev);
 	
 	return 0;
 	

@@ -1,5 +1,5 @@
 # Change DSDT_ROOT to your path.
-declare -x DSDT_ROOT=/work/marvell/mvl_drivers/dsdt
+declare -x DSDT_ROOT=/home/frank/work/project/wr1004sjl/apps/DSDT_3.0
 declare -x DSDT_USER_BASE=$DSDT_ROOT/switch
 declare -x DSDT_PROJ_NAME=qdDrv
 declare -x DSDT_TOOL_DIR=$DSDT_USER_BASE/tools

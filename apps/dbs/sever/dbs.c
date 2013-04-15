@@ -211,14 +211,15 @@ int dbs_init_socket(BBLOCK_QUEUE *this)
 *********************************************************************************************/
 void dbs_ack(BBLOCK_QUEUE *this)
 {
-	assert(NULL != this);
+	assert(NULL != this);	
 	
 	int sendn = 0;
+	T_DB_MSG_HEADER_REQ *h = (T_DB_MSG_HEADER_REQ *)(this->b);
 
 	/* 打印发送的数据报文*/
 	if( DBS_ACCESS_DEBUG_ENABLE )
 	{
-		fprintf(stderr, "\n<==== DB_ACCESS SEND MASSAGE:\n");
+		fprintf(stderr, "\n<==== DB_ACCESS SEND MASSAGE [MID %d PORT %d]:\n", h->usDstMID, ntohs(this->sk.skaddr.sin_port));
 		dbs_msg_dump(this->b, this->blen, stderr);
 	}	
 	
@@ -2191,15 +2192,16 @@ void dbs_process(BBLOCK_QUEUE *this)
 		bzero(this->b, MAX_UDP_SIZE);
 		this->blen = recvfrom(this->sk.sk, this->b, MAX_UDP_SIZE, 0, 
 					(struct sockaddr *)&(this->sk.skaddr), &FromAddrSize);
+
+		h = (T_DB_MSG_HEADER_REQ *)(this->b);
 		
 		/* 打印接收到的报文*/
 		if( DBS_ACCESS_DEBUG_ENABLE )
 		{
-			fprintf(stderr, "\n<==== DBS RECIEVED MASSAGE:\n");
+			fprintf(stderr, "\n====> DBS RECIEVED MASSAGE [MID %d PORT %d]:\n", h->usSrcMID, ntohs(this->sk.skaddr.sin_port));
 			dbs_msg_dump(this->b, this->blen, stderr);
 		}
-
-		h = (T_DB_MSG_HEADER_REQ *)(this->b);
+		
 		if( h->usDstMID != MID_DBS)
 		{
 			fprintf(stderr, "WARNNING: dbs_process->usDstMID [%d] [continue] !\n", h->usDstMID);
