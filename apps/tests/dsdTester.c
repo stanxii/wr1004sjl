@@ -23,6 +23,7 @@
 
 #include <msApi.h>
 #include <public.h>
+#include <wecplatform.h>
 
 #include "msSample.h"
 
@@ -61,7 +62,9 @@ void dsdTester_usage(void)
 	printf("  --case/5/3: display switch rmon conter3\n");
 	printf("  --case/6/1: show all the vid entry in the VTU\n");
 	printf("  --case/6/2: show all the Mac entry in the ATU\n");
-	printf("  --case/6/3: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU\n");
+	printf("  --case/6/3: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, P6 only\n");
+	printf("  --case/6/4: sample del intellon multicast address 00:b0:52:00:00:01 from the ATU\n");
+	printf("  --case/6/5: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, p0 & p6\n");
 	printf("  --case/7/1 0x200000 0x3D: cbsLimit 0x200000 < 0xFFFFFF  cbsIncreament < 0xFF sample Storm prevent test for broadcast unknow unicast and multicast\n");
 	
 	printf("\n\n");
@@ -592,8 +595,8 @@ GT_STATUS dsdTester_displayMacEntry(GT_U32 dbNum)
 {
 	GT_STATUS status;
 	GT_ATU_ENTRY tmpMacEntry;
+	int iCount = 0;
 
-	printf("ATU %d List:\n", dbNum);
 	memset(&tmpMacEntry,0,sizeof(GT_ATU_ENTRY));
 	tmpMacEntry.DBNum = dbNum;
 
@@ -604,6 +607,9 @@ GT_STATUS dsdTester_displayMacEntry(GT_U32 dbNum)
 		{
 			return status;
 		}
+		
+		if( 0 == iCount )
+			printf("ATU %d List:\n", dbNum);
 
 		printf("(%02x-%02x-%02x-%02x-%02x-%02x) PortVec %#x\n",
 			tmpMacEntry.macAddr.arEther[0],
@@ -614,6 +620,8 @@ GT_STATUS dsdTester_displayMacEntry(GT_U32 dbNum)
 			tmpMacEntry.macAddr.arEther[5],
 			tmpMacEntry.portVec
 		);
+
+		iCount++;
 	}
 	return GT_OK;
 }
@@ -700,6 +708,135 @@ GT_STATUS dsdTester_addAtherosMulticastAddress(void)
 	//st_dbsNetwork networkinfo;
 
 	return sampleAddAtherosMac();
+}
+
+
+int find_dbnum_by_vid(uint32_t vid)
+{
+	GT_STATUS status;
+	GT_VTU_ENTRY vtuEntry;
+
+	gtMemSet(&vtuEntry,0,sizeof(GT_VTU_ENTRY));
+	vtuEntry.vid = 0xfff;
+	
+	if((status = gvtuGetEntryFirst(dev,&vtuEntry)) != GT_OK)
+	{
+		/* if can not find vid in the VTU, return DBNum = 0 */
+		printf("can not find vid in the vtu\n");
+		return 0;
+	}
+	else
+	{
+		if( vtuEntry.vid == vid )
+		{
+			return vtuEntry.DBNum;
+		}		
+	}
+
+	while(1)
+	{
+		if((status = gvtuGetEntryNext(dev,&vtuEntry)) != GT_OK)
+		{
+			/* if can not find vid in the VTU, return DBNum = 0 */
+			printf("can not find vid in the vtu\n");
+			return 0;
+		}		
+		if( vtuEntry.vid == vid )
+		{
+			return vtuEntry.DBNum;
+		}
+	}
+}
+
+/* only need to call one time at app starting up */
+GT_STATUS dsdTester_addAtherosMulticastAddressToAllCablePort(void)
+{
+	st_dbsNetwork networkinfo;
+	GT_STATUS status;
+	GT_ATU_ENTRY macEntry;	
+
+	macEntry.macAddr.arEther[0] = 0x00;
+	macEntry.macAddr.arEther[1] = 0xb0;
+	macEntry.macAddr.arEther[2] = 0x52;
+	macEntry.macAddr.arEther[3] = 0x00;
+	macEntry.macAddr.arEther[4] = 0x00;
+	macEntry.macAddr.arEther[5] = 0x01;
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_C22
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_S220
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_XD25
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004SJL
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID)
+						|(1 << PORT_CABLE2_PORT_ID)
+						|(1 << PORT_CABLE3_PORT_ID)
+						|(1 << PORT_CABLE4_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+	macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
+                                any other priority determined by the frame's data. This value is
+                                meaningful only if the device does not support extended priority
+                                information such as MAC Queue Priority and MAC Frame Priority */
+
+	macEntry.exPrio.macQPri = 0;    /* If device doesnot support MAC Queue Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.macFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.useMacFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+
+	macEntry.entryState.ucEntryState = GT_UC_STATIC;
+                                /* This address is locked and will not be aged out.
+                                Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
+	
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+								
+	/* Add the MAC Address */
+	if((status = gfdbAddMacEntry(dev,&macEntry)) != GT_OK)
+	{
+		printf("gfdbAddMacEntry returned fail.\n");
+		return status;
+	}
+
+	return GT_OK;
+}
+
+GT_STATUS dsdTester_delAtherosMulticastAddress(void)
+{
+	GT_ETHERADDR mac;
+
+	mac.arEther[0] = 0x00;
+	mac.arEther[1] = 0xb0;
+	mac.arEther[2] = 0x52;
+	mac.arEther[3] = 0x00;
+	mac.arEther[4] = 0x00;
+	mac.arEther[5] = 0x01;
+	
+	return gfdbDelMacEntry(dev, &mac);
 }
 
 GT_STATUS dsdTester_case_1_1_settings(void)
@@ -1488,9 +1625,6 @@ GT_STATUS dsdTester_PIRL2CustomSetup(long cbsLimit, int cbsIncreament)
     return status;
 }
 
-
-
-
 int main(int argc, char *argv[])
 {
 	int cpuPort = 5;
@@ -1815,6 +1949,32 @@ int main(int argc, char *argv[])
 		dsdtInit(cpuPort);
 
 		if( GT_OK != dsdTester_addAtherosMulticastAddress() )
+		{
+			goto DSDT_END;
+		}		
+
+		printf("\n");
+		goto DSDT_END;
+	}
+	else if( strcmp(argv[1], "case/6/4") == 0)
+	{
+		printf("\n");
+		dsdtInit(cpuPort);
+
+		if( GT_OK != dsdTester_delAtherosMulticastAddress() )
+		{
+			goto DSDT_END;
+		}		
+
+		printf("\n");
+		goto DSDT_END;
+	}
+	else if( strcmp(argv[1], "case/6/5") == 0)
+	{
+		printf("\n");
+		dsdtInit(cpuPort);
+
+		if( GT_OK != dsdTester_addAtherosMulticastAddressToAllCablePort() )
 		{
 			goto DSDT_END;
 		}		

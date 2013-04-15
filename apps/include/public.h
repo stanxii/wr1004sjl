@@ -20,6 +20,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "wecplatform.h"
+
 #ifndef STDIN_FILENO
 #define STDIN_FILENO 0
 #endif
@@ -76,7 +78,6 @@
 #define MAX_ROW                                   512     /*操作日志最大存储数量*/
 #define ALARM_MAX_ROW                      256     /*告警日志最大存储数量*/
 #define MMEAD_MAX_CNU_NUM		64
-#define MAX_CLT_AMOUNT_LIMIT		1
 #define MAX_CNU_AMOUNT_LIMIT		64
 #define MAX_CNU_PORTLIMIT			4		/*cnu port max num*/
 #define MAX_CNU_AMOUNTLIMIT		2		/*the amount limitation of cnu ports*/
