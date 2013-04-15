@@ -62,7 +62,7 @@ void dsdTester_usage(void)
 	printf("  --case/6/1: show all the vid entry in the VTU\n");
 	printf("  --case/6/2: show all the Mac entry in the ATU\n");
 	printf("  --case/6/3: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU\n");
-	printf("  --case/7/1: sample Storm prevent test for broadcast unknow unicast and multicast\n");
+	printf("  --case/7/1 0x200000 0x3D: cbsLimit 0x200000 < 0xFFFFFF  cbsIncreament < 0xFF sample Storm prevent test for broadcast unknow unicast and multicast\n");
 	
 	printf("\n\n");
 }
@@ -1420,7 +1420,7 @@ GT_STATUS dsdTester_showVlan(void)
  *
 */
 
-GT_STATUS dsdTester_PIRL2CustomSetup(void)
+GT_STATUS dsdTester_PIRL2CustomSetup(long cbsLimit, int cbsIncreament)
 {
     GT_STATUS status;
     GT_PIRL2_DATA pirlData;
@@ -1430,10 +1430,15 @@ GT_STATUS dsdTester_PIRL2CustomSetup(void)
     port = 0;
     irlRes = 0;
 
+    //  demo  default cbsLimit 0x200000 
+   //  demo  default cbsIncreament 0x3D 
+
     pirlData.customSetup.isValid = GT_TRUE;
     pirlData.customSetup.ebsLimit = 0xFFFFFF;
-    pirlData.customSetup.cbsLimit = 0x200000;
-    pirlData.customSetup.bktIncrement = 0x3D;
+//    pirlData.customSetup.cbsLimit = 0x200000;
+ //   pirlData.customSetup.bktIncrement = 0x3D;
+    pirlData.customSetup.cbsLimit = cbsLimit;
+    pirlData.customSetup.bktIncrement = cbsIncreament;
     pirlData.customSetup.bktRateFactor = 2;
 
     pirlData.accountQConf         = GT_FALSE;
@@ -1489,6 +1494,8 @@ GT_STATUS dsdTester_PIRL2CustomSetup(void)
 int main(int argc, char *argv[])
 {
 	int cpuPort = 5;
+	long cbsLimit =0x000000;
+	int cbsIncreament = 0x00;	
 
 	if( argc != 2 )
 	{
@@ -1819,8 +1826,13 @@ int main(int argc, char *argv[])
 	{
 		printf("\n");
 		dsdtInit(cpuPort);
+                //add by stan for param cbslimit argv[3] and increament argv[4]
+                if(argc == 4 ) {
+                  sprintf((char *)&cbsLimit, "%6X", argv[2]);
+                  sprintf((char *)&cbsIncreament,  "%2X", argv[3]);
+                }
 
-		if( GT_OK != dsdTester_PIRL2CustomSetup() )
+		if( GT_OK != dsdTester_PIRL2CustomSetup(cbsLimit, cbsIncreament) )
 		{
 			goto DSDT_END;
 		}		
