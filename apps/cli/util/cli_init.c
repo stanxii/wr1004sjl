@@ -23,7 +23,9 @@ extern "C" {
 #include "../cli_comm.h"
 #include <signal.h>
 
-char               m_szHostName[32] = "WEC-3501I";             /* 主机设备名     */
+/* demo version info */
+char               m_szHostName[32] = "CLI";             /* 主机设备名     */
+//char               m_szHostName[32] = "WEC9720EK";             /* 主机设备名     */
 
 // 模式注册信息
 ST_CMD_MODE_INFO m_stCmdModeInfo[] =

@@ -71,6 +71,10 @@
 
 #include "snmpd.h"
 
+#include <public.h>
+#include <dbsapi.h>
+#include "snmp2cmm.h"
+
 /**
  * Registers the VACM token handlers for inserting rows into the vacm tables.
  * These tokens will be recognised by both 'snmpd' and 'snmptrapd'.
@@ -792,15 +796,36 @@ vacm_parse_rouser(const char *token, char *confline)
 void
 vacm_parse_rocommunity(const char *token, char *confline)
 {
-    vacm_create_simple(token, confline, VACM_CREATE_SIMPLE_COMIPV4,
-                       VACM_VIEW_READ_BIT);
+   	st_dbsSnmp snmpConfig;
+
+	if( !dbsGetSnmp(dbsdev, 1, &snmpConfig) )
+	{
+		//printf("vacm_parse_rocommunity from dbs: rocommunity = %s\n", snmpConfig.col_rdcom);
+		vacm_create_simple(token, snmpConfig.col_rdcom, VACM_CREATE_SIMPLE_COMIPV4, VACM_VIEW_READ_BIT);
+	}
+	else
+	{
+		//printf("vacm_parse_rocommunity from snmpd.conf: rocommunity = %s\n", confline);
+		vacm_create_simple(token, confline, VACM_CREATE_SIMPLE_COMIPV4, VACM_VIEW_READ_BIT);
+	}    
 }
 
 void
 vacm_parse_rwcommunity(const char *token, char *confline)
 {
-    vacm_create_simple(token, confline, VACM_CREATE_SIMPLE_COMIPV4,
+	st_dbsSnmp snmpConfig;
+	if( !dbsGetSnmp(dbsdev, 1, &snmpConfig) )
+	{
+		//printf("vacm_parse_rwcommunity from dbs: rwcommunity = %s\n", snmpConfig.col_wrcom);
+		vacm_create_simple(token, snmpConfig.col_wrcom, VACM_CREATE_SIMPLE_COMIPV4,
                        VACM_VIEW_READ_BIT | VACM_VIEW_WRITE_BIT);
+	}
+	else
+	{
+		//printf("vacm_parse_rwcommunity from snmpd.conf: rwcommunity = %s\n", confline);
+		vacm_create_simple(token, confline, VACM_CREATE_SIMPLE_COMIPV4,
+                       VACM_VIEW_READ_BIT | VACM_VIEW_WRITE_BIT);
+	}	
 }
 
 void

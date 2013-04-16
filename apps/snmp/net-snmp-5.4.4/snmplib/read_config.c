@@ -794,6 +794,7 @@ read_config(const char *filename,
             } else {
                 DEBUGMSGTL(("read_config", "%s:%d examining: %s\n",
                             filename, linecount, line));
+		  //printf("read_config: %s:%d examining: %s\n", filename, linecount, line);
                 run_config_handler(lptr, token, cptr, when);
             }
         }

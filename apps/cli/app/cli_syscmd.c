@@ -1369,7 +1369,7 @@ ULONG CLI_Cmd_ShowSysInfo()
 	ret = cli2cmm_getCbatTemperature(&temp_data);
 #endif	
 
-	//IO_Print("\r\n\r\n  Description:		WEC-3501I series EoC CBAT");
+	//IO_Print("\r\n\r\n  Description:		WEC9720EK series EoC CBAT");
 	IO_Print("\r\n\r\n  Device Model:		%s", boardapi_getDeviceModelStr(szSysinfo.col_model));
 	IO_Print("\r\n  Maximum CLTs:		%d", MAX_CLT_AMOUNT_LIMIT);
 	IO_Print("\r\n  Maximum CNUs:		%d*%d", MAX_CLT_AMOUNT_LIMIT, MAX_CNU_AMOUNT_LIMIT);
@@ -1381,7 +1381,9 @@ ULONG CLI_Cmd_ShowSysInfo()
 	IO_Print("\r\n  APP Version:		%s", szSysinfo.col_appver);
 	IO_Print("\r\n  Flash Size:		%dMB", szSysinfo.col_flashsize);
 	IO_Print("\r\n  Sdram Size:		%dMB", szSysinfo.col_ramsize);
-	IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
+	/* demo version info */
+	IO_Print("\r\n  Manufacturer:		");
+	//IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
 
 #ifdef __AT30TK175STK__
 	if( CMM_SUCCESS == ret )

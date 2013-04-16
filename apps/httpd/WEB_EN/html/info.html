@@ -36,13 +36,15 @@
 			        </table>
 			        <br>
                <table border="0" cellpadding="0" cellspacing="0">
+               <!--// hide
                <tr>
                   <td class='diagdata' width=260>Device description</td>
                   <td class='diagdata' width=300><%ejGet(wecDevSerial)%></td>              
                </tr>
+               // done hiding-->
                <tr>
-                  <td class='diagdata'>Device model</td>
-                  <td class='diagdata'><%ejGet(wecDevModel)%></td>
+                  <td class='diagdata' width=260>Device model</td>
+                  <td class='diagdata' width=300><%ejGet(wecDevModel)%></td>
                </tr>
                <tr>
                   <td class='diagdata'>EoC technology standard</td>
@@ -108,7 +110,7 @@
                </tr>
                <tr>
                   <td class='diagdata'>Manufacturers</td>
-                  <td class='diagdata'><%ejGet(wecManufactory)%></td>
+                  <td class='diagdata'></td>
                </tr>
                <tr>
                   <td class='diagdata'>System uptime</td>
