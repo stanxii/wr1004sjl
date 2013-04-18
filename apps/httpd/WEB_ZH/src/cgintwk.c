@@ -22,6 +22,7 @@
 #include <bcmcfm.h>
 #include <http2dbs.h>
 #include <dbsapi.h>
+#include <boardapi.h>
 
 extern WEB_NTWK_VAR glbWebVar;
 
@@ -658,7 +659,7 @@ void cgiCltProfileView(char *query, FILE *fs)
 	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
 	fprintf(fs, "<br>本页面显示您所选CLT的线路配置文件信息。</br>\n<br><br>\n");
 		
-	if( CMM_SUCCESS == dbsGetCltconf(id, &profile) )
+	if( CMM_SUCCESS == dbsGetCltconf(dbsdev, id, &profile) )
 	{
 		fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
 		fprintf(fs, "<tr>\n<td class='diagret' width=300>基本信息</td>\n");
@@ -739,7 +740,7 @@ void cgiCltProfileView(char *query, FILE *fs)
 		fprintf(fs, "<tr>\n<td class='diagdata'>cos 3:</td>\n");
 		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos3pri);
 		fprintf(fs, "<tr>\n<td class='diagdata'>cos 4:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos4pri);
+		fprintf(fs, "<td class='diagdatadbsdev, '>CAP %d</td>\n</tr>\n", profile.col_cos4pri);
 		fprintf(fs, "<tr>\n<td class='diagdata'>cos 5:</td>\n");
 		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos5pri);
 		fprintf(fs, "<tr>\n<td class='diagdata'>cos 6:</td>\n");
@@ -799,7 +800,7 @@ void cgiCnuProfileView(char *query, FILE *fs)
 	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
 	fprintf(fs, "<br>本页面显示您所选CNU的线路配置文件信息。</br>\n<br><br>\n");
 		
-	if( CMM_SUCCESS == dbsGetProfile(id, &profile) )
+	if( CMM_SUCCESS == dbsGetProfile(dbsdev, id, &profile) )
 	{
 		fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
 		fprintf(fs, "<tr>\n<td class='diagret' width=300>基本信息</td>\n");
@@ -1117,7 +1118,7 @@ void cgiCltProfile(char *query, FILE *fs)
 	cgiGetValueByName(query, "cltid", action);
 	id = atoi(action);
 
-	if( CMM_SUCCESS != dbsGetCltconf(id, &profile) )
+	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, id, &profile) )
 	{
 		/*Error*/
 		strcpy(glbWebVar.returnUrl, "cltManagement.cmd");
@@ -1497,7 +1498,7 @@ void cgiCnuProfile(char *query, FILE *fs)
 	cgiGetValueByName(query, "cnuid", action);
 	id = atoi(action);
 
-	if( CMM_SUCCESS != dbsGetProfile(id, &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id, &profile) )
 	{
 		/*Error*/
 		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
@@ -2185,7 +2186,7 @@ void cgiCltMgmt(char *query, FILE *fs)
 	fprintf(fs, "	</tr>\n");
 	for( i=1; i<=MAX_CLT_AMOUNT_LIMIT; i++ )
 	{
-		if( dbsGetClt(i, &clt) != CMM_SUCCESS )
+		if( dbsGetClt(dbsdev, i, &clt) != CMM_SUCCESS )
 		{
 			/* Get CNU failed, exit */
 			break;
@@ -2298,7 +2299,7 @@ void cgiCnuMgmt(char *query, FILE *fs)
 	fprintf(fs, "	</tr>\n");
 	for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
-		if( dbsGetCnu(i, &cnu) != CMM_SUCCESS )
+		if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
 		{
 			/*Read CNU Error, Exit*/
 			break;
@@ -2407,7 +2408,7 @@ void cgiLinkDiag(char *query, FILE *fs)
 
 	for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
-		if( dbsGetCnu(i, &cnu) != CMM_SUCCESS )
+		if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
 		{
 			/* Read CNU failed, exit */
 			break;
@@ -2605,7 +2606,7 @@ void cgiTopologyView(char *query, FILE *fs)
 	fprintf(fs, "<td class='diagret' align='center' width=100>Profile</td>\n</tr>\n</table>\n<br>\n");
 
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	if( dbsGetClt(1, &clt) == CMM_SUCCESS )
+	if( dbsGetClt(dbsdev, 1, &clt) == CMM_SUCCESS )
 	{
 		fprintf(fs, "<tr>\n");
 		fprintf(fs, "<td class='clt' align='center' width=60>1</td>\n");
@@ -2618,7 +2619,7 @@ void cgiTopologyView(char *query, FILE *fs)
 		fprintf(fs, "<tr>\n");
 		for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
 		{
-			if( dbsGetCnu(i, &cnu) != CMM_SUCCESS )
+			if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
 			{
 				break;
 			}

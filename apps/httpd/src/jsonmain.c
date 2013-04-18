@@ -328,6 +328,11 @@ int jsonSetCnuProfile(FILE * fs)
 		if( CMM_SUCCESS != ret ) goto json_ack;
 	}
 
+	/* 7. reload profile for cnu */
+	ret = http2cmm_reloadCnu(iNode.cnu);
+	if( CMM_SUCCESS != ret ) goto json_ack;
+	
+
 json_ack:
 	/* send ack to nms */
 	my_object = json_object_new_object();

@@ -6,6 +6,7 @@
 //CFG_USE_PLATFORM_XXX is defined by makefile
 
 #ifdef CFG_USE_PLATFORM_WEC9720EK_C22
+ //#define SYSINFO_DEVICE_MODEL		WEC9720EK_C22
  #define MAX_CLT_AMOUNT_LIMIT		1
 
  /* CPU port */
@@ -33,6 +34,7 @@
 #endif
 
 #ifdef CFG_USE_PLATFORM_WEC9720EK_S220
+ //#define SYSINFO_DEVICE_MODEL		WEC9720EK_S220
  #define MAX_CLT_AMOUNT_LIMIT		1
 
  /* CPU port */
@@ -60,6 +62,7 @@
 #endif
 
 #ifdef CFG_USE_PLATFORM_WEC9720EK_XD25
+ //#define SYSINFO_DEVICE_MODEL		WEC9720EK_XD25
  #define MAX_CLT_AMOUNT_LIMIT		1
 
  /* CPU port */
@@ -87,6 +90,7 @@
 #endif
 
 #ifdef CFG_USE_PLATFORM_WR1004SJL 
+ //#define SYSINFO_DEVICE_MODEL		WR1004SJL
  #define MAX_CLT_AMOUNT_LIMIT		4
  
  #define PORT_CPU_PORT_ID			5

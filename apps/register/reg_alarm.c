@@ -76,7 +76,8 @@ void clt_sts_transition_notification(uint32_t id, BOOLEAN sts)
 void cnu_sts_transition_notification(uint32_t clt, uint32_t cnu, BOOLEAN sts)
 {
 	T_ALARM_DESC alarm_desc;
-	
+
+#if 0
 	switch(sts)
 	{
 		case BOOL_FALSE:
@@ -100,6 +101,7 @@ void cnu_sts_transition_notification(uint32_t clt, uint32_t cnu, BOOLEAN sts)
 		default:
 			break;
 	}
+#endif
 }
 
 void lllegal_cnu_register_notification(uint32_t clt, uint8_t mac[])

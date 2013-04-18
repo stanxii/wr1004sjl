@@ -54,13 +54,12 @@
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.2.4.2-cr4"
+#define SYSINFO_APP_VERSION		"v1.2.4.2-cr8"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
 #define SYSINFO_FLASH_SIZE			256
 #define SYSINFO_RAM_SIZE			64
-//#define SYSINFO_DEVICE_MODEL	
 /********************************************************/
 
 /********************************************************/
@@ -253,7 +252,7 @@ enum
 	WEC701_M0,
 	WEC701_C2,
 	WEC701_C4,
-	WEC_3501I_XD25,	/* du channel */
+	WEC_3501I_XD25,	/* 30: du channel */
 	WEC9720EK_XD25,	/* du channel */
 	WR1004JL,			/* 2*clt + 1*onu module */
 	WR1004SJL,			/* 4*clt + 1*onu module */

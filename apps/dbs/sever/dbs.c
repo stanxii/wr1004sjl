@@ -2108,6 +2108,12 @@ int dbs_board_init(void)
 		strcpy(rowSysinfo.col_kver, SYSINFO_KERNEL_VERSION);
 		strcpy(rowSysinfo.col_hwver, SYSINFO_HW_VERSION);
 		rowSysinfo.col_model = atoi(str_devmodel);
+		/*
+		if( SYSINFO_DEVICE_MODEL != rowSysinfo.col_model )
+		{
+			fprintf(stderr,"WARNNING: device model is not matched in nvm\n");
+		}
+		*/
 		if( strcmp(str_wdt, "on") == 0 )
 		{
 			rowSysinfo.col_wdt = 1;
