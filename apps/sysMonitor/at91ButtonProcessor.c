@@ -17,15 +17,32 @@ static T_DBS_DEV_INFO *dbsdev = NULL;
 
 void at91btnsSyncHandler(int args)
 {
-#if 0
 	int tmp = 0;
 	/* 通过系统调用获取系统状态*/
 	if( ioctl(at91btns_fd, GET_KEY_STS_CMD, &tmp) >= 0 )
 	{
-		set_systemStatus(tmp);
-		printf("-->at91btnsSyncHandler : set_systemStatus(%d)\n", get_systemStatus());
+		switch(tmp)
+		{
+			/* reset SIGIO */
+			case 1:
+			{
+				set_systemStatus(SYSLED_STS_RESET);		/* sysled off */
+				break;
+			}
+			/* restore-default SIGIO */
+			case 2:
+			{
+				set_systemStatus(SYSLED_STS_BUSY);		/* sysled fast flash */
+				break;
+			}
+			default:
+			{
+				set_systemStatus(SYSLED_STS_NORMAL);	/* sysled normal */
+				break;
+			}
+		}		
+		//printf("-->at91btnsSyncHandler : set_systemStatus(%d)\n", get_systemStatus());
 	}
-#endif
 }
 
 int init_at91btns(void)

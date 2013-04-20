@@ -54,7 +54,7 @@
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.2.4.2-cr8"
+#define SYSINFO_APP_VERSION		"v1.2.4.2-final"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
