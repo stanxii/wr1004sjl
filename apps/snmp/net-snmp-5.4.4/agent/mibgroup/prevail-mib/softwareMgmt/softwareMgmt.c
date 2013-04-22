@@ -112,7 +112,7 @@ int write_softwareUploadTFTPServerIP(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, softwareMgmt_softwareUploadTFTPServerIP);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -159,7 +159,7 @@ int write_softwareUploadTFTPServerPort(int action,
 			iValue.len = sizeof(uint32_t);
 			iValue.integer = softwareMgmt_softwareUploadTFTPServerPort;
 
-			ret = dbsUpdateInteger(&iValue);
+			ret = dbsUpdateInteger(dbsdev, &iValue);
 			
 			if( SNMP_ERR_NOERROR != ret )
 			{
@@ -216,7 +216,7 @@ int write_softwareUploadLogin(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, softwareMgmt_softwareUploadLogin);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -272,7 +272,7 @@ int write_softwareUploadPassword(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, softwareMgmt_softwareUploadPassword);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -328,7 +328,7 @@ int write_softwareUploadFileName(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, softwareMgmt_softwareUploadFileName);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -382,15 +382,15 @@ int load_softwareMgmt(void)
 	st_dbsSysinfo sysInfo;
 	
 	/* load data from cmm *//* ??? */
-	if( CMM_SUCCESS != dbsGetSysinfo(1, &sysInfo) )
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &sysInfo) )
 	{
-		dbs_sys_log(DBS_LOG_ERR, "snmp load_softwareMgmt failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "snmp load_softwareMgmt failed");
 	}
 	
 	//printf("-->load_softwareMgmt\n");
-	if( CMM_SUCCESS != dbsGetSwmgmt(1, &row) )
+	if( CMM_SUCCESS != dbsGetSwmgmt(dbsdev, 1, &row) )
 	{
-		dbs_sys_log(DBS_LOG_ERR, "snmp load_softwareMgmt failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "snmp load_softwareMgmt failed");
 	}
 	else
 	{

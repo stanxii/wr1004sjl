@@ -349,18 +349,51 @@ char * boardapi_getModNameStr(uint16_t mid)
 		case MID_TEMPLATE:
 		{
 			return "MID_TM";
-		}case MID_DBS:
+		}
+		case MID_DBS:
 		{
 			return "MID_DBS";
+		}
+		case MID_DBS_TESTER:
+		{
+			return "DBS_TESTER";
 		}
 		case MID_SYSMONITOR:
 		{
 			return "MID_MON";
 		}
+		case MID_TM_TESTER:
+		{
+			return "TM_TESTER";
+		}
 		case MID_SYSEVENT:
 		{
 			return "MID_EVENT";
 		}
+		case MID_DSDT_TESTER:
+		{
+			return "DSDT_TESTER";
+		}
+		case MID_AT91BTN:
+		{
+			return "T_AT91BTN";
+		}
+		case MID_ATM:
+		{
+			return "T_ATM";
+		}
+		case MID_SYSINDI:
+		{
+			return "T_SYSINDI";
+		}
+		case MID_SYSLED:
+		{
+			return "T_SYSLED";
+		}
+		case MID_WDTIMER:
+		{
+			return "T_WDT";
+		}		
 		default:
 		{
 			return "MID_OTHER";

@@ -270,7 +270,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	*/
 	if( 0 == rowreq_ctx->data.proRowStatus )
 	{
-		dbs_sys_log(DBS_LOG_WARNING, "module snmp profileTable_commit in bad proRowStatus");
+		dbs_sys_log(dbsdev, DBS_LOG_WARNING, "module snmp profileTable_commit in bad proRowStatus");
 	}
 	
 	if (save_flags & COLUMN_PROBASE_FLAG)
@@ -282,7 +282,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_BASE;
 		iValue.integer = rowreq_ctx->data.proBase;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proBase commit failed\n");
@@ -306,7 +306,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_MACLIMIT;
 		iValue.integer = rowreq_ctx->data.proMacLimit;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proMacLimit commit failed\n");
@@ -330,7 +330,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_CURATE;
 		iValue.integer = rowreq_ctx->data.proCableUplinkRate;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCableUplinkRate commit failed\n");
@@ -354,7 +354,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_CDRATE;
 		iValue.integer = rowreq_ctx->data.proCableDownlinkRate;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCableDownlinkRate commit failed\n");
@@ -378,7 +378,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_LOAGE;
 		iValue.integer = rowreq_ctx->data.proLocalAgingTime;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proLocalAgingTime commit failed\n");
@@ -402,7 +402,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_REAGE;
 		iValue.integer = rowreq_ctx->data.proRemoteAgingTime;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proRemoteAgingTime commit failed\n");
@@ -426,7 +426,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_IGMPPRI;
 		iValue.integer = rowreq_ctx->data.proIgmpPri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proIgmpPri commit failed\n");
@@ -450,7 +450,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_UNIPRI;
 		iValue.integer = rowreq_ctx->data.proUnicastPri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proUnicastPri commit failed\n");
@@ -474,7 +474,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_AVSPRI;
 		iValue.integer = rowreq_ctx->data.proAvsPri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proAvsPri commit failed\n");
@@ -498,7 +498,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 		/* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_MCPRI;
 		iValue.integer = rowreq_ctx->data.proMcastPri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proMcastPri commit failed\n");
@@ -531,7 +531,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTbaPriSts commit failed\n");
@@ -564,7 +564,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCosPriSts commit failed\n");
@@ -588,7 +588,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS0PRI;
 		iValue.integer = rowreq_ctx->data.proCos0pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos0pri commit failed\n");
@@ -612,7 +612,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS1PRI;
 		iValue.integer = rowreq_ctx->data.proCos1pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos1pri commit failed\n");
@@ -636,7 +636,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS2PRI;
 		iValue.integer = rowreq_ctx->data.proCos2pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos2pri commit failed\n");
@@ -660,7 +660,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS3PRI;
 		iValue.integer = rowreq_ctx->data.proCos3pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos3pri commit failed\n");
@@ -684,7 +684,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS4PRI;
 		iValue.integer = rowreq_ctx->data.proCos4pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos4pri commit failed\n");
@@ -708,7 +708,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS5PRI;
 		iValue.integer = rowreq_ctx->data.proCos5pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos5pri commit failed\n");
@@ -732,7 +732,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS6PRI;
 		iValue.integer = rowreq_ctx->data.proCos6pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos6pri commit failed\n");
@@ -756,7 +756,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_COS7PRI;
 		iValue.integer = rowreq_ctx->data.proCos7pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCos7pri commit failed\n");
@@ -789,7 +789,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTosPriSts commit failed\n");
@@ -813,7 +813,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS0PRI;
 		iValue.integer = rowreq_ctx->data.proTos0pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos0pri commit failed\n");
@@ -837,7 +837,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS1PRI;
 		iValue.integer = rowreq_ctx->data.proTos1pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos1pri commit failed\n");
@@ -861,7 +861,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS2PRI;
 		iValue.integer = rowreq_ctx->data.proTos2pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos2pri commit failed\n");
@@ -885,7 +885,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS3PRI;
 		iValue.integer = rowreq_ctx->data.proTos3pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos3pri commit failed\n");
@@ -909,7 +909,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS4PRI;
 		iValue.integer = rowreq_ctx->data.proTos4pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos4pri commit failed\n");
@@ -933,7 +933,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS5PRI;
 		iValue.integer = rowreq_ctx->data.proTos5pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos5pri commit failed\n");
@@ -957,7 +957,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS6PRI;
 		iValue.integer = rowreq_ctx->data.proTos6pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos6pri commit failed\n");
@@ -981,7 +981,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_TOS7PRI;
 		iValue.integer = rowreq_ctx->data.proTos7pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTos7pri commit failed\n");
@@ -1014,7 +1014,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proSfbSts commit failed\n");
@@ -1047,7 +1047,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proSfuSts commit failed\n");
@@ -1080,7 +1080,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proSfmSts commit failed\n");
@@ -1104,7 +1104,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_SFRATE;
 		iValue.integer = rowreq_ctx->data.proSfRate;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proSfRate commit failed\n");
@@ -1137,7 +1137,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proVlanStatus commit failed\n");
@@ -1161,7 +1161,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH1VID;
 		iValue.integer = rowreq_ctx->data.proEth1vid;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth1vid commit failed\n");
@@ -1185,7 +1185,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH2VID;
 		iValue.integer = rowreq_ctx->data.proEth2vid;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth2vid commit failed\n");
@@ -1209,7 +1209,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH3VID;
 		iValue.integer = rowreq_ctx->data.proEth3vid;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth3vid commit failed\n");
@@ -1233,7 +1233,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH4VID;
 		iValue.integer = rowreq_ctx->data.proEth4vid;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth4vid commit failed\n");
@@ -1266,7 +1266,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proPortPriSts commit failed\n");
@@ -1290,7 +1290,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH1PRI;
 		iValue.integer = rowreq_ctx->data.proEth1pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth1pri commit failed\n");
@@ -1314,7 +1314,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH2PRI;
 		iValue.integer = rowreq_ctx->data.proEth2pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth2pri commit failed\n");
@@ -1338,7 +1338,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH3PRI;
 		iValue.integer = rowreq_ctx->data.proEth3pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth3pri commit failed\n");
@@ -1362,7 +1362,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH4PRI;
 		iValue.integer = rowreq_ctx->data.proEth4pri;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth4pri commit failed\n");
@@ -1395,7 +1395,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proRxLimitSts commit failed\n");
@@ -1419,7 +1419,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_CPURX;
 		iValue.integer = rowreq_ctx->data.proCpuPortRxRate;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCpuPortRxRate commit failed\n");
@@ -1443,7 +1443,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH1RX;
 		iValue.integer = rowreq_ctx->data.proEth1rx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth1rx commit failed\n");
@@ -1467,7 +1467,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH2RX;
 		iValue.integer = rowreq_ctx->data.proEth2rx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth2rx commit failed\n");
@@ -1491,7 +1491,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH3RX;
 		iValue.integer = rowreq_ctx->data.proEth3rx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth3rx commit failed\n");
@@ -1515,7 +1515,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH4RX;
 		iValue.integer = rowreq_ctx->data.proEth4rx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth4rx commit failed\n");
@@ -1548,7 +1548,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proTxLimitSts commit failed\n");
@@ -1572,7 +1572,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_CPUTX;
 		iValue.integer = rowreq_ctx->data.proCpuPortTxRate;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proCpuPortTxRate commit failed\n");
@@ -1596,7 +1596,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH1TX;
 		iValue.integer = rowreq_ctx->data.proEth1tx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth1tx commit failed\n");
@@ -1620,7 +1620,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH2TX;
 		iValue.integer = rowreq_ctx->data.proEth2tx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth2tx commit failed\n");
@@ -1644,7 +1644,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH3TX;
 		iValue.integer = rowreq_ctx->data.proEth3tx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth3tx commit failed\n");
@@ -1668,7 +1668,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 	       /* Modified by frank */
 		iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ETH4TX;
 		iValue.integer = rowreq_ctx->data.proEth4tx;
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth4tx commit failed\n");
@@ -1701,7 +1701,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proPsctlSts commit failed\n");
@@ -1734,7 +1734,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth1sts commit failed\n");
@@ -1767,7 +1767,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth2sts commit failed\n");
@@ -1800,7 +1800,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth3sts commit failed\n");
@@ -1833,7 +1833,7 @@ int profileTable_commit( profileTable_rowreq_ctx *rowreq_ctx)
 			iValue.integer = 0;
 		}
 		
-		if( CMM_SUCCESS != dbsUpdateInteger(&iValue) )
+		if( CMM_SUCCESS != dbsUpdateInteger(dbsdev, &iValue) )
 		{
 			rc = -1;
 			snmp_log(LOG_ERR,"profileTable column proEth4sts commit failed\n");

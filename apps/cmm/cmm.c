@@ -40,6 +40,8 @@ T_UDP_SK_INFO SK_CMM;	/* 负责处理外部请求的套接字*/
 
 static BBLOCK_QUEUE bblock;
 
+/* 与DBS  通讯的设备文件*/
+T_DBS_DEV_INFO *dbsdev = NULL;
 
 int __findCnuEntry()
 {
@@ -52,7 +54,7 @@ int __findCnuEntry()
 		iValue.ci.row = i;
 		iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_ROWSTS;
 		iValue.ci.colType = DBS_INTEGER;
-		if( CMM_SUCCESS != dbsGetInteger(&iValue))
+		if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue))
 		{
 			return 0;
 		}
@@ -89,7 +91,7 @@ int __isNewCnuMacaddr(uint8_t mac[])
 		strValue.ci.row = i;
 		strValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_MAC;
 		strValue.ci.colType = DBS_TEXT;
-		if( CMM_SUCCESS != dbsGetText(&strValue) )
+		if( CMM_SUCCESS != dbsGetText(dbsdev, &strValue) )
 		{
 			return 0;
 		}
@@ -216,11 +218,11 @@ int do_dsdt_rgmii_delay_config(st_dsdtRgmiiTimingDelay* pDelay)
 	{
 		if( pDelay->rxdelay )
 		{
-			dbs_sys_log(DBS_LOG_DEBUG, "dsdt port6 rgmii rx delay enabled");
+			dbs_sys_log(dbsdev, DBS_LOG_DEBUG, "dsdt port6 rgmii rx delay enabled");
 		}
 		if( pDelay->txdelay )
 		{
-			dbs_sys_log(DBS_LOG_DEBUG, "dsdt port6 rgmii tx delay enabled");
+			dbs_sys_log(dbsdev, DBS_LOG_DEBUG, "dsdt port6 rgmii tx delay enabled");
 		}
 	}
 
@@ -241,7 +243,7 @@ int init_network(void)
 	st_dsdtRgmiiTimingDelay dsdtRgmiiDelay;
 
 	/*从数据库中读取配置信息*/
-	if(CMM_SUCCESS == dbsGetSysinfo(1, &szSysinfo))
+	if(CMM_SUCCESS == dbsGetSysinfo(dbsdev, 1, &szSysinfo))
 	{
 		/* dsdt rgmii delay config */
 		dsdtRgmiiDelay.port = 6;
@@ -259,7 +261,7 @@ int init_network(void)
 		return CMM_FAILED;
 	}
 	
-	if(CMM_SUCCESS == dbsGetNetwork(1, &szNetwork))
+	if(CMM_SUCCESS == dbsGetNetwork(dbsdev, 1, &szNetwork))
 	{
 		/* 设置ip,子网掩码,网关*/
 		if( do_network_config(szNetwork) != CMM_SUCCESS )
@@ -332,7 +334,7 @@ void CMM_ProcessAck(uint16_t status, BBLOCK_QUEUE *this, uint8_t *b, uint32_t le
 		rh.ulBodyLength = sizeof(uint16_t);
 		memcpy(buf, &rh, sizeof(rh));
 		memcpy(buf+sizeof(rh), &result, sizeof(uint16_t));
-		dbs_sys_log(DBS_LOG_ALERT, "cmm->nCMM_ProcessAck msg length exceeded");	
+		dbs_sys_log(dbsdev, DBS_LOG_ALERT, "cmm->nCMM_ProcessAck msg length exceeded");	
 		
 		/* 将处理信息发送给请求者 */
 		sendn = sendto(this->sk.sk, buf, sizeof(rh)+sizeof(uint16_t), 0, 
@@ -364,7 +366,7 @@ void CMM_ProcessAck(uint16_t status, BBLOCK_QUEUE *this, uint8_t *b, uint32_t le
 				(struct sockaddr *)&(this->sk.skaddr), sizeof(this->sk.skaddr));
 	if( sendn != total_len )
 	{
-		dbs_sys_log(DBS_LOG_ALERT, "cmm->nCMM_ProcessAck call sendto error");
+		dbs_sys_log(dbsdev, DBS_LOG_ALERT, "cmm->nCMM_ProcessAck call sendto error");
 	}
 }
 
@@ -378,7 +380,7 @@ void CMM_ProcessMTAck(BBLOCK_QUEUE *this, uint8_t *b, uint32_t len)
 {
 	if(sendto(this->sk.sk, b, len, 0,(struct sockaddr *)&(this->sk.skaddr), sizeof(this->sk.skaddr) ) == -1)
 	{
-		dbs_sys_log(DBS_LOG_ALERT, "ERROR: CMM_ProcessMTAck sendto failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ALERT, "ERROR: CMM_ProcessMTAck sendto failed");
 		perror("\nERROR: CMM_ProcessMTAck sendto failed\n");
 	}
 }
@@ -653,7 +655,7 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 	}
 
 	/* 将日志写入数据库*/
-	return dbs_opt_log(&log);
+	return dbs_opt_log(dbsdev, &log);
 
 }
 
@@ -674,12 +676,12 @@ int CMM_ProcessModuleDebugCtl(BBLOCK_QUEUE *this)
 		}
 		case MID_DBS:
 		{
-			opt_sts = dbsMsgDebug(pDebugClt->enable);
+			opt_sts = dbsMsgDebug(dbsdev, pDebugClt->enable);
 			break;
 		}
 		case MID_SQL:
 		{
-			opt_sts = dbsSQLDebug(pDebugClt->enable);
+			opt_sts = dbsSQLDebug(dbsdev, pDebugClt->enable);
 			break;
 		}
 		default:
@@ -771,7 +773,7 @@ int CMM_ProcessCltReset(BBLOCK_QUEUE *this)
 	{
 		opt_sts = CMM_FAILED;
 	}
-	else if( CMM_SUCCESS != dbsGetClt(registerEvent.clt, &clt))
+	else if( CMM_SUCCESS != dbsGetClt(dbsdev, registerEvent.clt, &clt))
 	{
 		opt_sts = CMM_FAILED;
 	}
@@ -808,7 +810,7 @@ int CMM_ProcessCnuReset(BBLOCK_QUEUE *this)
 	{
 		opt_sts = CMM_FAILED;
 	}
-	else if( CMM_SUCCESS != dbsGetCnu(registerEvent.cnu, &cnu) )
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, registerEvent.cnu, &cnu) )
 	{
 		opt_sts = CMM_FAILED;
 	}	
@@ -913,7 +915,7 @@ int CMM_ProcessMmeMdioPhyRead(BBLOCK_QUEUE *this)
 	{
 		opt_sts = CMM_FAILED;
 	}	
-	else if( CMM_SUCCESS != dbsGetClt(smiPhy->clt, &clt) )
+	else if( CMM_SUCCESS != dbsGetClt(dbsdev, smiPhy->clt, &clt) )
 	{
 		opt_sts = CMM_FAILED;
 	}
@@ -971,7 +973,7 @@ int CMM_ProcessMmeMdioPhyWrite(BBLOCK_QUEUE *this)
 	{
 		opt_sts = CMM_FAILED;
 	}	
-	else if( CMM_SUCCESS != dbsGetClt(smiPhy->clt, &clt) )
+	else if( CMM_SUCCESS != dbsGetClt(dbsdev, smiPhy->clt, &clt) )
 	{
 		opt_sts = CMM_FAILED;
 	}
@@ -1020,7 +1022,7 @@ int CMM_ProcessReadAr8236Phy(BBLOCK_QUEUE *this)
 	{
 		opt_sts = CMM_FAILED;
 	}
-	else if( CMM_SUCCESS != dbsGetCnu(smiPhy->cnu, &cnu) )
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, smiPhy->cnu, &cnu) )
 	{
 		opt_sts = CMM_FAILED;
 	}
@@ -1074,7 +1076,7 @@ int CMM_ProcessWriteAr8236Phy(BBLOCK_QUEUE *this)
 	cli_ar8236_phy.mdioPhy.reg = smiPhy->mdioPhy.reg;
 	cli_ar8236_phy.mdioPhy.value = smiPhy->mdioPhy.value;
 
-	if( CMM_SUCCESS != dbsGetCnu(smiPhy->cnu, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, smiPhy->cnu, &cnu) )
 	{
 		opt_sts = CMM_DB_GETCNU_ERROR;
 	}
@@ -1117,7 +1119,7 @@ int CMM_ProcessReadAr8236Reg(BBLOCK_QUEUE *this)
 	cli_ar8236_reg.mdioReg.reg = smiReg->mdioReg.reg;
 	cli_ar8236_reg.mdioReg.value = 0x0000;
 
-	if( CMM_SUCCESS != dbsGetCnu(smiReg->cnu, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, smiReg->cnu, &cnu) )
 	{
 		opt_sts = CMM_DB_GETCNU_ERROR;
 	}
@@ -1168,7 +1170,7 @@ int CMM_ProcessWriteAr8236Reg(BBLOCK_QUEUE *this)
 	cli_ar8236_reg.mdioReg.reg = smiReg->mdioReg.reg;
 	cli_ar8236_reg.mdioReg.value = smiReg->mdioReg.value;
 
-	if( CMM_SUCCESS != dbsGetCnu(smiReg->cnu, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, smiReg->cnu, &cnu) )
 	{
 		opt_sts = CMM_DB_GETCNU_ERROR;
 	}
@@ -1219,7 +1221,7 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	}
 
 	/* Get CCo MAC address */
-	if( CMM_SUCCESS == dbsGetClt(1, &clt) )
+	if( CMM_SUCCESS == dbsGetClt(dbsdev, 1, &clt) )
 	{
 		inputInfo.dir = msg_data->dir;
 		if( CMM_SUCCESS != boardapi_macs2b(clt.col_mac, inputInfo.ccoMac) )
@@ -1240,7 +1242,7 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	}
 
 	/* CNU 不在线禁止诊断*/
-	if( CMM_SUCCESS == dbsGetCnu(msg_data->cnu, &cnu) )
+	if( CMM_SUCCESS == dbsGetCnu(dbsdev, msg_data->cnu, &cnu) )
 	{
 		if( DEV_STS_ONLINE != cnu.col_sts )
 		{
@@ -1338,10 +1340,10 @@ int CMM_ProcessSetDsdtRgmiiDelay(BBLOCK_QUEUE *this)
 	st_dsdtRgmiiTimingDelay *msg_data = (st_dsdtRgmiiTimingDelay *)(msg->BUF);
 
 	/* save dsdt rgmii delay config in dbs */
-	if( CMM_SUCCESS != dbsSetDsdtRgmiiDelay(msg_data) )
+	if( CMM_SUCCESS != dbsSetDsdtRgmiiDelay(dbsdev, msg_data) )
 	{
 		fprintf(stderr, "\r\n  WARNING: Cannot save dsdt rgmii delay config into databases.");
-		dbs_sys_log(DBS_LOG_WARNING, "cannot save dsdt rgmii delay config into databases");
+		dbs_sys_log(dbsdev, DBS_LOG_WARNING, "cannot save dsdt rgmii delay config into databases");
 	}
 
 	opt_sts = cmm2dsdt_setRgmiiTimingDelay(msg_data);
@@ -1524,13 +1526,13 @@ int CMM_ProcessCreateCnu(BBLOCK_QUEUE *this)
 	/* 判断CNU 数量是否达到极限*/
 	if( !__findCnuEntry() )
 	{
-		dbs_sys_log(DBS_LOG_ERR, "cmm create cnu error: cnu entry is full !");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "cmm create cnu error: cnu entry is full !");
 		opt_sts = TM_DB_MAX_ROW;
 	}	
 	/* 判断新添加的MAC 地址必须有效且没有重复*/
 	else if( !__isNewCnuMacaddr(req->BUF) )
 	{
-		dbs_sys_log(DBS_LOG_ERR, "cmm create cnu error: cnu mac conflict !");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "cmm create cnu error: cnu mac conflict !");
 		opt_sts = CMM_CONFIG_REPEAT;
 	}
 	else
@@ -1585,7 +1587,7 @@ int CMM_ProcessDoWdtControl(BBLOCK_QUEUE *this)
 		if( CMM_SUCCESS == nvm_set_parameter("watchdog", "on") )
 		{
 			iValue.integer = 1;
-			if( CMM_SUCCESS == dbsUpdateInteger(&iValue) )
+			if( CMM_SUCCESS == dbsUpdateInteger(dbsdev, &iValue) )
 			{
 				opt_sts = CMM_SUCCESS;
 			}
@@ -1604,7 +1606,7 @@ int CMM_ProcessDoWdtControl(BBLOCK_QUEUE *this)
 		if( CMM_SUCCESS == nvm_set_parameter("watchdog", "off") )
 		{
 			iValue.integer = 0;
-			if( CMM_SUCCESS == dbsUpdateInteger(&iValue) )
+			if( CMM_SUCCESS == dbsUpdateInteger(dbsdev, &iValue) )
 			{
 				opt_sts = CMM_SUCCESS;
 			}
@@ -1713,7 +1715,7 @@ static int CMM_ProcessMTProgram(BBLOCK_QUEUE *this)
 	{
 		CMM_ProcessMTAck(this, "0", 1);
 		perror("\nERROR: CMM_ProcessToolMac write mac address failed\n");
-		dbs_sys_log(DBS_LOG_ALERT, "ERROR: CMM_ProcessToolMac write mac address failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ALERT, "ERROR: CMM_ProcessToolMac write mac address failed");
 		return CMM_FAILED;
 	}	
 }
@@ -2014,7 +2016,7 @@ int close_socket_cmm(void)
 *********************************************************************************************/
 void cmmSignalProcessHandle(int n)
 {
-	dbs_sys_log(DBS_LOG_INFO, "cmmSignalProcessHandle : module cmm exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "cmmSignalProcessHandle : module cmm exit");
 	
 	/* 关闭socket接口 */
 	cmm2alarm_destroy();
@@ -2022,7 +2024,7 @@ void cmmSignalProcessHandle(int n)
 	destroy_cmm_tm();
 	destroy_cmm_mmead();
 	close_socket_cmm();
-	dbsClose();
+	dbsClose(dbsdev);
 #ifdef __AT30TK175STK__
 	uninit_at30ts75();
 #endif
@@ -2039,9 +2041,10 @@ void cmmSignalProcessHandle(int n)
 int main(void)
 {
 	/*创建与数据库模块通讯的外部SOCKET接口*/
-	if( CMM_SUCCESS != dbsOpen(MID_CMM) )
+	dbsdev = dbsOpen(MID_CMM);
+	if( NULL == dbsdev )
 	{
-		perror("cmm->msg_db_init error, exited !\n");
+		fprintf(stderr,"ERROR: cmm->dbsOpen error, exited !\n");
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
@@ -2049,8 +2052,8 @@ int main(void)
 	if( init_socket_cmm() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->init_socket_cmm error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm init_socket_cmm error, exited !");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm init_socket_cmm error, exited !");
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
@@ -2058,9 +2061,9 @@ int main(void)
 	if( init_cmm_mmead() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->init_cmm_mmead error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm init_cmm_mmead error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm init_cmm_mmead error, exited !");
 		close_socket_cmm();
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
@@ -2068,10 +2071,10 @@ int main(void)
 	if( init_cmm_tm() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->init_cmm_tm error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm init_cmm_tm error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm init_cmm_tm error, exited !");
 		destroy_cmm_mmead();
 		close_socket_cmm();
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
@@ -2079,11 +2082,11 @@ int main(void)
 	if( init_cmm_reg() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->init_cmm_reg error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm init_cmm_reg error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm init_cmm_reg error, exited !");
 		destroy_cmm_tm();
 		destroy_cmm_mmead();
 		close_socket_cmm();
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 
@@ -2091,12 +2094,12 @@ int main(void)
 	if( cmm2alarm_init() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->cmm2alarm_init error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm cmm2alarm_init error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm cmm2alarm_init error, exited !");
 		destroy_cmm_reg();
 		destroy_cmm_tm();
 		destroy_cmm_mmead();
 		close_socket_cmm();
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 
@@ -2104,13 +2107,13 @@ int main(void)
 	if( cmm2sysmonitor_init() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->cmm2sysmonitor_init error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm cmm2sysmonitor_init error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm cmm2sysmonitor_init error, exited !");
 		cmm2alarm_destroy();
 		destroy_cmm_reg();
 		destroy_cmm_tm();
 		destroy_cmm_mmead();
 		close_socket_cmm();
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 
@@ -2118,14 +2121,14 @@ int main(void)
 	if( cmm2dsdt_init() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->cmm2dsdt_init error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm cmm2dsdt_init error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm cmm2dsdt_init error, exited !");
 		cmm2sysmonitor_destroy();
 		cmm2alarm_destroy();
 		destroy_cmm_reg();
 		destroy_cmm_tm();
 		destroy_cmm_mmead();
 		close_socket_cmm();
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
 	
@@ -2133,14 +2136,14 @@ int main(void)
 	if( init_network() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->init_network error, exited !\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm init_network error, exited !");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm init_network error, exited !");
 		cmm2sysmonitor_destroy();
 		cmm2alarm_destroy();
 		destroy_cmm_reg();
 		destroy_cmm_tm();
 		destroy_cmm_mmead();
 		close_socket_cmm();
-		dbsClose();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
 	
@@ -2149,7 +2152,7 @@ int main(void)
 	if( init_at30ts75() != CMM_SUCCESS )
 	{
 		fprintf(stderr, "cmm->init_at30ts75() failed\n");
-		dbs_sys_log(DBS_LOG_EMERG, "module cmm init_at30ts75 failed");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm init_at30ts75 failed");
 	}
 #endif
 
@@ -2157,21 +2160,21 @@ int main(void)
 	signal(SIGTERM, cmmSignalProcessHandle);	
 
 	fprintf(stderr, "Starting module CMM		......		[OK]\n");
-	dbs_sys_log(DBS_LOG_INFO, "starting module cmm success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module cmm success");
 	
 	/* 循环处理外部请求*/
 	cmmProcessManager();
 
 	/* 不要在这个后面添加代码，执行不到滴*/
 	/* 关闭socket接口 */
-	dbs_sys_log(DBS_LOG_INFO, "module cmm exit");	
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "module cmm exit");	
 	cmm2sysmonitor_destroy();
 	cmm2alarm_destroy();
 	destroy_cmm_reg();
 	destroy_cmm_tm();
 	destroy_cmm_mmead();
 	close_socket_cmm();
-	dbsClose();
+	dbsClose(dbsdev);
 #ifdef __AT30TK175STK__
 	uninit_at30ts75();
 #endif

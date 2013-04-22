@@ -108,7 +108,7 @@ int write_ipAddress(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, networkInfo_ipAddress);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -169,7 +169,7 @@ int write_netmask(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, networkInfo_netmask);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -230,7 +230,7 @@ int write_gateway(int action,
 		strValue.len = var_val_len;
 		strcpy(strValue.text, networkInfo_gateway);
 		
-		ret = dbsUpdateText(&strValue);
+		ret = dbsUpdateText(dbsdev, &strValue);
 		
 		if( SNMP_ERR_NOERROR != ret )
 		{
@@ -277,7 +277,7 @@ int write_mgmtVlanStatus(int action,
 			iValue.len = sizeof(uint32_t);
 			iValue.integer = (1==networkInfo_mgmtVlanStatus)?1:0;
 
-			ret = dbsUpdateInteger(&iValue);
+			ret = dbsUpdateInteger(dbsdev, &iValue);
 			
 			if( SNMP_ERR_NOERROR != ret )
 			{
@@ -325,7 +325,7 @@ int write_mgmtVlanId(int action,
 			iValue.len = sizeof(uint32_t);
 			iValue.integer = networkInfo_mgmtVlanId;
 
-			ret = dbsUpdateInteger(&iValue);
+			ret = dbsUpdateInteger(dbsdev, &iValue);
 			
 			if( SNMP_ERR_NOERROR != ret )
 			{
@@ -342,7 +342,7 @@ int load_networkInfo(void)
 {
 	st_dbsNetwork row;
 
-	if( CMM_SUCCESS == dbsGetNetwork(1, &row) )
+	if( CMM_SUCCESS == dbsGetNetwork(dbsdev, 1, &row) )
 	{
 		strcpy(networkInfo_ipAddress, row.col_ip);
 		strcpy(networkInfo_netmask, row.col_netmask);
@@ -353,7 +353,7 @@ int load_networkInfo(void)
 	}
 	else
 	{
-		dbs_sys_log(DBS_LOG_ERR, "snmp load_networkInfo failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "snmp load_networkInfo failed");
 		strcpy(networkInfo_ipAddress, "192.168.223.1");
 		strcpy(networkInfo_netmask, "255.255.255.0");
 		strcpy(networkInfo_gateway, "0.0.0.0");

@@ -40,6 +40,9 @@
 T_UDP_SK_INFO SK_ALARM;
 uint8_t g_hb_enabled = 1;
 
+/* 与DBS  通讯的设备文件*/
+static T_DBS_DEV_INFO *dbsdev = NULL;
+
 #ifdef SEND_TRAP_BY_AGENT_TRAP
 T_UDP_SK_INFO SK_TOSNMP;
 #else
@@ -147,7 +150,7 @@ void SignalProcessHandle(int n)
 #ifdef SEND_TRAP_BY_AGENT_TRAP
 	hb_flag = 0;
 #endif
-	dbs_sys_log(DBS_LOG_INFO, "SignalProcessHandle : module alarm exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "SignalProcessHandle : module alarm exit");
 	/* 关闭socket接口 */
 	close(SK_ALARM.sk);
 #ifdef SEND_TRAP_BY_AGENT_TRAP
@@ -155,7 +158,7 @@ void SignalProcessHandle(int n)
 #endif
 	//close(SK_TODB.sk);	
 	snmp_shutdown("snmpapp");
-	dbsClose();
+	dbsClose(dbsdev);
 	exit(0);
 }
 
@@ -212,7 +215,7 @@ int recieve_alarm_notification(stAlarmInfo *alarminfo)
 			}			
 			case 200902:	
 			{
-				if( CMM_SUCCESS != dbsGetCnu(alarminfo->CnuIndex, &row_cnu) ) return CMM_FAILED;
+				if( CMM_SUCCESS != dbsGetCnu(dbsdev, alarminfo->CnuIndex, &row_cnu) ) return CMM_FAILED;
 				if( DEV_STS_ONLINE == alarminfo->AlarmValue )
 				{
 					/* 禁止修改此告警信息的格式*/
@@ -248,7 +251,7 @@ int recieve_alarm_notification(stAlarmInfo *alarminfo)
 			case 200909:
 			{
 				st_dbsNetwork stNetworkInfo;
-				if( CMM_SUCCESS != dbsGetNetwork(1, &stNetworkInfo) )
+				if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &stNetworkInfo) )
 				{
 					return CMM_FAILED;
 				}
@@ -392,7 +395,7 @@ void send_alarm_notification_to_snmp(stAlarmInfo *alarminfo)
 	sendn = sendto(SK_TOSNMP.sk, buffer, len, 0, (struct sockaddr *)&(SK_TOSNMP.skaddr), sizeof(struct sockaddr));
 	if ( -1 == sendn )
 	{
-		dbs_sys_log(DBS_LOG_ERR, "send_alarm_notification_to_snmp call sendto error");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "send_alarm_notification_to_snmp call sendto error");
 	}
 }
 #else
@@ -404,11 +407,11 @@ int snmp_input(int operation, netsnmp_session * session, int reqid, netsnmp_pdu 
 
 uint32_t init_snmptrap(void)
 {
-	if( CMM_SUCCESS != dbsGetNetwork(1, &g_networkInfo))
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &g_networkInfo))
 	{
 		return CMM_FAILED;
 	}
-	if( CMM_SUCCESS != dbsGetSysinfo(1, &g_szSysinfo))
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &g_szSysinfo))
 	{
 		return CMM_FAILED;
 	}
@@ -464,7 +467,7 @@ void send_alarm_notification_to_snmp(stAlarmInfo *alarminfo)
 	assert( NULL != alarminfo );
 
 	snmpInfo.id = 1;
-	if( CMM_SUCCESS != dbsGetSnmp(snmpInfo.id, &snmpInfo) )
+	if( CMM_SUCCESS != dbsGetSnmp(dbsdev, snmpInfo.id, &snmpInfo) )
 	{
 		fprintf(stderr, "ERROR: send_alarm_notification_to_snmp->dbsGetSnmp\n");
 		return;
@@ -707,7 +710,7 @@ int Write_alarmlog(stAlarmInfo *alarminfo)
 	strcpy(log.cbatMac, g_networkInfo.col_mac);
 	strcpy(log.oid, alarminfo->oid);
 	strcpy(log.trap_info, alarminfo->trap_info);
-	return dbs_alarm_log(&log);
+	return dbs_alarm_log(dbsdev, &log);
 }
 
 void send_cbat_topology_traps(void)
@@ -733,7 +736,7 @@ void send_cbat_topology_traps(void)
 	uint8_t *trap_24_oid = "1.3.6.1.4.1.17409.8080.2.18";	
 
 	/* */
-	if( CMM_SUCCESS != dbsGetSnmp(1, &snmpInfo) )
+	if( CMM_SUCCESS != dbsGetSnmp(dbsdev, 1, &snmpInfo) )
 	{
 		fprintf(stderr, "ERROR: send_cbat_topology_traps->dbsGetSnmp\n");
 		return;
@@ -808,7 +811,7 @@ void send_cbat_topology_traps(void)
 	bzero(svalue, 768);
 	for( i=1; i<=20; i++ )
 	{
-		if( CMM_SUCCESS == dbsGetCnu( i, &cnu) )
+		if( CMM_SUCCESS == dbsGetCnu(dbsdev, i, &cnu) )
 		{
 			if( cnu.col_row_sts )
 			{	
@@ -876,7 +879,7 @@ void send_cbat_topology_traps(void)
 	bzero(svalue, 768);
 	for( i=21; i<=40; i++ )
 	{
-		if( CMM_SUCCESS == dbsGetCnu( i, &cnu) )
+		if( CMM_SUCCESS == dbsGetCnu( dbsdev, i, &cnu) )
 		{
 			if( cnu.col_row_sts )
 			{
@@ -951,7 +954,7 @@ void send_cbat_topology_traps(void)
 	bzero(svalue, 768);
 	for( i=41; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
-		if( CMM_SUCCESS == dbsGetCnu( i, &cnu) )
+		if( CMM_SUCCESS == dbsGetCnu(dbsdev,  i, &cnu) )
 		{
 			if( cnu.col_row_sts )
 			{
@@ -1035,7 +1038,7 @@ void process_alarm(void)
 					{
 						/* 借用alarminfo.trap_info 作为临时存储*/
 						sprintf(alarminfo.trap_info, "heartbeat time is too long [%ds]", (int)(end.tv_sec - start.tv_sec));
-						dbs_sys_log(DBS_LOG_WARNING, alarminfo.trap_info);
+						dbs_sys_log(dbsdev, DBS_LOG_WARNING, alarminfo.trap_info);
 					}
 				}
 			}
@@ -1054,8 +1057,10 @@ void process_alarm(void)
 int main(void)
 {
 	/*初始化与DB 模块通信套接字*/
-	if( 0 != dbsOpen(MID_ALARM) )
+	dbsdev = dbsOpen(MID_ALARM);
+	if( NULL == dbsdev )
 	{
+		fprintf(stderr,"ERROR: alarm->dbsOpen error, exited !\n");
 		return -1;
 	}
 	
@@ -1064,8 +1069,8 @@ int main(void)
 	if( CMM_SUCCESS != init_socket(&SK_ALARM) )
 	{
 		fprintf(stderr, "ERROR: alarm->init_socket[SK_ALARM], exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "alarm init_socket[SK_ALARM] error, exited");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "alarm init_socket[SK_ALARM] error, exited");
+		dbsClose(dbsdev);
 		return -1;
 	}
 
@@ -1075,8 +1080,8 @@ int main(void)
 	if( CMM_SUCCESS != init_socket(&SK_TOSNMP) )
 	{
 		fprintf(stderr, "ERROR: alarm->init_socket[SK_TOSNMP], exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "alarm init_socket[SK_TOSNMP] error, exited");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "alarm init_socket[SK_TOSNMP] error, exited");
+		dbsClose(dbsdev);
 		return -1;
 	}
 #else
@@ -1084,8 +1089,8 @@ int main(void)
 	if( CMM_SUCCESS != init_snmptrap())
 	{
 		fprintf(stderr, "ERROR: alarm->init_snmptrap, exit !\n");
-		dbs_sys_log(DBS_LOG_ERR, "alarm init_snmptrap error, exited");
-		dbsClose();
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "alarm init_snmptrap error, exited");
+		dbsClose(dbsdev);
 		return -1;
 	}
 #endif
@@ -1097,20 +1102,20 @@ int main(void)
 	/* 注册异常退出句柄函数*/
 	signal(SIGTERM, SignalProcessHandle);
 
-	dbs_sys_log(DBS_LOG_INFO, "starting module alarm success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module alarm success");
 	printf("Starting module ALARM		......		[OK]\n");
 
 	/* 循环处理外部请求*/
 	process_alarm();
 
 	/* 不要在这个后面添加代码，执行不到滴*/
-	dbs_sys_log(DBS_LOG_INFO, "module alarm exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "module alarm exit");
 	close(SK_ALARM.sk);
 #ifdef SEND_TRAP_BY_AGENT_TRAP
 	close(SK_TOSNMP.sk);
 #endif
 	//close(SK_TODB.sk);
-	dbsClose();
+	dbsClose(dbsdev);
 	return 0;
 }
 

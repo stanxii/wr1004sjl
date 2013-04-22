@@ -16,13 +16,22 @@ td.hd {
 input {
     color: #5f5f5f;
 }
+.frmstyle{
+       frameborder:1;
+       border:1;
+       bordercolor:#005f95;
+       framespacing:0;
+       scrolling:auto;
+       noresize:true;
+}
+
 .footerbody {
     border-top: #205A7F 1px solid;
     border-bottom: #205A7F 1px solid;
-    background: #091720 none;
+    background: #205a7f none;
 }
 .footertd {
-    background-color: #091720;
+    background-color: #205a7f;
 }
 .mainMenuBody {
     background: #f3f3f3 none;

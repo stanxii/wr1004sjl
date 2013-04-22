@@ -36,13 +36,15 @@
 			        </table>
 			        <br>
                <table border="0" cellpadding="0" cellspacing="0">
+	<!--// hide
                <tr>
                   <td class='diagdata' width=260>设备描述:</td>
                   <td class='diagdata' width=300><%ejGet(wecDevSerial)%></td>              
                </tr>
+	// done hiding-->
                <tr>
-                  <td class='diagdata'>设备型号:</td>
-                  <td class='diagdata'><%ejGet(wecDevModel)%></td>
+                  <td class='diagdata' width=260>设备型号:</td>
+                  <td class='diagdata' width=300><%ejGet(wecDevModel)%></td>
                </tr>
                <tr>
                   <td class='diagdata'>EoC模块技术标准:</td>
@@ -108,7 +110,10 @@
                </tr>
                <tr>
                   <td class='diagdata'>制造商:</td>
-                  <td class='diagdata'><%ejGet(wecManufactory)%></td>
+                  <td class='diagdata'></td>
+		<!--// hide
+			<td class='diagdata'><%ejGet(wecManufactory)%></td>
+		// done hiding-->
                </tr>
                <tr>
                   <td class='diagdata'>系统运行时间:</td>

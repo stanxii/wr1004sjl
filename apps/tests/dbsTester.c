@@ -21,6 +21,8 @@
 #include <public.h>
 #include <dbsapi.h>
 
+static T_DBS_DEV_INFO *dev = NULL;
+
 void dbsTester_usage(void)
 {
 	printf("\nParameter error:\n");
@@ -61,12 +63,12 @@ void dbsTester_signalProcessHandle(int n)
 {
 	printf("\n\n==================================================================\n");
 	fprintf(stderr, "INFO: dbsTester_signalProcessHandle close dbsTester !\n");
-	dbs_sys_log(DBS_LOG_INFO, "dbsTester_signalProcessHandle : module dbsTester exit");
-	dbsClose();		
+	dbs_sys_log(dev, DBS_LOG_INFO, "dbsTester_signalProcessHandle : module dbsTester exit");
+	dbsClose(dev);		
 	exit(0);
 }
 
-int __test_dbs_row_tbl_clirole_interfaces(uint16_t id)
+int __test_dbs_row_tbl_clirole_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsCliRole row_w;
@@ -75,13 +77,13 @@ int __test_dbs_row_tbl_clirole_interfaces(uint16_t id)
 	sprintf(row_w.col_user, "str_%d_%d", id, ++i);
 	sprintf(row_w.col_pwd, "str_%d_%d", id, ++i);	
 		
-	if( 0 != dbsUpdateCliRole(id, &row_w) )
+	if( 0 != dbsUpdateCliRole(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_clirole_interfaces->dbsUpdateCliRole(%d)\n", id);
 		return -1;
 	}
 	
-	if( 0 == dbsGetCliRole(id, &row_r) )
+	if( 0 == dbsGetCliRole(dev, id, &row_r) )
 	{
 		printf("\n%d | %s | %s\n", row_r.id, row_r.col_user, row_r.col_pwd);
 		return 0;
@@ -93,7 +95,7 @@ int __test_dbs_row_tbl_clirole_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_clt_interfaces(uint16_t id)
+int __test_dbs_row_tbl_clt_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsClt row_w;
@@ -110,14 +112,14 @@ int __test_dbs_row_tbl_clt_interfaces(uint16_t id)
 	row_w.col_row_sts = ++i;
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateClt(id, &row_w) )
+	if( 0 != dbsUpdateClt(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_clt_interfaces->dbsUpdateClt(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetClt(id, &row_r) )
+	if( 0 == dbsGetClt(dev, id, &row_r) )
 	{
 		printf("\n%d | %d | %s | %d | %d | %d | %s | %d | %d \n", 
 			row_r.id, 
@@ -139,7 +141,7 @@ int __test_dbs_row_tbl_clt_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_cltconf_interfaces(uint16_t id)
+int __test_dbs_row_tbl_cltconf_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsCltConf row_w;
@@ -178,14 +180,14 @@ int __test_dbs_row_tbl_cltconf_interfaces(uint16_t id)
 	row_w.col_tos7pri = ++i;	
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateCltconf(id, &row_w) )
+	if( 0 != dbsUpdateCltconf(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_cltconf_interfaces->dbsUpdateCltconf(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetCltconf(id, &row_r) )
+	if( 0 == dbsGetCltconf(dev, id, &row_r) )
 	{
 		printf("\n%d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d\n", 
 			row_r.id, row_r.col_row_sts, row_r.col_base, row_r.col_macLimit, 
@@ -206,7 +208,7 @@ int __test_dbs_row_tbl_cltconf_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_cnu_interfaces(uint16_t id)
+int __test_dbs_row_tbl_cnu_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsCnu row_w;
@@ -227,14 +229,14 @@ int __test_dbs_row_tbl_cnu_interfaces(uint16_t id)
 	row_w.col_row_sts = ++i;
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateCnu(id, &row_w) )
+	if( 0 != dbsUpdateCnu(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_cnu_interfaces->dbsUpdateCnu(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetCnu(id, &row_r) )
+	if( 0 == dbsGetCnu(dev, id, &row_r) )
 	{
 		printf("\n%d | %d | %s | %d | %d | %s | %d | %d | %s | %s | %s | %d | %d\n", 
 			row_r.id, row_r.col_model, row_r.col_mac, row_r.col_sts, 
@@ -251,7 +253,7 @@ int __test_dbs_row_tbl_cnu_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_depro_interfaces(uint16_t id)
+int __test_dbs_row_tbl_depro_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsCnuDefaultProfile row_w;
@@ -321,14 +323,14 @@ int __test_dbs_row_tbl_depro_interfaces(uint16_t id)
 	row_w.col_eth4sts = ++i;
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateDepro(id, &row_w) )
+	if( 0 != dbsUpdateDepro(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_depro_interfaces->dbsUpdateDepro(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetDepro(id, &row_r) )
+	if( 0 == dbsGetDepro(dev, id, &row_r) )
 	{
 		printf("\n%d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d\n", 
 			row_r.id, 	row_w.col_base, 
@@ -358,7 +360,7 @@ int __test_dbs_row_tbl_depro_interfaces(uint16_t id)
 }
 
 
-int __test_dbs_row_tbl_network_interfaces(uint16_t id)
+int __test_dbs_row_tbl_network_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsNetwork row_w;
@@ -375,14 +377,14 @@ int __test_dbs_row_tbl_network_interfaces(uint16_t id)
 	row_w.col_mvlan_id = ++i;	
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateNetwork(id, &row_w) )
+	if( 0 != dbsUpdateNetwork(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_network_interfaces->dbsUpdateNetwork(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetNetwork(id, &row_r) )
+	if( 0 == dbsGetNetwork(dev, id, &row_r) )
 	{
 		printf("\n%d | %s | %s | %s | %d | %s | %s | %d | %d\n", 
 			row_r.id, 
@@ -398,7 +400,7 @@ int __test_dbs_row_tbl_network_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_profile_interfaces(uint16_t id)
+int __test_dbs_row_tbl_profile_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsProfile row_w;
@@ -469,14 +471,14 @@ int __test_dbs_row_tbl_profile_interfaces(uint16_t id)
 	row_w.col_eth4sts = ++i;
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateProfile(id, &row_w) )
+	if( 0 != dbsUpdateProfile(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_profile_interfaces->dbsUpdateProfile(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetProfile(id, &row_r) )
+	if( 0 == dbsGetProfile(dev, id, &row_r) )
 	{
 		printf("\n%d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d\n", 
 			row_r.id, 	row_w.col_row_sts, row_w.col_base, 
@@ -505,7 +507,7 @@ int __test_dbs_row_tbl_profile_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_snmp_interfaces(uint16_t id)
+int __test_dbs_row_tbl_snmp_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsSnmp row_w;
@@ -521,14 +523,14 @@ int __test_dbs_row_tbl_snmp_interfaces(uint16_t id)
 	row_w.col_tpb = ++i;
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateSnmp(id, &row_w) )
+	if( 0 != dbsUpdateSnmp(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_snmp_interfaces->dbsUpdateSnmp(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetSnmp(id, &row_r) )
+	if( 0 == dbsGetSnmp(dev, id, &row_r) )
 	{
 		printf("\n%d | %s | %s | %s | %s | %s | %d | %d\n", 
 			row_r.id, 	row_r.col_rdcom, row_r.col_wrcom, row_r.col_trapcom, 
@@ -543,7 +545,7 @@ int __test_dbs_row_tbl_snmp_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_swmgmt_interfaces(uint16_t id)
+int __test_dbs_row_tbl_swmgmt_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsSwmgmt row_w;
@@ -557,14 +559,14 @@ int __test_dbs_row_tbl_swmgmt_interfaces(uint16_t id)
 	sprintf(row_w.col_path, "str_%d_%d", id, ++i);
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateSwmgmt(id, &row_w) )
+	if( 0 != dbsUpdateSwmgmt(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_swmgmt_interfaces->dbsUpdateSwmgmt(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetSwmgmt(id, &row_r) )
+	if( 0 == dbsGetSwmgmt(dev, id, &row_r) )
 	{
 		printf("\n%d | %s | %d | %s | %s | %s\n", 
 			row_r.id, row_r.col_ip, row_r.col_port, row_r.col_user, 
@@ -579,7 +581,7 @@ int __test_dbs_row_tbl_swmgmt_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_row_tbl_sysinfo_interfaces(uint16_t id)
+int __test_dbs_row_tbl_sysinfo_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
 	int i = 0;
 	st_dbsSysinfo row_w;
@@ -601,14 +603,14 @@ int __test_dbs_row_tbl_sysinfo_interfaces(uint16_t id)
 	sprintf(row_w.col_mfinfo, "str_%d_%d", id, ++i);
 
 	/* ²âÊÔÐ´Èë*/
-	if( 0 != dbsUpdateSysinfo(id, &row_w) )
+	if( 0 != dbsUpdateSysinfo(dev, id, &row_w) )
 	{
 		printf("ERROR: __test_dbs_row_tbl_sysinfo_interfaces->dbsUpdateSysinfo(%d)\n", id);
 		return -1;
 	}
 
 	/* ²âÊÔ¶ÁÈ¡*/
-	if( 0 == dbsGetSysinfo(id, &row_r) )
+	if( 0 == dbsGetSysinfo(dev, id, &row_r) )
 	{
 		printf("\n%d | %d | %d | %s | %s | %s | %s | %d | %d | %d | %d | %d | %d | %s\n", 
 			row_r.id, row_r.col_model, row_r.col_maxclt, row_r.col_hwver, 
@@ -625,47 +627,47 @@ int __test_dbs_row_tbl_sysinfo_interfaces(uint16_t id)
 	}
 }
 
-int __test_dbs_create_su_profile_interfaces(uint16_t id)
+int __test_dbs_create_su_profile_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
-	return dbsCreateSuProfileForCnu(id);
+	return dbsCreateSuProfileForCnu(dev, id);
 }
 
-int __test_dbs_create_dewl_profile_interfaces(uint16_t id)
+int __test_dbs_create_dewl_profile_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
-	return dbsCreateDewlProfileForCnu(id);
+	return dbsCreateDewlProfileForCnu(dev, id);
 }
 
-int __test_dbs_create_debl_profile_interfaces(uint16_t id)
+int __test_dbs_create_debl_profile_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
-	return dbsCreateDeblProfileForCnu(id);
+	return dbsCreateDeblProfileForCnu(dev, id);
 }
 
-int __test_dbs_destroy_clt_interfaces(uint16_t id)
+int __test_dbs_destroy_clt_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
-	return dbsDestroyRowClt(id);
+	return dbsDestroyRowClt(dev, id);
 }
 
-int __test_dbs_destroy_cltconf_interfaces(uint16_t id)
+int __test_dbs_destroy_cltconf_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
-	return dbsDestroyRowCltconf(id);
+	return dbsDestroyRowCltconf(dev, id);
 }
 
-int __test_dbs_destroy_cnu_interfaces(uint16_t id)
+int __test_dbs_destroy_cnu_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
-	return dbsDestroyRowCnu(id);
+	return dbsDestroyRowCnu(dev, id);
 }
 
-int __test_dbs_destroy_profile_interfaces(uint16_t id)
+int __test_dbs_destroy_profile_interfaces(T_DBS_DEV_INFO *dev, uint16_t id)
 {
-	return dbsDestroyRowProfile(id);
+	return dbsDestroyRowProfile(dev, id);
 }
 
-int TEST_DBS_FFLUSH(void)
+int TEST_DBS_FFLUSH(T_DBS_DEV_INFO *dev)
 {
 	struct timeval start, end;
 
 	gettimeofday( &start, NULL );
-	if( 0 == dbsFflush() )
+	if( 0 == dbsFflush(dev) )
 	{
 		gettimeofday( &end, NULL );
 		printf("dbs backup success !\n");
@@ -683,7 +685,7 @@ int TEST_DBS_FFLUSH(void)
 	return 0;
 }
 
-int TEST_DBS_GET_INTEGER(void)
+int TEST_DBS_GET_INTEGER(T_DBS_DEV_INFO *dev)
 {
 	int n = 0;
 
@@ -712,7 +714,7 @@ int TEST_DBS_GET_INTEGER(void)
 	v.ci.col = n;
 	printf(" Your input is : tbl = %d, row = %d, col = %d\n", v.ci.tbl, v.ci.row, v.ci.col);	
 
-	if( 0 == dbsGetInteger(&v) )
+	if( 0 == dbsGetInteger(dev, &v) )
 	{
 		if( DBS_NULL == v.ci.colType )
 		{
@@ -733,7 +735,7 @@ int TEST_DBS_GET_INTEGER(void)
 	return 0;
 }
 
-int TEST_DBS_GET_ALL_INTEGER(void)
+int TEST_DBS_GET_ALL_INTEGER(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	int j = 0;
@@ -768,7 +770,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_CLIROLES_COL_ID_PWD == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -799,7 +801,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_CLT_COL_ID_SWVER == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -828,7 +830,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 				{
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -862,7 +864,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_CNU_COL_ID_ATT == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -891,7 +893,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 				{
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -925,7 +927,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_NETWORK_COL_ID_MAC == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -954,7 +956,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 				{
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -988,7 +990,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_SNMP_COL_ID_SB == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1021,7 +1023,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_SWMGMT_COL_ID_PATH == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1055,7 +1057,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_SYSINFO_COL_ID_MF == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetInteger(&v) )
+					if( 0 == dbsGetInteger(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1085,7 +1087,7 @@ int TEST_DBS_GET_ALL_INTEGER(void)
 	return 0;
 }
 
-int TEST_DBS_UPDATE_INTEGER(void)
+int TEST_DBS_UPDATE_INTEGER(T_DBS_DEV_INFO *dev)
 {
 	int n = 0;
 
@@ -1119,7 +1121,7 @@ int TEST_DBS_UPDATE_INTEGER(void)
 	v1.len = sizeof(uint32_t);
 	printf(" Your input is : tbl = %d, row = %d, col = %d, value = %d\n", v1.ci.tbl, v1.ci.row, v1.ci.col, v1.integer);
 
-	if( 0 == dbsUpdateInteger(&v1) )
+	if( 0 == dbsUpdateInteger(dev, &v1) )
 	{
 		printf("-->ack : update success !\n");
 		/* ¶ÁÈ¡Ð£Ñé*/
@@ -1129,7 +1131,7 @@ int TEST_DBS_UPDATE_INTEGER(void)
 		v2.len = 0;
 		v2.integer = 0;
 		
-		if( 0 == dbsGetInteger(&v2) )
+		if( 0 == dbsGetInteger(dev, &v2) )
 		{
 			if( v1.len == 0 )
 			{
@@ -1171,7 +1173,7 @@ int TEST_DBS_UPDATE_INTEGER(void)
 	return 0;
 }
 
-int TEST_DBS_UPDATE_ALL_INTEGER(void)
+int TEST_DBS_UPDATE_ALL_INTEGER(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	int j = 0;
@@ -1211,7 +1213,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_CLIROLES_COL_ID_PWD == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1244,7 +1246,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_CLT_COL_ID_SWVER == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1275,7 +1277,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_CLTPRO_COL_ID_ID == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1311,7 +1313,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_CNU_COL_ID_ATT == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1342,7 +1344,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_DEPRO_COL_ID_ID == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1378,7 +1380,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_NETWORK_COL_ID_MAC == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1409,7 +1411,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_PROFILE_COL_ID_ID == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1445,7 +1447,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_SNMP_COL_ID_SB == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1480,7 +1482,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_SWMGMT_COL_ID_PATH == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1516,7 +1518,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 					if( DBS_SYS_TBL_SYSINFO_COL_ID_MF == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateInteger(&v) )
+					if( 0 == dbsUpdateInteger(dev, &v) )
 					{
 						if( v.len == 0 )
 						{
@@ -1547,7 +1549,7 @@ int TEST_DBS_UPDATE_ALL_INTEGER(void)
 	return 0;
 }
 
-int TEST_DBS_GET_TEXT(void)
+int TEST_DBS_GET_TEXT(T_DBS_DEV_INFO *dev)
 {
 	int n = 0;
 	DB_TEXT_V v;
@@ -1575,7 +1577,7 @@ int TEST_DBS_GET_TEXT(void)
 	v.ci.col = n;
 	printf(" Your input is : tbl = %d, key = %d, col = %d\n", v.ci.tbl, v.ci.row, v.ci.col);
 
-	if( 0 == dbsGetText(&v) )
+	if( 0 == dbsGetText(dev, &v) )
 	{
 		if( DBS_NULL == v.ci.colType )
 		{
@@ -1596,7 +1598,7 @@ int TEST_DBS_GET_TEXT(void)
 	return 0;
 }
 
-int TEST_DBS_GET_ALL_TEXT(void)
+int TEST_DBS_GET_ALL_TEXT(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	int j = 0;
@@ -1630,7 +1632,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 					if( DBS_SYS_TBL_CLIROLES_COL_ID_ID == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetText(&v) )
+					if( 0 == dbsGetText(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1666,7 +1668,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 					if( DBS_SYS_TBL_CLT_COL_ID_ROWSTS == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetText(&v) )
+					if( 0 == dbsGetText(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1707,7 +1709,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 					if( DBS_SYS_TBL_CNU_COL_ID_ROWSTS == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetText(&v) )
+					if( 0 == dbsGetText(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1744,7 +1746,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 					if( DBS_SYS_TBL_NETWORK_COL_ID_MVID == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetText(&v) )
+					if( 0 == dbsGetText(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1780,7 +1782,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 					if( DBS_SYS_TBL_SNMP_COL_ID_PB == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetText(&v) )
+					if( 0 == dbsGetText(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1811,7 +1813,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 					if( DBS_SYS_TBL_SWMGMT_COL_ID_PORT == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetText(&v) )
+					if( 0 == dbsGetText(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1849,7 +1851,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 					if( DBS_SYS_TBL_SYSINFO_COL_ID_WDT == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsGetText(&v) )
+					if( 0 == dbsGetText(dev, &v) )
 					{
 						if( DBS_NULL == v.ci.colType )
 						{
@@ -1879,7 +1881,7 @@ int TEST_DBS_GET_ALL_TEXT(void)
 	return 0;
 }
 
-int TEST_DBS_UPDATE_TEXT(void)
+int TEST_DBS_UPDATE_TEXT(T_DBS_DEV_INFO *dev)
 {
 	int n = 0;
 	DB_TEXT_V v1;
@@ -1915,7 +1917,7 @@ int TEST_DBS_UPDATE_TEXT(void)
 	
 	printf(" Your input is : tbl = %d, row = %d, col = %d, value = \"%s\"\n", v1.ci.tbl, v1.ci.row, v1.ci.col, v1.text);
 
-	if( 0 == dbsUpdateText(&v1) )
+	if( 0 == dbsUpdateText(dev, &v1) )
 	{
 		printf("-->ack : update success !\n");
 		/* ¶ÁÈ¡Ð£Ñé*/
@@ -1925,7 +1927,7 @@ int TEST_DBS_UPDATE_TEXT(void)
 		v2.len = 0;
 		v2.text[0] = '\0';
 		
-		if( 0 == dbsGetText(&v2) )
+		if( 0 == dbsGetText(dev, &v2) )
 		{
 			if( 0 == v1.len )
 			{
@@ -1967,7 +1969,7 @@ int TEST_DBS_UPDATE_TEXT(void)
 	return 0;
 }
 
-int TEST_DBS_UPDATE_ALL_TEXT(void)
+int TEST_DBS_UPDATE_ALL_TEXT(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	int j = 0;
@@ -2007,7 +2009,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 					if( DBS_SYS_TBL_CLIROLES_COL_ID_ID == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateText(&v) )
+					if( 0 == dbsUpdateText(dev, &v) )
 					{
 						printf("-->ack : dbsTester_updateText(tbl=%d, key=%d, col=%d) success !\n", 
 							v.ci.tbl, v.ci.row, v.ci.col);
@@ -2030,7 +2032,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 					if( DBS_SYS_TBL_CLT_COL_ID_MAC != j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateText(&v) )
+					if( 0 == dbsUpdateText(dev, &v) )
 					{
 						printf("-->ack : dbsTester_updateText(tbl=%d, key=%d, col=%d) success !\n", 
 							v.ci.tbl, v.ci.row, v.ci.col);
@@ -2064,7 +2066,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 					if( DBS_SYS_TBL_CNU_COL_ID_ROWSTS == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateText(&v) )
+					if( 0 == dbsUpdateText(dev, &v) )
 					{
 						printf("-->ack : dbsTester_updateText(tbl=%d, key=%d, col=%d) success !\n", 
 							v.ci.tbl, v.ci.row, v.ci.col);
@@ -2094,7 +2096,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 					if( DBS_SYS_TBL_NETWORK_COL_ID_MVID == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateText(&v) )
+					if( 0 == dbsUpdateText(dev, &v) )
 					{
 						printf("-->ack : dbsTester_updateText(tbl=%d, key=%d, col=%d) success !\n", 
 							v.ci.tbl, v.ci.row, v.ci.col);
@@ -2123,7 +2125,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 					if( DBS_SYS_TBL_SNMP_COL_ID_PB == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateText(&v) )
+					if( 0 == dbsUpdateText(dev, &v) )
 					{
 						printf("-->ack : dbsTester_updateText(tbl=%d, key=%d, col=%d) success !\n", 
 							v.ci.tbl, v.ci.row, v.ci.col);
@@ -2147,7 +2149,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 					if( DBS_SYS_TBL_SWMGMT_COL_ID_PORT == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateText(&v) )
+					if( 0 == dbsUpdateText(dev, &v) )
 					{
 						printf("-->ack : dbsTester_updateText(tbl=%d, key=%d, col=%d) success !\n", 
 							v.ci.tbl, v.ci.row, v.ci.col);
@@ -2178,7 +2180,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 					if( DBS_SYS_TBL_SYSINFO_COL_ID_WDT == j ) continue;
 					v.ci.row = i;
 					v.ci.col = j;
-					if( 0 == dbsUpdateText(&v) )
+					if( 0 == dbsUpdateText(dev, &v) )
 					{
 						printf("-->ack : dbsTester_updateText(tbl=%d, key=%d, col=%d) success !\n", 
 							v.ci.tbl, v.ci.row, v.ci.col);
@@ -2201,27 +2203,27 @@ int TEST_DBS_UPDATE_ALL_TEXT(void)
 	return 0;
 }
 
-int TEST_DBS_MSG_DEBUG_ENABLE(void)
+int TEST_DBS_MSG_DEBUG_ENABLE(T_DBS_DEV_INFO *dev)
 {
-	return dbsMsgDebug(1);
+	return dbsMsgDebug(dev, 1);
 }
 
-int TEST_DBS_MSG_DEBUG_DISABLE(void)
+int TEST_DBS_MSG_DEBUG_DISABLE(T_DBS_DEV_INFO *dev)
 {
-	return dbsMsgDebug(0);
+	return dbsMsgDebug(dev, 0);
 }
 
-int TEST_DBS_SQL_DEBUG_ENABLE(void)
+int TEST_DBS_SQL_DEBUG_ENABLE(T_DBS_DEV_INFO *dev)
 {
-	return dbsSQLDebug(1);
+	return dbsSQLDebug(dev, 1);
 }
 
-int TEST_DBS_SQL_DEBUG_DISABLE(void)
+int TEST_DBS_SQL_DEBUG_DISABLE(T_DBS_DEV_INFO *dev)
 {
-	return dbsSQLDebug(0);
+	return dbsSQLDebug(dev, 0);
 }
 
-int TEST_DBS_WRITE_SYSLOG(void)
+int TEST_DBS_WRITE_SYSLOG(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	uint8_t syslog[256] = {0};
@@ -2231,19 +2233,19 @@ int TEST_DBS_WRITE_SYSLOG(void)
 		bzero(syslog, 256);
 		usleep(100);
 		sprintf(syslog, "TEST_DBS_WRITE_SYSLOG[%d]", ++i);
-		dbs_sys_log(DBS_LOG_DEBUG, syslog);
+		dbs_sys_log(dev, DBS_LOG_DEBUG, syslog);
 	}
 
 	return 0;
 }
 
-int TEST_DBS_SHOW_SYSLOG(void)
+int TEST_DBS_SHOW_SYSLOG(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	uint32_t n = 0;
 	st_dbsSyslog log;
 
-	if( 0 != dbsLogCount(DBS_LOG_TBL_ID_SYS, &n))
+	if( 0 != dbsLogCount(dev, DBS_LOG_TBL_ID_SYS, &n))
 	{
 		printf("-->ack : TEST_DBS_SHOW_SYSLOG->dbsLogCount() ERROR !\n");
 		return -1;
@@ -2253,7 +2255,7 @@ int TEST_DBS_SHOW_SYSLOG(void)
 		printf("TEST_DBS_SHOW_SYSLOG : [%d]\n", n);
 		for( i=n;i>0;i--)
 		{			
-			if( 0 != dbsGetSyslog(i, &log) )
+			if( 0 != dbsGetSyslog(dev, i, &log) )
 			{
 				printf("-->ack : TEST_DBS_SHOW_SYSLOG->dbsGetSyslog(%d) ERROR !\n", i);
 				break;
@@ -2267,7 +2269,7 @@ int TEST_DBS_SHOW_SYSLOG(void)
 	return 0;
 }
 
-int TEST_DBS_WRITE_OPTLOG(void)
+int TEST_DBS_WRITE_OPTLOG(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	time_t b_time;
@@ -2284,7 +2286,7 @@ int TEST_DBS_WRITE_OPTLOG(void)
 		log.level = DBS_LOG_DEBUG;
 		log.result = CMM_SUCCESS;
 		
-		dbs_opt_log(&log);	
+		dbs_opt_log(dev, &log);	
 		
 		usleep(100);		
 	}
@@ -2292,13 +2294,13 @@ int TEST_DBS_WRITE_OPTLOG(void)
 	return 0;
 }
 
-int TEST_DBS_SHOW_OPTLOG(void)
+int TEST_DBS_SHOW_OPTLOG(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	uint32_t n = 0;
 	st_dbsOptlog log;
 
-	if( 0 != dbsLogCount(DBS_LOG_TBL_ID_OPT, &n))
+	if( 0 != dbsLogCount(dev, DBS_LOG_TBL_ID_OPT, &n))
 	{
 		printf("-->ack : TEST_DBS_SHOW_OPTLOG->dbsLogCount() ERROR !\n");
 		return -1;
@@ -2308,7 +2310,7 @@ int TEST_DBS_SHOW_OPTLOG(void)
 		printf("TEST_DBS_SHOW_OPTLOG : [%d]\n", n);
 		for( i=n;i>0;i--)
 		{			
-			if( 0 != dbsGetOptlog(i, &log) )
+			if( 0 != dbsGetOptlog(dev, i, &log) )
 			{
 				printf("-->ack : TEST_DBS_SHOW_OPTLOG->dbsGetOptlog(%d) ERROR !\n", i);
 				break;
@@ -2322,7 +2324,7 @@ int TEST_DBS_SHOW_OPTLOG(void)
 	return 0;
 }
 
-int TEST_DBS_WRITE_ALARMLOG(void)
+int TEST_DBS_WRITE_ALARMLOG(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	time_t b_time;
@@ -2346,7 +2348,7 @@ int TEST_DBS_WRITE_ALARMLOG(void)
 		log.serialFlow = ++i;
 		sprintf(log.trap_info, "TEST_DBS_WRITE_ALARMLOG[%d]", i);
 		
-		dbs_alarm_log(&log);	
+		dbs_alarm_log(dev, &log);	
 		
 		usleep(100);		
 	}
@@ -2354,13 +2356,13 @@ int TEST_DBS_WRITE_ALARMLOG(void)
 	return 0;
 }
 
-int TEST_DBS_SHOW_ALARMLOG(void)
+int TEST_DBS_SHOW_ALARMLOG(T_DBS_DEV_INFO *dev)
 {
 	int i = 0;
 	uint32_t n = 0;
 	st_dbsAlarmlog log;
 
-	if( 0 != dbsLogCount(DBS_LOG_TBL_ID_ALARM, &n))
+	if( 0 != dbsLogCount(dev, DBS_LOG_TBL_ID_ALARM, &n))
 	{
 		printf("-->ack : TEST_DBS_SHOW_ALARMLOG->dbsLogCount() ERROR !\n");
 		return -1;
@@ -2370,7 +2372,7 @@ int TEST_DBS_SHOW_ALARMLOG(void)
 		printf("TEST_DBS_SHOW_ALARMLOG : [%d]\n", n);
 		for( i=n;i>0;i--)
 		{			
-			if( 0 != dbsGetAlarmlog(i, &log) )
+			if( 0 != dbsGetAlarmlog(dev, i, &log) )
 			{
 				printf("-->ack : TEST_DBS_SHOW_ALARMLOG->dbsGetSyslog(%d) ERROR !\n", i);
 				break;
@@ -2387,7 +2389,7 @@ int TEST_DBS_SHOW_ALARMLOG(void)
 	return 0;
 }
 
-int TEST_DBS_REGIST_MODULE(void)
+int TEST_DBS_REGIST_MODULE(T_DBS_DEV_INFO *dev)
 {
 	int n = 0;
 	uint16_t mid = 0;
@@ -2398,7 +2400,7 @@ int TEST_DBS_REGIST_MODULE(void)
 	scanf("%d", &n);
 	mid = n;
 	
-	if( 0 == dbsRegisterModuleById(mid) )
+	if( 0 == dbsRegisterModuleById(dev, mid) )
 	{
 		printf("TEST_DBS_REGIST_MODULE : SUCCESS !\n");
 	}
@@ -2410,7 +2412,7 @@ int TEST_DBS_REGIST_MODULE(void)
 	return 0;
 }
 
-int TEST_DBS_DESTROY_MODULE(void)
+int TEST_DBS_DESTROY_MODULE(T_DBS_DEV_INFO *dev)
 {
 	int n = 0;
 	uint16_t mid = 0;
@@ -2421,7 +2423,7 @@ int TEST_DBS_DESTROY_MODULE(void)
 	scanf("%d", &n);
 	mid = n;
 	
-	if( 0 == dbsDestroyModuleById(mid) )
+	if( 0 == dbsDestroyModuleById(dev, mid) )
 	{
 		printf("TEST_DBS_DESTROY_MODULE : SUCCESS !\n");
 	}
@@ -2433,13 +2435,13 @@ int TEST_DBS_DESTROY_MODULE(void)
 	return 0;
 }
 
-int TEST_DBS_REGIST_ALL_MODULES(void)
+int TEST_DBS_REGIST_ALL_MODULES(T_DBS_DEV_INFO *dev)
 {
 	uint16_t mid = 0;
 
 	for( mid=1;mid<=MAX_MODULE_NUMS;mid++)
 	{
-		if( 0 == dbsRegisterModuleById(mid) )
+		if( 0 == dbsRegisterModuleById(dev, mid) )
 		{
 			printf("TEST_DBS_REGIST_ALL_MODULES : MID[%d] SUCCESS !\n", mid);
 		}
@@ -2451,13 +2453,13 @@ int TEST_DBS_REGIST_ALL_MODULES(void)
 	return 0;
 }
 
-int TEST_DBS_DESTROY_ALL_MODULES(void)
+int TEST_DBS_DESTROY_ALL_MODULES(T_DBS_DEV_INFO *dev)
 {
 	uint16_t mid = 0;
 
 	for( mid=1;mid<=MAX_MODULE_NUMS;mid++)
 	{
-		if( 0 == dbsDestroyModuleById(mid) )
+		if( 0 == dbsDestroyModuleById(dev, mid) )
 		{
 			printf("TEST_DBS_DESTROY_ALL_MODULES : MID[%d] SUCCESS !\n", mid);
 		}
@@ -2469,15 +2471,15 @@ int TEST_DBS_DESTROY_ALL_MODULES(void)
 	return 0;
 }
 
-int TEST_DBS_WAIT_ALL_MODULES(void)
+int TEST_DBS_WAIT_ALL_MODULES(T_DBS_DEV_INFO *dev)
 {
 	uint32_t MF = 0xFFFFFFFF;
 
-	dbsWaitModule(MF);	
+	dbsWaitModule(dev, MF);	
 	return 0;
 }
 
-int TEST_DBS_TBL_ROW_INTERFACES(void)
+int TEST_DBS_TBL_ROW_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int tbl_id = 0;
 	int tbl_row = 0;	
@@ -2509,52 +2511,52 @@ int TEST_DBS_TBL_ROW_INTERFACES(void)
 	{
 		case DBS_SYS_TBL_ID_CLIROLE:
 		{
-			__test_dbs_row_tbl_clirole_interfaces(id);
+			__test_dbs_row_tbl_clirole_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_CLT:
 		{
-			__test_dbs_row_tbl_clt_interfaces(id);
+			__test_dbs_row_tbl_clt_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_CLTPRO:
 		{
-			__test_dbs_row_tbl_cltconf_interfaces(id);
+			__test_dbs_row_tbl_cltconf_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_CNU:
 		{
-			__test_dbs_row_tbl_cnu_interfaces(id);
+			__test_dbs_row_tbl_cnu_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_CNUDEPRO:
 		{
-			__test_dbs_row_tbl_depro_interfaces(id);
+			__test_dbs_row_tbl_depro_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_NETWORK:
 		{
-			__test_dbs_row_tbl_network_interfaces(id);
+			__test_dbs_row_tbl_network_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_CNUPRO:
 		{
-			__test_dbs_row_tbl_profile_interfaces(id);
+			__test_dbs_row_tbl_profile_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_SNMPINFO:
 		{
-			__test_dbs_row_tbl_snmp_interfaces(id);
+			__test_dbs_row_tbl_snmp_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_SWMGMT:
 		{
-			__test_dbs_row_tbl_swmgmt_interfaces(id);
+			__test_dbs_row_tbl_swmgmt_interfaces(dev, id);
 			break;
 		}
 		case DBS_SYS_TBL_ID_SYSINFO:
 		{
-			__test_dbs_row_tbl_sysinfo_interfaces(id);
+			__test_dbs_row_tbl_sysinfo_interfaces(dev, id);
 			break;
 		}
 		default:
@@ -2568,70 +2570,70 @@ int TEST_DBS_TBL_ROW_INTERFACES(void)
 	return 0;
 }
 
-int TEST_DBS_TBL_ALL_ROW_INTERFACES(void)
+int TEST_DBS_TBL_ALL_ROW_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
 	
 	/* step 1 : test row interfaces tbl_cliroles */
 	for( id=1;id<=3;id++ )
 	{
-		__test_dbs_row_tbl_clirole_interfaces(id);
+		__test_dbs_row_tbl_clirole_interfaces(dev, id);
 	}
 	/* step 2 : test row interfaces tbl_clt */
 	for( id=1;id<=MAX_CLT_AMOUNT_LIMIT;id++ )
 	{
-		__test_dbs_row_tbl_clt_interfaces(id);
+		__test_dbs_row_tbl_clt_interfaces(dev, id);
 	}
 	/* step 3 : test row interfaces tbl_cltconf */
 	for( id=1;id<=MAX_CLT_AMOUNT_LIMIT;id++ )
 	{
-		__test_dbs_row_tbl_cltconf_interfaces(id);
+		__test_dbs_row_tbl_cltconf_interfaces(dev, id);
 	}
 	/* step 4 : test row interfaces tbl_cnu */
 	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
-		__test_dbs_row_tbl_cnu_interfaces(id);
+		__test_dbs_row_tbl_cnu_interfaces(dev, id);
 	}
 	/* step 5 : test row interfaces tbl_depro */
 	for( id=1;id<=1;id++ )
 	{
-		__test_dbs_row_tbl_depro_interfaces(id);
+		__test_dbs_row_tbl_depro_interfaces(dev, id);
 	}
 	/* step 6 : test row interfaces tbl_network */
 	for( id=1;id<=1;id++ )
 	{
-		__test_dbs_row_tbl_network_interfaces(id);
+		__test_dbs_row_tbl_network_interfaces(dev, id);
 	}
 	/* step 7 : test row interfaces tbl_profile */
 	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
-		__test_dbs_row_tbl_profile_interfaces(id);
+		__test_dbs_row_tbl_profile_interfaces(dev, id);
 	}
 	/* step 8 : test row interfaces tbl_snmp */
 	for( id=1;id<=1;id++ )
 	{
-		__test_dbs_row_tbl_snmp_interfaces(id);
+		__test_dbs_row_tbl_snmp_interfaces(dev, id);
 	}
 	/* step 9 : test row interfaces tbl_swmgmt */
 	for( id=1;id<=1;id++ )
 	{
-		__test_dbs_row_tbl_swmgmt_interfaces(id);
+		__test_dbs_row_tbl_swmgmt_interfaces(dev, id);
 	}
 	/* step 10 : test row interfaces tbl_sysinfo */
 	for( id=1;id<=1;id++ )
 	{
-		__test_dbs_row_tbl_sysinfo_interfaces(id);
+		__test_dbs_row_tbl_sysinfo_interfaces(dev, id);
 	}
 	
 	return 0;
 }
 
-int TEST_DBS_CREATE_SU_PROFILE_INTERFACES(void)
+int TEST_DBS_CREATE_SU_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
 	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
-		if( 0 != __test_dbs_create_su_profile_interfaces(id) )
+		if( 0 != __test_dbs_create_su_profile_interfaces(dev, id) )
 		{
 			printf("-->TEST_DBS_CREATE_SU_PROFILE_INTERFACES [%d] ERROR !\n", id);
 		}
@@ -2643,12 +2645,12 @@ int TEST_DBS_CREATE_SU_PROFILE_INTERFACES(void)
 	return 0;
 }
 
-int TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES(void)
+int TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
 	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
-		if( 0 != __test_dbs_create_dewl_profile_interfaces(id) )
+		if( 0 != __test_dbs_create_dewl_profile_interfaces(dev, id) )
 		{
 			printf("-->TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES [%d] ERROR !\n", id);
 		}
@@ -2660,12 +2662,12 @@ int TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES(void)
 	return 0;
 }
 
-int TEST_DBS_CREATE_DEBL_PROFILE_INTERFACES(void)
+int TEST_DBS_CREATE_DEBL_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
 	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
-		if( 0 != __test_dbs_create_debl_profile_interfaces(id) )
+		if( 0 != __test_dbs_create_debl_profile_interfaces(dev, id) )
 		{
 			printf("-->TEST_DBS_CREATE_DEBL_PROFILE_INTERFACES [%d] ERROR !\n", id);
 		}
@@ -2677,13 +2679,13 @@ int TEST_DBS_CREATE_DEBL_PROFILE_INTERFACES(void)
 	return 0;
 }
 
-int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(void)
+int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
 	printf("\n==================================================================\n");
 	for( id=1;id<=MAX_CLT_AMOUNT_LIMIT;id++ )
 	{
-		if( 0 != __test_dbs_destroy_clt_interfaces(id) )
+		if( 0 != __test_dbs_destroy_clt_interfaces(dev, id) )
 		{
 			printf("-->__test_dbs_destroy_clt_interfaces [%d] ERROR !\n", id);
 		}
@@ -2695,7 +2697,7 @@ int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(void)
 	printf("\n==================================================================\n");
 	for( id=1;id<=MAX_CLT_AMOUNT_LIMIT;id++ )
 	{
-		if( 0 != __test_dbs_destroy_cltconf_interfaces(id) )
+		if( 0 != __test_dbs_destroy_cltconf_interfaces(dev, id) )
 		{
 			printf("-->__test_dbs_destroy_cltconf_interfaces [%d] ERROR !\n", id);
 		}
@@ -2707,7 +2709,7 @@ int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(void)
 	printf("\n==================================================================\n");
 	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
-		if( 0 != __test_dbs_destroy_cnu_interfaces(id) )
+		if( 0 != __test_dbs_destroy_cnu_interfaces(dev, id) )
 		{
 			printf("-->__test_dbs_destroy_cnu_interfaces [%d] ERROR !\n", id);
 		}
@@ -2719,7 +2721,7 @@ int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(void)
 	printf("\n==================================================================\n");
 	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
-		if( 0 != __test_dbs_destroy_profile_interfaces(id) )
+		if( 0 != __test_dbs_destroy_profile_interfaces(dev, id) )
 		{
 			printf("-->__test_dbs_destroy_profile_interfaces [%d] ERROR !\n", id);
 		}
@@ -2733,14 +2735,15 @@ int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(void)
 }
 
 int main(int argc, char *argv[])
-{
+{	
 	if( argc != 3 )
 	{
 		dbsTester_usage();
 		return 0;
 	}
 
-	if( 0 != dbsNoWaitOpen(MID_DBS_TESTER) )
+	dev = dbsNoWaitOpen(MID_DBS_TESTER);
+	if( NULL == dev )
 	{
 		return 0;
 	}
@@ -2749,7 +2752,7 @@ int main(int argc, char *argv[])
 	signal(SIGTERM, dbsTester_signalProcessHandle);
 	signal(SIGINT, dbsTester_signalProcessHandle);
 
-	dbs_sys_log(DBS_LOG_INFO, "starting module dbsTester success");
+	dbs_sys_log(dev, DBS_LOG_INFO, "starting module dbsTester success");
 	printf("Starting module dbsTester	......		[OK]\n\n");
 
 	printf("\n==================================================================\n\n");
@@ -2757,11 +2760,11 @@ int main(int argc, char *argv[])
 	{
 		if( strcmp(argv[2], "enable") == 0)
 		{
-			TEST_DBS_MSG_DEBUG_ENABLE();
+			TEST_DBS_MSG_DEBUG_ENABLE(dev);
 		}
 		else if( strcmp(argv[2], "disable") == 0)
 		{
-			TEST_DBS_MSG_DEBUG_DISABLE();
+			TEST_DBS_MSG_DEBUG_DISABLE(dev);
 		}
 		else
 		{
@@ -2772,11 +2775,11 @@ int main(int argc, char *argv[])
 	{
 		if( strcmp(argv[2], "enable") == 0)
 		{
-			TEST_DBS_SQL_DEBUG_ENABLE();
+			TEST_DBS_SQL_DEBUG_ENABLE(dev);
 		}
 		else if( strcmp(argv[2], "disable") == 0)
 		{
-			TEST_DBS_SQL_DEBUG_DISABLE();
+			TEST_DBS_SQL_DEBUG_DISABLE(dev);
 		}
 		else
 		{
@@ -2789,82 +2792,82 @@ int main(int argc, char *argv[])
 		switch(cmd)
 		{
 			case 0:
-				TEST_DBS_FFLUSH();
+				TEST_DBS_FFLUSH(dev);
 				break;
 			case 1:
-				TEST_DBS_GET_INTEGER();
+				TEST_DBS_GET_INTEGER(dev);
 				break;
 			case 2:
-				TEST_DBS_GET_ALL_INTEGER();
+				TEST_DBS_GET_ALL_INTEGER(dev);
 				break;
 			case 3:
-				TEST_DBS_UPDATE_INTEGER();
+				TEST_DBS_UPDATE_INTEGER(dev);
 				break;
 			case 4:
-				TEST_DBS_UPDATE_ALL_INTEGER();
+				TEST_DBS_UPDATE_ALL_INTEGER(dev);
 				break;
 			case 5:
-				TEST_DBS_GET_TEXT();
+				TEST_DBS_GET_TEXT(dev);
 				break;
 			case 6:
-				TEST_DBS_GET_ALL_TEXT();
+				TEST_DBS_GET_ALL_TEXT(dev);
 				break;
 			case 7:
-				TEST_DBS_UPDATE_TEXT();
+				TEST_DBS_UPDATE_TEXT(dev);
 				break;
 			case 8:
-				TEST_DBS_UPDATE_ALL_TEXT();
+				TEST_DBS_UPDATE_ALL_TEXT(dev);
 				break;
 			case 9:
-				TEST_DBS_WRITE_SYSLOG();
+				TEST_DBS_WRITE_SYSLOG(dev);
 				break;
 			case 10:
-				TEST_DBS_SHOW_SYSLOG();
+				TEST_DBS_SHOW_SYSLOG(dev);
 				break;
 			case 11:
-				TEST_DBS_WRITE_OPTLOG();
+				TEST_DBS_WRITE_OPTLOG(dev);
 				break;
 			case 12:
-				TEST_DBS_SHOW_OPTLOG();
+				TEST_DBS_SHOW_OPTLOG(dev);
 				break;
 			case 13:
-				TEST_DBS_WRITE_ALARMLOG();
+				TEST_DBS_WRITE_ALARMLOG(dev);
 				break;
 			case 14:
-				TEST_DBS_SHOW_ALARMLOG();
+				TEST_DBS_SHOW_ALARMLOG(dev);
 				break;
 			case 15:
-				TEST_DBS_REGIST_MODULE();
+				TEST_DBS_REGIST_MODULE(dev);
 				break;
 			case 16:
-				TEST_DBS_DESTROY_MODULE();
+				TEST_DBS_DESTROY_MODULE(dev);
 				break;
 			case 17:
-				TEST_DBS_REGIST_ALL_MODULES();
+				TEST_DBS_REGIST_ALL_MODULES(dev);
 				break;
 			case 18:
-				TEST_DBS_DESTROY_ALL_MODULES();
+				TEST_DBS_DESTROY_ALL_MODULES(dev);
 				break;
 			case 19:
-				TEST_DBS_WAIT_ALL_MODULES();
+				TEST_DBS_WAIT_ALL_MODULES(dev);
 				break;
 			case 20:
-				TEST_DBS_TBL_ROW_INTERFACES();
+				TEST_DBS_TBL_ROW_INTERFACES(dev);
 				break;
 			case 21:
-				TEST_DBS_TBL_ALL_ROW_INTERFACES();
+				TEST_DBS_TBL_ALL_ROW_INTERFACES(dev);
 				break;
 			case 22:
-				TEST_DBS_CREATE_SU_PROFILE_INTERFACES();
+				TEST_DBS_CREATE_SU_PROFILE_INTERFACES(dev);
 				break;
 			case 23:
-				TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES();
+				TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES(dev);
 				break;
 			case 24:
-				TEST_DBS_CREATE_DEBL_PROFILE_INTERFACES();
+				TEST_DBS_CREATE_DEBL_PROFILE_INTERFACES(dev);
 				break;
 			case 25:
-				TEST_DBS_DESTROY_CLT_CNU_INTERFACES();
+				TEST_DBS_DESTROY_CLT_CNU_INTERFACES(dev);
 				break;
 			default:
 				dbsTester_usage();
@@ -2876,8 +2879,8 @@ int main(int argc, char *argv[])
 		dbsTester_usage();
 	}
 	printf("\n\n==================================================================\n");
-	dbs_sys_log(DBS_LOG_INFO, "module dbsTester exit");
-	dbsClose();
+	dbs_sys_log(dev, DBS_LOG_INFO, "module dbsTester exit");
+	dbsClose(dev);
 	return 0;	
 }
 

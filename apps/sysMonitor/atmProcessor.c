@@ -1,5 +1,6 @@
 #include <public.h>
-#include "sm2dbsMutex.h"
+#include <dbsapi.h>
+//#include "sm2dbsMutex.h"
 #include "sysMonitor2cmm.h"
 #include "sysMonitor2alarm.h"
 #include "atmProcessor.h"
@@ -19,6 +20,9 @@ static T_UDP_SK_INFO atmCmmSk;
 
 /* 该线程与Alarm模块通讯的消息接口*/
 static T_UDP_SK_INFO atmAlarmSk;
+
+/* 与DBS  通讯的设备文件*/
+static T_DBS_DEV_INFO *dbsdev = NULL;
 
 int get_atm_alarm_level(st_temperature *curTemp)
 {
@@ -147,17 +151,28 @@ void *atmProcessor(void)
 	T_UDP_SK_INFO *pAtm2CmmSk = &atmCmmSk;
 	T_UDP_SK_INFO *pAtm2AlarmSk = &atmAlarmSk;
 
+	/* DBS设计变更，支持多线程操作，初始化时在每个线程中独享消息接口*/
+	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
+	dbsdev = dbsNoWaitOpen(MID_ATM);
+	if( NULL == dbsdev )
+	{
+		fprintf(stderr,"ERROR: atmProcessor->dbsOpen error, exited !\n");
+		return (void *)0;
+	}
+
 	if( CMM_SUCCESS != sysMonitor2cmm_init(pAtm2CmmSk) )
 	{
 		fprintf(stderr, "atmProcessor->sysMonitor2cmm_init() failed\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "atmProcessor->sysMonitor2cmm_init() failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "atmProcessor->sysMonitor2cmm_init() failed");
+		dbsClose(dbsdev);
 		return (void *)0;
 	}
 
 	if( CMM_SUCCESS != sysMonitor2alarm_init(pAtm2AlarmSk) )
 	{
 		fprintf(stderr, "atmProcessor->sysMonitor2alarm_init() failed\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "atmProcessor->sysMonitor2alarm_init() failed");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "atmProcessor->sysMonitor2alarm_init() failed");
+		dbsClose(dbsdev);
 		return (void *)0;
 	}
 
@@ -170,7 +185,7 @@ void *atmProcessor(void)
 	g_cur_sts.last_atm_value.sign = 0;
 
 	fprintf(stderr, "Starting thread atmProcessor 	......		[OK]\n");
-	dbs_mutex_sys_log(DBS_LOG_INFO, "starting thread atmProcessor success");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting thread atmProcessor success");
 
 	for (;;)
 	{
@@ -179,13 +194,17 @@ void *atmProcessor(void)
 		{
 			/* 如果连续3次读取温度失败，则退出子线程*/
 			fprintf(stderr, "\natmProcessor can not get cbat ambient temperature\n");
-			dbs_mutex_sys_log(DBS_LOG_ERR, "atmProcessor can not get cbat ambient temperature");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "atmProcessor can not get cbat ambient temperature");
 			break;
 		}
 	}
-	
+
+	/* 不要在这个后面添加代码，执行不到滴*/
+	printf("thread atmProcessor exit !\n");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "INFO: thread atmProcessor exit");
 	sysMonitor2cmm_destroy(pAtm2CmmSk);
 	sysMonitor2alarm_destroy(pAtm2AlarmSk);
+	dbsClose(dbsdev);
 	return (void *)0;
 } 
 

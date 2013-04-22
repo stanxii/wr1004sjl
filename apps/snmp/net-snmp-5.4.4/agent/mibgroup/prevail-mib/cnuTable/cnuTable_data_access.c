@@ -13,7 +13,7 @@
 
 /* include our parent header */
 #include "cnuTable.h"
-
+#include <snmp2cmm.h>
 
 #include "cnuTable_data_access.h"
 
@@ -215,14 +215,14 @@ cnuTable_container_load(netsnmp_container *container)
 	for( tblid=1; tblid<=MAX_CNU_AMOUNT_LIMIT; tblid++ )
 	{
 		/* 从数据库获取数据*/
-		if( CMM_SUCCESS != dbsGetCnu(tblid,  &row) )
+		if( CMM_SUCCESS != dbsGetCnu(dbsdev, tblid,  &row) )
 		{
-			dbs_sys_log(DBS_LOG_ERR, "cnuTable_container_load dbsGetCnu failed");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "cnuTable_container_load dbsGetCnu failed");
 			return MFD_RESOURCE_UNAVAILABLE;
 		}
 		if( CMM_SUCCESS != snmp2cmm_macs2b(row.col_mac, macAddress) )
 		{
-			dbs_sys_log(DBS_LOG_ERR, "cnuTable_container_load snmp2cmm_macs2b failed");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "cnuTable_container_load snmp2cmm_macs2b failed");
 			return MFD_ERROR;
 		}
 

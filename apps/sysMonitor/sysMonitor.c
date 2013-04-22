@@ -6,14 +6,18 @@
 
 #include <public.h>
 #include <boardapi.h>
+#include <dbsapi.h>
 
-#include "sm2dbsMutex.h"
+//#include "sm2dbsMutex.h"
 #include "sysMonitor.h"
 #include "at91ButtonProcessor.h"
 #include "sysindiProcessor.h"
 #include "sysledProcessor.h"
 #include "wdtProcessor.h"
 #include "atmProcessor.h"
+
+/* 与DBS  通讯的设备文件*/
+static T_DBS_DEV_INFO *dbsdev = NULL;
 
 /********************************************************************************************
 *	函数名称:sysMonitorSignalHandler
@@ -24,9 +28,9 @@
 void sysMonitorSignalHandler(int n)
 {
 	printf("sysMonitorSignalHandler : module sysMonitor exit !\n");
-	dbs_mutex_sys_log(DBS_LOG_INFO, "sysMonitorSignalHandler : module sysMonitor exit");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "sysMonitorSignalHandler : module sysMonitor exit");
 	destroy_systemStatusLock();
-	destroy_sm2dbs();
+	dbsClose(dbsdev);
 	exit(0);
 }
 
@@ -40,10 +44,12 @@ int main(void)
 	pthread_t thread_id[4];
 #endif		
 
+	/* DBS设计变更，支持多线程操作，初始化时在每个线程中独享消息接口*/
 	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
-	if( CMM_SUCCESS != init_sm2dbs(MID_SYSMONITOR) )
+	dbsdev = dbsOpen(MID_SYSMONITOR);
+	if( NULL == dbsdev )
 	{
-		fprintf(stderr,"ERROR: sysMonitor->init_sm2dbs error, exited !\n");
+		fprintf(stderr,"ERROR: sysMonitor->dbsOpen error, exited !\n");
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 	
@@ -54,17 +60,17 @@ int main(void)
 	signal(SIGTERM, sysMonitorSignalHandler);
 
 	/* Waiting for all modus init */
-	dbsMutexWaitModule(MF_MMEAD|MF_ALARM|MF_TM|MF_CMM|MF_REGI);
-	//dbsWaitModule(MF_ALARM|MF_CMM);	
+	dbsWaitModule(dbsdev, MF_MMEAD|MF_ALARM|MF_TM|MF_CMM|MF_REGI);
+	//dbsWaitModule(dbsdev, MF_MMEAD);
 
 	/* 按键检测线程*/
 	ret = pthread_create( &thread_id[0], NULL, (void *)at91ButtonProcessor, NULL );
 	if( ret == -1 )
 	{
 		fprintf(stderr, "Cannot create thread at91buttonProcessor\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "Cannot create thread at91buttonProcessor");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "Cannot create thread at91buttonProcessor");
 		destroy_systemStatusLock();
-		destroy_sm2dbs();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
 	
@@ -73,9 +79,9 @@ int main(void)
 	if( ret == -1 )
 	{
 		fprintf(stderr, "Cannot create thread sysledProcessor\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "Cannot create thread sysledProcessor");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "Cannot create thread sysledProcessor");
 		destroy_systemStatusLock();
-		destroy_sm2dbs();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
 
@@ -84,9 +90,9 @@ int main(void)
 	if( ret == -1 )
 	{
 		fprintf(stderr, "Cannot create thread wdtProcessor\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "Cannot create thread wdtProcessor");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "Cannot create thread wdtProcessor");
 		destroy_systemStatusLock();
-		destroy_sm2dbs();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
 
@@ -95,9 +101,9 @@ int main(void)
 	if( ret == -1 )
 	{
 		fprintf(stderr, "Cannot create thread sysindiProcessor\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "Cannot create thread sysindiProcessor");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "Cannot create thread sysindiProcessor");
 		destroy_systemStatusLock();
-		destroy_sm2dbs();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
 	
@@ -107,9 +113,9 @@ int main(void)
 	if( ret == -1 )
 	{
 		fprintf(stderr, "Cannot create thread atmProcessor\n");
-		dbs_mutex_sys_log(DBS_LOG_ERR, "Cannot create thread atmProcessor");
+		dbs_sys_log(dbsdev, DBS_LOG_ERR, "Cannot create thread atmProcessor");
 		destroy_systemStatusLock();
-		destroy_sm2dbs();
+		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
 #endif	
@@ -121,10 +127,12 @@ int main(void)
 	pthread_join( thread_id[2], NULL );
 	pthread_join( thread_id[0], NULL );
 	pthread_join( thread_id[1], NULL );	
-	
+
+	/* 不要在这个后面添加代码，执行不到滴*/
 	printf("module sysMonitor exit !\n");
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "INFO: module sysMonitor exit");	
 	destroy_systemStatusLock();
-	destroy_sm2dbs();
+	dbsClose(dbsdev);
 	return 0;
 }
 

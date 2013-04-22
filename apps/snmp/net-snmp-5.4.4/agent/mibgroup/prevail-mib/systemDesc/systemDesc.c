@@ -59,7 +59,7 @@ void load_systemDesc(void)
 	strcpy(systemDesc_enterpriseName, "Hangzhou Prevail Optoelectronic Equipment Co.,LTD");
 	strcpy(systemDesc_enterpriseContact, "XI YU XI");
 	strcpy(systemDesc_enterpriseEmail, "stanhangzhou@gmail.com");
-	strcpy(systemDesc_enterpriseDevName, "WEC-3501I");
+	strcpy(systemDesc_enterpriseDevName, "WEC9720EK");
 }
 
 unsigned char *var_systemDesc(struct variable *vp,

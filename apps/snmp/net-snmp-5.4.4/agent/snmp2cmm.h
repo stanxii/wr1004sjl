@@ -5,6 +5,8 @@
 #include <string.h>
 #include <public.h>
 
+extern T_DBS_DEV_INFO *dbsdev;
+
 int snmp2cmm_reloadCnuProfile(uint16_t id);
 int snmp2cmm_resetCnu(uint16_t id);
 int snmp2cmm_permitCnu(uint16_t id);

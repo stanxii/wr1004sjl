@@ -5,21 +5,24 @@
 
 static uint8_t save_flag = 0;
 
-int reg_dbsOpen(void)
+/* 与DBS  通讯的设备文件*/
+T_DBS_DEV_INFO *dbsdev = NULL;
+
+T_DBS_DEV_INFO * reg_dbsOpen(void)
 {
 	return dbsOpen(MID_REGISTER);
 }
 
 int reg_dbsClose(void)
 {
-	return dbsClose();
+	return dbsClose(dbsdev);
 }
 
 int db_init_clt(int index)
 {
 	st_dbsClt clt;
 
-	if( CMM_SUCCESS != dbsGetClt(index, &clt))
+	if( CMM_SUCCESS != dbsGetClt(dbsdev, index, &clt))
 	{
 		return CMM_FAILED;
 	}
@@ -27,7 +30,7 @@ int db_init_clt(int index)
 	{
 		clt.col_numStas = 0;
 		clt.col_sts = DEV_STS_OFFLINE;
-		return dbsUpdateClt(index, &clt);
+		return dbsUpdateClt(dbsdev, index, &clt);
 	}
 }
 
@@ -35,7 +38,7 @@ int db_init_cnu(int index)
 {
 	st_dbsCnu cnu;
 	
-	if( CMM_SUCCESS != dbsGetCnu(index, &cnu))
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, index, &cnu))
 	{
 		return CMM_FAILED;
 	}
@@ -47,7 +50,7 @@ int db_init_cnu(int index)
 		strcpy(cnu.col_snr, "0%");
 		cnu.col_sts = DEV_STS_OFFLINE;
 		cnu.col_tx = 0;
-		return dbsUpdateCnu(index, &cnu);
+		return dbsUpdateCnu(dbsdev, index, &cnu);
 	}	
 }
 
@@ -74,22 +77,22 @@ int db_init_all(void)
 
 int db_get_clt(int index, st_dbsClt *clt)
 {
-	return dbsGetClt(index, clt);
+	return dbsGetClt(dbsdev, index, clt);
 }
 
 int db_get_cnu(int index, st_dbsCnu *cnu)
 {
-	return dbsGetCnu(index, cnu);
+	return dbsGetCnu(dbsdev, index, cnu);
 }
 
 int db_update_clt(int index, st_dbsClt *clt)
 {
-	return dbsUpdateClt(index, clt);
+	return dbsUpdateClt(dbsdev, index, clt);
 }
 
 int db_update_cnu(int index, st_dbsCnu *cnu)
 {
-	return dbsUpdateCnu(index, cnu);
+	return dbsUpdateCnu(dbsdev, index, cnu);
 }
 
 int db_unregister_clt(int index)
@@ -114,17 +117,17 @@ int db_new_cnu(int index, st_dbsCnu *cnu)
 				case WEC701_C2:
 				case WEC701_C4:
 				{
-					if( 0 == dbsCreateDeblProfileForWec701Cnu(index) )
+					if( 0 == dbsCreateDeblProfileForWec701Cnu(dbsdev, index) )
 					{
-						return dbsUpdateCnu(index, cnu);
+						return dbsUpdateCnu(dbsdev, index, cnu);
 					}
 					break;
 				}
 				default:
 				{
-					if( 0 == dbsCreateDeblProfileForCnu(index) )
+					if( 0 == dbsCreateDeblProfileForCnu(dbsdev, index) )
 					{
-						return dbsUpdateCnu(index, cnu);
+						return dbsUpdateCnu(dbsdev, index, cnu);
 					}
 					break;
 				}
@@ -137,17 +140,17 @@ int db_new_cnu(int index, st_dbsCnu *cnu)
 				case WEC701_C2:
 				case WEC701_C4:
 				{
-					if( 0 == dbsCreateDewlProfileForWec701Cnu(index) )
+					if( 0 == dbsCreateDewlProfileForWec701Cnu(dbsdev, index) )
 					{
-						return dbsUpdateCnu(index, cnu);
+						return dbsUpdateCnu(dbsdev, index, cnu);
 					}
 					break;
 				}
 				default:
 				{
-					if( 0 == dbsCreateDewlProfileForCnu(index) )
+					if( 0 == dbsCreateDewlProfileForCnu(dbsdev, index) )
 					{
-						return dbsUpdateCnu(index, cnu);
+						return dbsUpdateCnu(dbsdev, index, cnu);
 					}
 					break;
 				}
@@ -164,17 +167,17 @@ int db_new_su(int index, st_dbsCnu *cnu)
 		case WEC701_C2:
 		case WEC701_C4:
 		{
-			if( 0 == dbsCreateSuProfileForWec701Cnu(index) )
+			if( 0 == dbsCreateSuProfileForWec701Cnu(dbsdev, index) )
 			{
-				return dbsUpdateCnu(index, cnu);
+				return dbsUpdateCnu(dbsdev, index, cnu);
 			}
 			break;
 		}
 		default:
 		{
-			if( 0 == dbsCreateSuProfileForCnu(index) )
+			if( 0 == dbsCreateSuProfileForCnu(dbsdev, index) )
 			{
-				return dbsUpdateCnu(index, cnu);
+				return dbsUpdateCnu(dbsdev, index, cnu);
 			}
 			break;
 		}
@@ -184,9 +187,9 @@ int db_new_su(int index, st_dbsCnu *cnu)
 
 int db_delete_cnu(int index)
 {
-	if( 0 == dbsDestroyRowCnu(index) )
+	if( 0 == dbsDestroyRowCnu(dbsdev, index) )
 	{
-		if( 0 == dbsDestroyRowProfile(index) )
+		if( 0 == dbsDestroyRowProfile(dbsdev, index) )
 		{
 			return CMM_SUCCESS;
 		}
@@ -203,7 +206,7 @@ int db_get_user_type(uint32_t clt_index, uint32_t cnu_index, uint32_t *userType)
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	st_iValue.ci.colType = DBS_INTEGER;
 
-	if( CMM_SUCCESS != dbsGetInteger(&st_iValue))
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &st_iValue))
 	{
 		printf("db_get_user_type(%d, %d, %d) : CMM_FAILED", st_iValue.ci.tbl, st_iValue.ci.row, st_iValue.ci.col);
 		return CMM_FAILED;
@@ -231,7 +234,7 @@ int db_get_user_onused(uint32_t clt_index, uint32_t cnu_index, uint32_t *onUsed)
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_ROWSTS;
 	st_iValue.ci.colType = DBS_INTEGER;
 
-	if( CMM_SUCCESS != dbsGetInteger(&st_iValue))
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &st_iValue))
 	{
 		printf("db_get_user_onused(%d, %d, %d) : CMM_FAILED", st_iValue.ci.tbl, st_iValue.ci.row, st_iValue.ci.col);
 		return CMM_FAILED;
@@ -259,7 +262,7 @@ int db_get_anonymous_access_sts(uint32_t *anonyAccSts)
 	st_iValue.ci.col = DBS_SYS_TBL_SYSINFO_COL_ID_WLCTL;
 	st_iValue.ci.colType = DBS_INTEGER;
 
-	if( CMM_SUCCESS != dbsGetInteger(&st_iValue))
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &st_iValue))
 	{
 		printf("db_get_anonymous_access_sts(%d, %d, %d) : CMM_FAILED", st_iValue.ci.tbl, st_iValue.ci.row, st_iValue.ci.col);
 		return CMM_FAILED;
@@ -293,7 +296,7 @@ int db_get_auto_config_sts(uint32_t *autoCfgSts)
 	st_iValue.ci.col = DBS_SYS_TBL_SYSINFO_COL_ID_AC;
 	st_iValue.ci.colType = DBS_INTEGER;
 
-	if( CMM_SUCCESS != dbsGetInteger(&st_iValue))
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &st_iValue))
 	{
 		printf("db_get_auto_config_sts(%d, %d, %d) : CMM_FAILED", st_iValue.ci.tbl, st_iValue.ci.row, st_iValue.ci.col);
 		return CMM_FAILED;
@@ -378,7 +381,7 @@ int db_real_fflush(void)
 {
 	if(save_flag)
 	{
-		if( 0 == dbsFflush() )
+		if( 0 == dbsFflush(dbsdev) )
 		{
 			save_flag = 0;
 			return CMM_SUCCESS;

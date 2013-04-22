@@ -14,6 +14,7 @@
 #include <dbsapi.h>
 #include <boardapi.h>
 #include "reg_alarm.h"
+#include "reg_dbs.h"
 
 T_UDP_SK_INFO SK_ALARM;
 
@@ -75,7 +76,8 @@ void clt_sts_transition_notification(uint32_t id, BOOLEAN sts)
 void cnu_sts_transition_notification(uint32_t clt, uint32_t cnu, BOOLEAN sts)
 {
 	T_ALARM_DESC alarm_desc;
-	
+
+#if 0
 	switch(sts)
 	{
 		case BOOL_FALSE:
@@ -99,6 +101,7 @@ void cnu_sts_transition_notification(uint32_t clt, uint32_t cnu, BOOLEAN sts)
 		default:
 			break;
 	}
+#endif
 }
 
 void lllegal_cnu_register_notification(uint32_t clt, uint8_t mac[])
@@ -280,14 +283,14 @@ void cbat_system_sts_notification(uint8_t status)
 	sCbatIpaddr.ci.row = 1;
 	sCbatIpaddr.ci.col = DBS_SYS_TBL_NETWORK_COL_ID_IP;
 	sCbatIpaddr.ci.colType = DBS_TEXT;
-	if( CMM_SUCCESS != dbsGetText(&sCbatIpaddr) ) return;
+	if( CMM_SUCCESS != dbsGetText(dbsdev, &sCbatIpaddr) ) return;
 
 	/* 获取CBAT 的设备类型*/
 	iDevType.ci.tbl = DBS_SYS_TBL_ID_SYSINFO;
 	iDevType.ci.row = 1;
 	iDevType.ci.col = DBS_SYS_TBL_SYSINFO_COL_ID_MODEL;
 	iDevType.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iDevType) ) return;	
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iDevType) ) return;	
 
 	memset(&alarm_desc, 0, sizeof(T_ALARM_DESC));
 	

@@ -1026,7 +1026,7 @@ main(int argc, char *argv[])
     /*
      * We're up, log our version number.  
      */
-    dbs_sys_log(DBS_LOG_INFO, "starting module snmpd success");
+    dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module snmpd success");
     //snmp_log(LOG_INFO, "NET-SNMP version %s\n", netsnmp_get_version());
     fprintf(stderr, "Starting module snmp agent	......          [OK]\n");
 #ifdef WIN32SERVICE
@@ -1045,12 +1045,12 @@ main(int argc, char *argv[])
     SnmpTrapNodeDown();
     DEBUGMSGTL(("snmpd/main", "Bye...\n"));
     /* add by frank */
-    dbs_sys_log(DBS_LOG_INFO, "module snmpd exit");
+    dbs_sys_log(dbsdev, DBS_LOG_INFO, "module snmpd exit");
     snmp_shutdown(app_name);
     /* add by frank */
     snmp2cmm_destroy();    
     //printf("shutdown_agent: dbsClose\n");
-    dbsClose();
+    dbsClose(dbsdev);
     shutdown_master_agent();
     shutdown_agent();
 

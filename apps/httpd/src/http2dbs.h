@@ -6,6 +6,8 @@
 #include <public.h>
 #include "cgimain.h"
 
+extern T_DBS_DEV_INFO *dbsdev;
+
 int http2dbs_getCnuIndexByMacaddress(char *mac, stCnuNode *index);
 int http2dbs_getProfile(uint16_t id, st_dbsProfile * profile);
 int http2dbs_setProfile(uint16_t id, st_dbsProfile * profile);

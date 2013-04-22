@@ -99,7 +99,7 @@ int write_saveConfig(int action,
 	{
 		if( 1 == (*((long *) var_val) ))
 		{
-			if( 0 != dbsFflush() )
+			if( 0 != dbsFflush(dbsdev) )
 			{
 				return SNMP_ERR_GENERR;
 			}

@@ -149,6 +149,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include "agent_module_includes.h"
 #include "mib_module_includes.h"
 #include "net-snmp/library/container.h"
+#include "snmp2cmm.h"
 #include <public.h>
 #include <dbsapi.h>
 
@@ -298,21 +299,23 @@ init_agent(const char *app)
 
     setup_tree();
 
-    /* add by frank */
-    if( CMM_SUCCESS == dbsOpen(MID_SNMP) )
-    {
-	dbsWaitModule(MF_CMM|MF_ALARM|MF_TM);
-	//printf("init_agent: dbsOpen\n");
-    }
-    else
-    {
-         printf("module snmpd dbsOpen error\n");
-    }
+	/* add by frank */
+	/*创建与数据库模块互斥通讯的外部SOCKET接口*/
+	dbsdev = dbsOpen(MID_SNMP);
+	if( NULL != dbsdev )
+	{
+		dbsWaitModule(dbsdev, MF_CMM|MF_ALARM|MF_TM);
+		//printf("init_agent: dbsOpen\n");
+	}
+	else
+	{
+		fprintf(stderr,"ERROR: snmpd->dbsOpen error, exited !\n");
+	}
 	
     if( CMM_SUCCESS != snmp2cmm_init() )
     {
     	  printf("module snmpd snmp2cmm_init error\n");
-         dbs_sys_log(DBS_LOG_ERR, "module snmpd snmp2cmm_init error");
+         dbs_sys_log(dbsdev, DBS_LOG_ERR, "module snmpd snmp2cmm_init error");
     }
 
     init_agent_read_config(app);

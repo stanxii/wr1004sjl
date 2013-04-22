@@ -17,6 +17,8 @@
 
 T_UDP_SK_INFO SK_CMM2ALARM;
 
+extern T_DBS_DEV_INFO *dbsdev;
+
 void __alarm_notification(T_ALARM_DESC *alarm)
 {
 	assert( NULL != alarm );	
@@ -56,14 +58,14 @@ void cmm2alarm_sendCbatResetNotification(void)
 	sCbatIpaddr.ci.row = 1;
 	sCbatIpaddr.ci.col = DBS_SYS_TBL_NETWORK_COL_ID_IP;
 	sCbatIpaddr.ci.colType = DBS_TEXT;
-	if( CMM_SUCCESS != dbsGetText(&sCbatIpaddr) ) return;
+	if( CMM_SUCCESS != dbsGetText(dbsdev, &sCbatIpaddr) ) return;
 
 	/* 获取CBAT 的设备类型*/
 	iDevType.ci.tbl = DBS_SYS_TBL_ID_SYSINFO;
 	iDevType.ci.row = 1;
 	iDevType.ci.col = DBS_SYS_TBL_SYSINFO_COL_ID_MODEL;
 	iDevType.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iDevType) ) return;	
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iDevType) ) return;	
 	
 	alarm_desc.AlarmCode = 200921;
 	alarm_desc.CltIndex = 0;

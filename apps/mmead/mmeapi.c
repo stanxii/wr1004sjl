@@ -1081,7 +1081,6 @@ void MME_Atheros_MsgNeRefresh
 			usleep(10000);
 			if( MME_Atheros_MsgGetDeviceInfo(MME_SK, NEList.cnu[i].Mac, &stDevInfo) == CMM_SUCCESS )
 			{
-				printf("XXXXX fuck you cnu devtype = %d \n", stDevInfo.DevType);
 				NEList.cnu[i].DevType = stDevInfo.DevType;
 				NEList.cnu[i].CRC[0] = stDevInfo.CRC[0];
 				NEList.cnu[i].CRC[1] = stDevInfo.CRC[1];
@@ -2246,7 +2245,7 @@ int MME_AR7411_MsgGetPibCrc(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint32_t *cr
 
 	/* jisuan */
 	memset(pib_data+0x08, 0x00, 4);
-	crc = checksum_32_pib(pib_data, pib_len, 0);
+	*crc = checksum_32_pib(pib_data, pib_len, 0);
 	free(pib_data);
 	return CMM_SUCCESS;
 }

@@ -13,7 +13,7 @@
 
 /* include our parent header */
 #include "cltTable.h"
-
+#include <snmp2cmm.h>
 
 #include "cltTable_data_access.h"
 
@@ -215,14 +215,14 @@ cltTable_container_load(netsnmp_container *container)
 	for( cltTid=1; cltTid<=MAX_CLT_AMOUNT_LIMIT; cltTid++ )
 	{
 		/* 从数据库获取数据*/
-		if( CMM_SUCCESS != dbsGetClt(cltTid,  &row) )
+		if( CMM_SUCCESS != dbsGetClt(dbsdev, cltTid,  &row) )
 		{
-			dbs_sys_log(DBS_LOG_ERR, "cltTable_container_load dbsGetClt failed");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "cltTable_container_load dbsGetClt failed");
 			return MFD_RESOURCE_UNAVAILABLE;
 		}
 		if( CMM_SUCCESS != snmp2cmm_macs2b(row.col_mac, macAddress) )
 		{
-			dbs_sys_log(DBS_LOG_ERR, "cltTable_container_load snmp2cmm_macs2b failed");
+			dbs_sys_log(dbsdev, DBS_LOG_ERR, "cltTable_container_load snmp2cmm_macs2b failed");
 			return MFD_ERROR;
 		}
 

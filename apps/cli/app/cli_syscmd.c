@@ -31,6 +31,8 @@
 extern "C" {
 #endif
 
+/* 与DBS  通讯的设备文件*/
+T_DBS_DEV_INFO *dbsdev = NULL;
 
 extern ST_CLI_MODE m_sCliSysModes[MAX_MODE_NUM];    /* 命令树 */
 
@@ -539,7 +541,7 @@ int __clt_opt_log(uint16_t cmd, uint32_t result)
 			break;
 		}
 	}	
-	return dbs_opt_log(&log);
+	return dbs_opt_log(dbsdev, &log);
 }
 
 /*********************************************************************/
@@ -1068,7 +1070,7 @@ ULONG CLI_Cmd_ShowTopology()
 	st_dbsCnu cnu;
 
 	/* 获取CLT */
-	if( CMM_SUCCESS != dbsGetClt(1, &clt) )
+	if( CMM_SUCCESS != dbsGetClt(dbsdev, 1, &clt) )
 	{
 		/* 写日志*/
 		__clt_opt_log(CMM_TOPOLOGY_SHOW, CMM_FAILED);
@@ -1094,7 +1096,7 @@ ULONG CLI_Cmd_ShowTopology()
 	/* CNU */
 	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
-		if( CMM_SUCCESS == dbsGetCnu(i+1, &cnu) )
+		if( CMM_SUCCESS == dbsGetCnu(dbsdev, i+1, &cnu) )
 		{
 			if( 0 == cnu.col_row_sts )
 			{
@@ -1128,7 +1130,7 @@ ULONG CLI_Cmd_ShowWlistUsers()
 	st_dbsSysinfo rowSysinfo;
 	st_dbsCnu cnu;
 
-	if( CMM_SUCCESS != dbsGetSysinfo(1,  &rowSysinfo) )
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1,  &rowSysinfo) )
 	{
 		IO_Print("\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_GET_USERS, CMM_FAILED);
@@ -1148,7 +1150,7 @@ ULONG CLI_Cmd_ShowWlistUsers()
 	/* CNU */
 	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
-		if( CMM_SUCCESS == dbsGetCnu(i+1, &cnu) )
+		if( CMM_SUCCESS == dbsGetCnu(dbsdev, i+1, &cnu) )
 		{
 			if( 0 == cnu.col_row_sts )
 			{
@@ -1195,7 +1197,7 @@ ULONG CLI_Cmd_Show_Optlog()
 	/*操作日志最大存储数量=  512 */
 	for( i=1; i<=512; i++ )
 	{
-		if( CMM_SUCCESS != dbsGetOptlog(i, &log) )
+		if( CMM_SUCCESS != dbsGetOptlog(dbsdev, i, &log) )
 		{
 			break;
 		}
@@ -1240,7 +1242,7 @@ ULONG CLI_Cmd_Show_alarmlog()
 	/*告警日志最大存储数量==  512 */
 	for( i=1; i<=512; i++ )
 	{
-		if( CMM_SUCCESS != dbsGetAlarmlog(i, &log) )
+		if( CMM_SUCCESS != dbsGetAlarmlog(dbsdev, i, &log) )
 		{
 			break;
 		}
@@ -1290,7 +1292,7 @@ ULONG CLI_Cmd_ShowSyslog()
 	/*系统日志最大存储数量==  1024 */
 	for( i=1; i<=1024; i++ )
 	{
-		if( CMM_SUCCESS != dbsGetSyslog(i, &log) )
+		if( CMM_SUCCESS != dbsGetSyslog(dbsdev, i, &log) )
 		{
 			break;
 		}
@@ -1322,7 +1324,7 @@ ULONG CLI_Cmd_ShowNetworkInfo()
 {
 	st_dbsNetwork networkInfo;
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &networkInfo) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkInfo) )
 	{
 		/* 写日志*/
 		__clt_opt_log(CMM_NETWORK_INFO_SHOW, CMM_FAILED);
@@ -1356,7 +1358,7 @@ ULONG CLI_Cmd_ShowSysInfo()
 	char temp[32] = {0};
 #endif	
 
-	if( CMM_SUCCESS != dbsGetSysinfo(1, &szSysinfo) )
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &szSysinfo) )
 	{
 		/* 写日志*/
 		__clt_opt_log(CMM_CLI_GET_SYSINFO, CMM_FAILED);
@@ -1367,7 +1369,7 @@ ULONG CLI_Cmd_ShowSysInfo()
 	ret = cli2cmm_getCbatTemperature(&temp_data);
 #endif	
 
-	//IO_Print("\r\n\r\n  Description:		WEC-3501I series EoC CBAT");
+	//IO_Print("\r\n\r\n  Description:		WEC9720EK series EoC CBAT");
 	IO_Print("\r\n\r\n  Device Model:		%s", boardapi_getDeviceModelStr(szSysinfo.col_model));
 	IO_Print("\r\n  Maximum CLTs:		%d", MAX_CLT_AMOUNT_LIMIT);
 	IO_Print("\r\n  Maximum CNUs:		%d*%d", MAX_CLT_AMOUNT_LIMIT, MAX_CNU_AMOUNT_LIMIT);
@@ -1379,7 +1381,9 @@ ULONG CLI_Cmd_ShowSysInfo()
 	IO_Print("\r\n  APP Version:		%s", szSysinfo.col_appver);
 	IO_Print("\r\n  Flash Size:		%dMB", szSysinfo.col_flashsize);
 	IO_Print("\r\n  Sdram Size:		%dMB", szSysinfo.col_ramsize);
-	IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
+	/* demo version info */
+	IO_Print("\r\n  Manufacturer:		");
+	//IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
 
 #ifdef __AT30TK175STK__
 	if( CMM_SUCCESS == ret )
@@ -1414,7 +1418,7 @@ ULONG CLI_Cmd_ShowSnmpInfo()
 	st_dbsSnmp snmp;
 
 	/* 获取SNMP  的配置信息*/
-	if( CMM_SUCCESS != dbsGetSnmp(1, &snmp) )
+	if( CMM_SUCCESS != dbsGetSnmp(dbsdev, 1, &snmp) )
 	{
 		/* 写日志*/
 		__clt_opt_log(CMM_READ_SNMP_CONF, CMM_FAILED);
@@ -1443,7 +1447,7 @@ ULONG CLI_Cmd_ShowFtpServer()
 	st_dbsSwmgmt ftpinfo;
 
 	/* 获取FTP SERVER  的配置信息*/
-	if( CMM_SUCCESS != dbsGetSwmgmt(1, &ftpinfo) )
+	if( CMM_SUCCESS != dbsGetSwmgmt(dbsdev, 1, &ftpinfo) )
 	{
 		/* 写日志*/
 		__clt_opt_log(CMM_CLI_GET_FTP, CMM_FAILED);
@@ -1477,7 +1481,7 @@ ULONG __CLI_Cmd_ShowCltProfile(uint16_t id)
 	}
 
 	/* 获取CLT 的配置信息*/
-	if( CMM_SUCCESS != dbsGetCltconf(id, &profile) )
+	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, id, &profile) )
 	{
 		return CMM_FAILED;
 	}
@@ -1555,12 +1559,12 @@ ULONG __CLI_Cmd_ShowCnuProfile(uint16_t id)
 
 	/* 需要为不同型号的设备定制不同的配置信息*/
 	/* 获取CNU的设备型号*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		return CMM_FAILED;
 	}
 	/* 获取CNU的配置信息*/
-	if( CMM_SUCCESS != dbsGetProfile(id, &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id, &profile) )
 	{
 		return CMM_FAILED;
 	}
@@ -1839,7 +1843,7 @@ ULONG CLI_Cmd_SetCliPwd()
 	}
 	
 	/* 写入数据库*/
-	if( CMM_SUCCESS != dbsUpdateCliRole(uid, &cliRole) )
+	if( CMM_SUCCESS != dbsUpdateCliRole(dbsdev, uid, &cliRole) )
 	{
 		/* 写日志*/
 		IO_Print("\r\n\r\n  Password Too Long !");
@@ -1871,7 +1875,7 @@ ULONG CLI_Cmd_SnmpConfig()
 	}
 
 	/* 设置前先读取SNMP配置信息*/
-	if( dbsGetSnmp(1, &szSnmpConfig) != CMM_SUCCESS)
+	if( dbsGetSnmp(dbsdev, 1, &szSnmpConfig) != CMM_SUCCESS)
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_WRITE_SNMP_CONF, CMM_FAILED);
@@ -1973,7 +1977,7 @@ ULONG CLI_Cmd_SnmpConfig()
 	}
 
 	/* 写入数据库*/
-	if( CMM_SUCCESS != dbsUpdateSnmp(1, &szSnmpConfig) )
+	if( CMM_SUCCESS != dbsUpdateSnmp(dbsdev, 1, &szSnmpConfig) )
 	{
 		/* 写日志*/
 		IO_Print("\r\n\r\n  System Error !");
@@ -1994,7 +1998,7 @@ ULONG CLI_Cmd_SnmpConfig()
 /*********************************************************************/
 ULONG CLI_Cmd_SaveConfig()
 {
-	if( CMM_SUCCESS == dbsFflush() )
+	if( CMM_SUCCESS == dbsFflush(dbsdev) )
 	{
 		IO_Print("\r\n\r\n  Success !");
 		__clt_opt_log(CMM_SAVE_CONFIG, CMM_SUCCESS);
@@ -2016,7 +2020,7 @@ ULONG CLI_Cmd_SetIpAddress()
 	char  *szP;
 	st_dbsNetwork szNetwork;	
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &szNetwork) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &szNetwork) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_SET_IP, CMM_FAILED);
@@ -2050,7 +2054,7 @@ ULONG CLI_Cmd_SetIpAddress()
 		return CMM_FAILED;
 	}	
 	
-	if( CMM_SUCCESS == dbsUpdateNetwork(1, &szNetwork))
+	if( CMM_SUCCESS == dbsUpdateNetwork(dbsdev, 1, &szNetwork))
 	{
 		IO_Print("\r\n\r\n  Success !");
 		__clt_opt_log(CMM_CLI_SET_IP, CMM_SUCCESS);
@@ -2071,7 +2075,7 @@ ULONG CLI_Cmd_UndoIpAddress()
 {
 	st_dbsNetwork szNetwork;
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &szNetwork) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &szNetwork) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_UNDO_IPADDR, CMM_FAILED);
@@ -2083,7 +2087,7 @@ ULONG CLI_Cmd_UndoIpAddress()
 	strcpy(szNetwork.col_netmask, "255.255.255.0");
 	szNetwork.col_dhcp = 0;
 	
-	if( CMM_SUCCESS == dbsUpdateNetwork(1, &szNetwork))
+	if( CMM_SUCCESS == dbsUpdateNetwork(dbsdev, 1, &szNetwork))
 	{
 		IO_Print("\r\n\r\n  Success !");
 		__clt_opt_log(CMM_CLI_UNDO_IPADDR, CMM_SUCCESS);
@@ -2114,7 +2118,7 @@ ULONG CLI_Cmd_SetIpGateway()
 		return TBS_FAILED;
 	}
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &szNetwork) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &szNetwork) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_SET_IPGATEWAY, CMM_FAILED);
@@ -2145,7 +2149,7 @@ ULONG CLI_Cmd_SetIpGateway()
 		}
 	}
 	
-	if( CMM_SUCCESS == dbsUpdateNetwork(1, &szNetwork))
+	if( CMM_SUCCESS == dbsUpdateNetwork(dbsdev, 1, &szNetwork))
 	{
 		IO_Print("\r\n\r\n  Success !");
 		__clt_opt_log(CMM_CLI_SET_IPGATEWAY, CMM_SUCCESS);
@@ -2166,7 +2170,7 @@ ULONG CLI_Cmd_UndoIpGateway()
 {
 	st_dbsNetwork szNetwork;
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &szNetwork) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &szNetwork) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_UNDO_IP_GW, CMM_FAILED);
@@ -2176,7 +2180,7 @@ ULONG CLI_Cmd_UndoIpGateway()
 	/*设置默认gw 0.0.0.0*/
 	strcpy(szNetwork.col_gw, "0.0.0.0");
 	
-	if( CMM_SUCCESS == dbsUpdateNetwork(1, &szNetwork))
+	if( CMM_SUCCESS == dbsUpdateNetwork(dbsdev, 1, &szNetwork))
 	{
 		IO_Print("\r\n\r\n  Success !");
 		__clt_opt_log(CMM_CLI_UNDO_IP_GW, CMM_SUCCESS);
@@ -2204,7 +2208,7 @@ ULONG CLI_Cmd_SetMgmtVlan()
 		return TBS_FAILED;
 	}
 	
-	if( CMM_SUCCESS != dbsGetNetwork(1, &szNetwork) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &szNetwork) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_SET_MVLAN, CMM_FAILED);
@@ -2222,7 +2226,7 @@ ULONG CLI_Cmd_SetMgmtVlan()
 	}
 
 	/* 保存配置*/
-	if( CMM_SUCCESS == dbsUpdateNetwork(1, &szNetwork))
+	if( CMM_SUCCESS == dbsUpdateNetwork(dbsdev, 1, &szNetwork))
 	{
 		IO_Print("\r\n\r\n  Success !");
 		__clt_opt_log(CMM_CLI_SET_MVLAN, CMM_SUCCESS);
@@ -2243,7 +2247,7 @@ ULONG CLI_Cmd_UndoMgmtVlan()
 {
 	st_dbsNetwork szNetwork;	
 
-	if( CMM_SUCCESS != dbsGetNetwork(1, &szNetwork) )
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &szNetwork) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_UNDO_MVLAN, CMM_FAILED);
@@ -2255,7 +2259,7 @@ ULONG CLI_Cmd_UndoMgmtVlan()
 	szNetwork.col_mvlan_id = 1;
 	
 	/* 保存配置*/
-	if( CMM_SUCCESS == dbsUpdateNetwork(1, &szNetwork))
+	if( CMM_SUCCESS == dbsUpdateNetwork(dbsdev, 1, &szNetwork))
 	{
 		IO_Print("\r\n\r\n  Success !");
 		__clt_opt_log(CMM_CLI_UNDO_MVLAN, CMM_SUCCESS);
@@ -2286,7 +2290,7 @@ ULONG CLI_Cmd_SetFtpServer()
 	}
 
 	/* 设置之前先读取配置*/
-	if( CMM_SUCCESS != dbsGetSwmgmt(1, &szFtpserver) )
+	if( CMM_SUCCESS != dbsGetSwmgmt(dbsdev, 1, &szFtpserver) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_SET_FTPSERVER, CMM_FAILED);
@@ -2392,7 +2396,7 @@ ULONG CLI_Cmd_SetFtpServer()
 	}
 	
 	/* 写入数据库*/
-	if( CMM_SUCCESS != dbsUpdateSwmgmt(1, &szFtpserver) )
+	if( CMM_SUCCESS != dbsUpdateSwmgmt(dbsdev, 1, &szFtpserver) )
 	{
 		/* 写日志*/
 		IO_Print("\r\n\r\n  System Error !");
@@ -2570,7 +2574,7 @@ ULONG CLI_Cmd_DoCnuVlanConfig()
 	}
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -2582,7 +2586,7 @@ ULONG CLI_Cmd_DoCnuVlanConfig()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -2701,7 +2705,7 @@ ULONG CLI_Cmd_UndoCnuVlanConfig()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -2713,7 +2717,7 @@ ULONG CLI_Cmd_UndoCnuVlanConfig()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -2774,7 +2778,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -2786,7 +2790,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 	}
 
 	/* 设置前先读取线路配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id, &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id, &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3056,7 +3060,7 @@ ULONG CLI_Cmd_UndoRateLimiting()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3068,7 +3072,7 @@ ULONG CLI_Cmd_UndoRateLimiting()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3130,7 +3134,7 @@ ULONG CLI_Cmd_DoStromFilter()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3142,7 +3146,7 @@ ULONG CLI_Cmd_DoStromFilter()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3232,7 +3236,7 @@ ULONG CLI_Cmd_UndoStromFilter()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3244,7 +3248,7 @@ ULONG CLI_Cmd_UndoStromFilter()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3456,7 +3460,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 		return 0;
 	}
 
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return 0;
@@ -3466,7 +3470,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 		return 0;
 	}
 
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return 0;
@@ -3541,7 +3545,7 @@ ULONG CLI_Cmd_Shutdown()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3553,7 +3557,7 @@ ULONG CLI_Cmd_Shutdown()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3649,7 +3653,7 @@ ULONG CLI_Cmd_UndoShutdown()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3661,7 +3665,7 @@ ULONG CLI_Cmd_UndoShutdown()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3718,7 +3722,7 @@ ULONG CLI_Cmd_MacLimit()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3730,7 +3734,7 @@ ULONG CLI_Cmd_MacLimit()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3796,7 +3800,7 @@ ULONG CLI_Cmd_UndoMacLimit()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3808,7 +3812,7 @@ ULONG CLI_Cmd_UndoMacLimit()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3857,7 +3861,7 @@ ULONG CLI_Cmd_DoAgingTimeConfig()
 	id = CLI_GetCltTidByMode(iMode);
 
 	/* 如果该CLT 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetClt(id, &clt) )
+	if( CMM_SUCCESS != dbsGetClt(dbsdev, id, &clt) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_DO_AGING_TIME_CONFIG, CMM_FAILED);
@@ -3871,7 +3875,7 @@ ULONG CLI_Cmd_DoAgingTimeConfig()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCltconf(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_DO_AGING_TIME_CONFIG, CMM_FAILED);
@@ -3920,7 +3924,7 @@ ULONG CLI_Cmd_DoAgingTimeConfig()
 		return TBS_FAILED;
 	}	
 	
-	if( CMM_SUCCESS != dbsUpdateCltconf(id, &profile) )
+	if( CMM_SUCCESS != dbsUpdateCltconf(dbsdev, id, &profile) )
 	{
 		/* 写日志*/
 		__clt_opt_log(CMM_CLI_DO_AGING_TIME_CONFIG, CMM_FAILED);
@@ -3961,7 +3965,7 @@ ULONG CLI_Cmd_UndoAgingTimeConfig()
 	id = CLI_GetCltTidByMode(iMode);
 
 	/* 如果该CLT 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetClt(id, &clt) )
+	if( CMM_SUCCESS != dbsGetClt(dbsdev, id, &clt) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_DO_AGING_TIME_CONFIG, CMM_FAILED);
@@ -3975,7 +3979,7 @@ ULONG CLI_Cmd_UndoAgingTimeConfig()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCltconf(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		__clt_opt_log(CMM_CLI_DO_AGING_TIME_CONFIG, CMM_FAILED);
@@ -3991,7 +3995,7 @@ ULONG CLI_Cmd_UndoAgingTimeConfig()
 	profile.col_loagTime = 15;
 	profile.col_reagTime = 4;
 
-	if( CMM_SUCCESS != dbsUpdateCltconf(id, &profile) )
+	if( CMM_SUCCESS != dbsUpdateCltconf(dbsdev, id, &profile) )
 	{
 		/* 写日志*/
 		__clt_opt_log(CMM_CLI_DO_AGING_TIME_CONFIG, CMM_FAILED);
@@ -4012,7 +4016,7 @@ int __cmd_set_clt_qos_mode(uint16_t cltid, uint16_t mode)
 	uint16_t id = cltid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetClt(id, &clt) )
+	if( CMM_SUCCESS != dbsGetClt(dbsdev, id, &clt) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4023,7 +4027,7 @@ int __cmd_set_clt_qos_mode(uint16_t cltid, uint16_t mode)
 		return CMM_FAILED;
 	}
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCltconf(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4059,7 +4063,7 @@ int __cmd_set_clt_qos_mode(uint16_t cltid, uint16_t mode)
 	}
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_set_clt_qos_mode(%d, %d)", id, mode);
-	return dbsUpdateCltconf(id, &profile);
+	return dbsUpdateCltconf(dbsdev, id, &profile);
 }
 
 int __cmd_set_cnu_qos_mode(uint16_t cltid, uint16_t cnuid, uint16_t mode)
@@ -4069,7 +4073,7 @@ int __cmd_set_cnu_qos_mode(uint16_t cltid, uint16_t cnuid, uint16_t mode)
 	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4080,7 +4084,7 @@ int __cmd_set_cnu_qos_mode(uint16_t cltid, uint16_t cnuid, uint16_t mode)
 		return CMM_FAILED;
 	}
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4116,7 +4120,7 @@ int __cmd_set_cnu_qos_mode(uint16_t cltid, uint16_t cnuid, uint16_t mode)
 	}
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_set_cnu_qos_mode(%d, %d)", id, mode);
-	return dbsUpdateProfile(id, &profile);
+	return dbsUpdateProfile(dbsdev, id, &profile);
 }
 
 /*********************************************************************/
@@ -4195,7 +4199,7 @@ int __cmd_clt_cos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_CLT_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4210,7 +4214,7 @@ int __cmd_clt_cos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_CLTPRO_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4283,7 +4287,7 @@ int __cmd_clt_cos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 	}
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_clt_cos_map(%d, %d, %d)", id, pri, cap);
-	return dbsUpdateInteger(&iValue);	
+	return dbsUpdateInteger(dbsdev, &iValue);	
 }
 
 int __cmd_cnu_cos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
@@ -4296,7 +4300,7 @@ int __cmd_cnu_cos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4311,7 +4315,7 @@ int __cmd_cnu_cos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4384,7 +4388,7 @@ int __cmd_cnu_cos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 	}
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_cnu_cos_map(%d, %d, %d)", id, pri, cap);
-	return dbsUpdateInteger(&iValue);	
+	return dbsUpdateInteger(dbsdev, &iValue);	
 }
 
 int __cmd_clt_tos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
@@ -4397,7 +4401,7 @@ int __cmd_clt_tos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_CLT_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4412,7 +4416,7 @@ int __cmd_clt_tos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_CLTPRO_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4485,7 +4489,7 @@ int __cmd_clt_tos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 	}
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_clt_tos_map(%d, %d, %d)", id, pri, cap);
-	return dbsUpdateInteger(&iValue);	
+	return dbsUpdateInteger(dbsdev, &iValue);	
 }
 
 int __cmd_cnu_tos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
@@ -4498,7 +4502,7 @@ int __cmd_cnu_tos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4513,7 +4517,7 @@ int __cmd_cnu_tos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 	iValue.ci.row = id;
 	iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
-	if( CMM_SUCCESS != dbsGetInteger(&iValue) )
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4586,7 +4590,7 @@ int __cmd_cnu_tos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 	}
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_cnu_tos_map(%d, %d, %d)", id, pri, cap);
-	return dbsUpdateInteger(&iValue);	
+	return dbsUpdateInteger(dbsdev, &iValue);	
 }
 
 /*********************************************************************/
@@ -4703,7 +4707,7 @@ int __cmd_undo_clt_qos(uint16_t cltid)
 	uint16_t id = cltid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetClt(id, &clt) )
+	if( CMM_SUCCESS != dbsGetClt(dbsdev, id, &clt) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4714,7 +4718,7 @@ int __cmd_undo_clt_qos(uint16_t cltid)
 		return CMM_FAILED;
 	}
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCltconf(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4746,7 +4750,7 @@ int __cmd_undo_clt_qos(uint16_t cltid)
 	profile.col_tos7pri = 3;
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_undo_clt_qos(%d)", id);
-	return dbsUpdateCltconf(id, &profile);
+	return dbsUpdateCltconf(dbsdev, id, &profile);
 }
 
 int __cmd_undo_cnu_qos(uint16_t cltid, uint16_t cnuid)
@@ -4756,7 +4760,7 @@ int __cmd_undo_cnu_qos(uint16_t cltid, uint16_t cnuid)
 	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4767,7 +4771,7 @@ int __cmd_undo_cnu_qos(uint16_t cltid, uint16_t cnuid)
 		return CMM_FAILED;
 	}
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4799,7 +4803,7 @@ int __cmd_undo_cnu_qos(uint16_t cltid, uint16_t cnuid)
 	profile.col_tos7pri = 3;
 	/* for debug */
 	//IO_Print("\r\n\r\n  __cmd_undo_cnu_qos(%d)", id);
-	return dbsUpdateProfile(id, &profile);
+	return dbsUpdateProfile(dbsdev, id, &profile);
 }
 
 /*********************************************************************/
@@ -4873,7 +4877,7 @@ ULONG CLI_CmdAr8236SmiReg()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4890,7 +4894,7 @@ ULONG CLI_CmdAr8236SmiReg()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4982,7 +4986,7 @@ ULONG CLI_CmdAr8236SmiPhy()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4999,7 +5003,7 @@ ULONG CLI_CmdAr8236SmiPhy()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5310,7 +5314,7 @@ ULONG CLI_Cmd_ReloadProfile()
 		id = CLI_GetCnuTidByMode(iMode);
 
 		/* 如果该CNU 槽位无效则禁止配置*/
-		if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+		if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 		{
 			IO_Print("\r\n\r\n  System Error !");
 			return CMM_FAILED;
@@ -5322,7 +5326,7 @@ ULONG CLI_Cmd_ReloadProfile()
 		}
 
 		/* 如果该PROFILE 槽位无效则禁止配置*/
-		if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+		if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 		{
 			IO_Print("\r\n\r\n  System Error !");
 			return CMM_FAILED;
@@ -5397,7 +5401,7 @@ ULONG CLI_Cmd_DoCnuPermit()
 	}	
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5408,7 +5412,7 @@ ULONG CLI_Cmd_DoCnuPermit()
 		return CMM_SUCCESS;
 	}
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5420,7 +5424,7 @@ ULONG CLI_Cmd_DoCnuPermit()
 	}
 
 	/* 如果白名单没有开启则禁止执行*/
-	if( CMM_SUCCESS != dbsGetSysinfo(1, &sysinfo) )
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &sysinfo) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5488,7 +5492,7 @@ ULONG CLI_Cmd_UndoCnuPermit()
 	}
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5499,7 +5503,7 @@ ULONG CLI_Cmd_UndoCnuPermit()
 		return CMM_SUCCESS;
 	}
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5511,7 +5515,7 @@ ULONG CLI_Cmd_UndoCnuPermit()
 	}
 
 	/* 如果白名单没有开启则禁止执行*/
-	if( CMM_SUCCESS != dbsGetSysinfo(1, &sysinfo) )
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &sysinfo) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5578,7 +5582,7 @@ ULONG CLI_Cmd_DeleteCnu()
 	}
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5889,7 +5893,7 @@ ULONG CLI_Cmd_Dump()
 	id = CLI_GetCnuTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -5901,7 +5905,7 @@ ULONG CLI_Cmd_Dump()
 	}	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
