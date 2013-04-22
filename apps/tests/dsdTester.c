@@ -1641,8 +1641,11 @@ int main(int argc, char *argv[])
 
 	if( argc != 2 )
 	{
+	    if( strcmp(argv[1], "case/7/1") != 0)
+            {
 		dsdTester_usage();
 		return 0;
+            }
 	}
 
 	if( 0 != dbsNoWaitOpen(MID_DSDT_TESTER) )
@@ -1996,11 +1999,11 @@ int main(int argc, char *argv[])
 		dsdtInit(cpuPort);
                 //add by stan for param cbslimit argv[3] and increament argv[4]
                 if(argc >= 3 ) {
-                  sprintf((char *)&cbsEnable, "%d", argv[2]);
+                  cbsEnable = atoi(argv[2]);
                   // storm prevent enable
 	 	  if( 1 == cbsEnable && 5 == argc) {
-                    sprintf((char *)&cbsLimit, "%6X", argv[3]);
-                    sprintf((char *)&cbsIncreament,  "%2X", argv[4]);
+		    sscanf(argv[3], "%x", &cbsLimit );
+		    sscanf(argv[4], "%x", &cbsIncreament);
                     cbsEnable = 1;
 		  }else if( 0 == cbsEnable){
                     // storm prevent disable
