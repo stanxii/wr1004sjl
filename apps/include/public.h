@@ -418,6 +418,8 @@ enum
 	MID_SYSINDI,		/*20*/
 	MID_SYSLED,
 	MID_WDTIMER,
+	MID_REGIEVENT,
+	
 	/* 警告: 模块定义不要超过32个*/
 	MID_OTHER = 32
 };
