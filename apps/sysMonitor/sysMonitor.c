@@ -52,7 +52,7 @@ int main(void)
 		fprintf(stderr,"ERROR: sysMonitor->dbsOpen error, exited !\n");
 		return CMM_CREATE_SOCKET_ERROR;
 	}
-	
+
 	/* 初始化g_systemStatus 互斥访问的互斥锁*/
 	init_systemStatusLock();
 
@@ -73,7 +73,6 @@ int main(void)
 		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
-	
 	/* 系统灯管理线程*/
 	ret = pthread_create( &thread_id[1], NULL, (void *)sysledProcessor, NULL );
 	if( ret == -1 )
@@ -84,7 +83,6 @@ int main(void)
 		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
-
 	/* WDT 监管线程*/
 	ret = pthread_create( &thread_id[2], NULL, (void *)wdtProcessor, NULL );
 	if( ret == -1 )
@@ -94,8 +92,7 @@ int main(void)
 		destroy_systemStatusLock();
 		dbsClose(dbsdev);
 		return CMM_FAILED;
-	}
-
+	}	
 	/* 外部请求消息响应线程*/
 	ret = pthread_create( &thread_id[3], NULL, (void *)sysindiProcessor, NULL );
 	if( ret == -1 )
@@ -106,7 +103,7 @@ int main(void)
 		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
-	
+
 #ifdef __AT30TK175STK__
 	/* 系统环境监控进程*/
 	ret = pthread_create( &thread_id[4], NULL, (void *)atmProcessor, NULL );
@@ -130,7 +127,7 @@ int main(void)
 
 	/* 不要在这个后面添加代码，执行不到滴*/
 	printf("module sysMonitor exit !\n");
-	dbs_sys_log(dbsdev, DBS_LOG_INFO, "INFO: module sysMonitor exit");	
+	dbs_sys_log(dbsdev, DBS_LOG_INFO, "INFO: module sysMonitor exit");
 	destroy_systemStatusLock();
 	dbsClose(dbsdev);
 	return 0;
