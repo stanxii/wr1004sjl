@@ -11,6 +11,7 @@
 #include <linux/mii.h>
 
 #include <msApi.h>
+#include <dbsapi.h>
 
 #include "cmm_dsdt.h"
 
@@ -238,6 +239,43 @@ GT_STATUS dsdtStart(int cpuPort)
 	printf("QuarterDeck has been started\n");
 
 	return GT_OK;
+}
+
+int __find_dbnum_by_vid(uint32_t vid)
+{
+	GT_STATUS status;
+	GT_VTU_ENTRY vtuEntry;
+
+	gtMemSet(&vtuEntry,0,sizeof(GT_VTU_ENTRY));
+	vtuEntry.vid = 0xfff;
+	
+	if((status = gvtuGetEntryFirst(dev,&vtuEntry)) != GT_OK)
+	{
+		/* if can not find vid in the VTU, return DBNum = 0 */
+		printf("can not find vid in the vtu\n");
+		return 0;
+	}
+	else
+	{
+		if( vtuEntry.vid == vid )
+		{
+			return vtuEntry.DBNum;
+		}		
+	}
+
+	while(1)
+	{
+		if((status = gvtuGetEntryNext(dev,&vtuEntry)) != GT_OK)
+		{
+			/* if can not find vid in the VTU, return DBNum = 0 */
+			printf("can not find vid in the vtu\n");
+			return 0;
+		}		
+		if( vtuEntry.vid == vid )
+		{
+			return vtuEntry.DBNum;
+		}
+	}
 }
 
 GT_STATUS __undo_mgmt_vlan(void)
@@ -807,6 +845,84 @@ int cmm2dsdt_mgmtVlanInit(void)
 	{
 		return CMM_SUCCESS;
 	}
+}
+
+int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void)
+{
+	st_dbsNetwork networkinfo;
+	int status;
+	GT_ATU_ENTRY macEntry;	
+
+	macEntry.macAddr.arEther[0] = 0x00;
+	macEntry.macAddr.arEther[1] = 0xb0;
+	macEntry.macAddr.arEther[2] = 0x52;
+	macEntry.macAddr.arEther[3] = 0x00;
+	macEntry.macAddr.arEther[4] = 0x00;
+	macEntry.macAddr.arEther[5] = 0x01;
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_C22
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_S220
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_XD25
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004SJL
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID)
+						|(1 << PORT_CABLE2_PORT_ID)
+						|(1 << PORT_CABLE3_PORT_ID)
+						|(1 << PORT_CABLE4_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
+	macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
+                                any other priority determined by the frame's data. This value is
+                                meaningful only if the device does not support extended priority
+                                information such as MAC Queue Priority and MAC Frame Priority */
+
+	macEntry.exPrio.macQPri = 0;    /* If device doesnot support MAC Queue Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.macFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.useMacFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+
+	macEntry.entryState.ucEntryState = GT_UC_STATIC;
+                                /* This address is locked and will not be aged out.
+                                Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
+
+	macEntry.trunkMember = GT_FALSE;
+								
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = __find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+
+	/* Add the MAC Address */
+	if((status = gfdbAddMacEntry(dev,&macEntry)) != GT_OK)
+	{
+		printf("gfdbAddMacEntry returned fail.\n");
+		return status;
+	}
+
+	return GT_OK;
 }
 
 int cmm2dsdt_init(void)

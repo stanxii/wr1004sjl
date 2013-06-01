@@ -823,7 +823,8 @@ void do_create_cnu(uint8_t macaddr[])
 	T_TOPOLOGY_INFO *this = &topEntry;
 
 	/* 假定默认添加设备类型*/
-	cnu.col_model = WEC_604;
+	//cnu.col_model = WEC_604;
+	cnu.col_model = WEC701_C4;
 	sprintf(cnu.col_mac, "%02X:%02X:%02X:%02X:%02X:%02X", 
 		macaddr[0], macaddr[1], macaddr[2], 
 		macaddr[3], macaddr[4], macaddr[5]
@@ -1472,7 +1473,8 @@ int init_nelib(void)
 	需要获取CLT的MAC并写入数据库，下次启动就不用再次
 	获取CLT的MAC地址，只需要从数据库取即可*/
 	if( memcmp(topology->tb_clt.Mac, null_mac, 6) == 0 )
-	{		
+	{
+		printf("no clt info in dbs, try auto scanning......\n");
 		/* 获取CLT的MAC地址并写入数据库*/
 		if( msg_reg_mmead_get_clt(&(topology->tb_clt)) != CMM_SUCCESS )
 		{
@@ -1530,7 +1532,7 @@ int main(void)
 	}
 	
 	/* Waiting for mmead init */
-	dbsWaitModule(dbsdev, MF_MMEAD|MF_ALARM|MF_TM);
+	dbsWaitModule(dbsdev, MF_CMM|MF_MMEAD|MF_ALARM|MF_TM);
 	
 	/*创建与MMEAD模块通讯的外部SOCKET接口*/
 	if( CMM_SUCCESS != msg_mmead_init() )

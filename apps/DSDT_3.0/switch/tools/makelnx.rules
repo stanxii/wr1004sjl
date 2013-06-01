@@ -32,7 +32,7 @@ $(TARGET).o : $(OBJECTS) deps
 
 $(OBJECTS): %.o: %.c
 .c.o :
-	@if ! [ -a $(OBJDIR) ]; then mkdir $(OBJDIR); fi
+	@if ! [ -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
 	$(CC) $(CFLAGS) $(EXTRA_DEFINE) $(EXTRA_INCLUDE) $(ADDED_CFLAGS) -c $< -o $(OBJDIR)/$(notdir $@)
 
 deps : $(CSOURCES)

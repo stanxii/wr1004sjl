@@ -37,7 +37,8 @@ Table of Content:
 2) Source Code Organization
 3) General Introduction
 4) How to - build Marvell drivers
-5) Example of global building variables
+5) How to - build Marvell sw drivers (add by frank)
+6) Example of global building variables
 
 1) Release History 
 ------------------
@@ -88,6 +89,16 @@ In more detail see README_SW and README_PHY in each driver.
     4.4) Build Marvell SOHO Switch driver on madDrv 
         <make DSDT_USE_MAD=TRUE> in root directory.
 
-5) Example of global building variables		
+5) How to - build Marvell sw drivers (add by frank)
+---------------------------------
+    In Linux system,
+    5.1) Build Marvell SOHO Switch driver only (qdDrv)
+        <cd switch/tools> (need modify your src home path first in switch/tools/setenv file in 
+        dir first)
+        <source setenv>
+        <cd switch/src>
+        <make> in switch/src directory.    
+
+6) Example of global building variables		
 ---------------------------------
   <setenv> includes example of building global variables in Linux environment.

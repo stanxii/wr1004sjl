@@ -36,7 +36,7 @@ void ShowBrand(void)
 {
 	printf("\n");
 	printf("*********************************************************************\n");
-	printf("*    WEC9720EK cli system. Copyright (c) 2013-2014                  *\n");
+	printf("*    EoC CLI system. Copyright (c) 2013-2014                        *\n");
 	/* demo version info */
 	//printf("*    Hangzhou Prevail Optoelectronic Equipment Co.,LTD.                  *\n");
 	printf("*    Without the owner's prior written consent,                     *\n");

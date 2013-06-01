@@ -66,7 +66,7 @@ void dsdTester_usage(void)
 	printf("  --case/6/2: show all the Mac entry in the ATU\n");
 	printf("  --case/6/3: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, P6 only\n");
 	printf("  --case/6/4: sample del intellon multicast address 00:b0:52:00:00:01 from the ATU\n");
-	printf("  --case/6/5: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, p0 & p6\n");
+	printf("  --case/6/5: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, and all cable port\n");
 	printf("  --case/7/1 1 0x200000 0x3D: 1 is Enable ,cbsLimit 0x200000 < 0xFFFFFF , cbsIncreament < 0xFF sample:: --case/7/1 0 is disable Storm prevent test for broadcast unknow unicast and multicast\n");
 	
 	printf("\n\n");
@@ -798,7 +798,9 @@ GT_STATUS dsdTester_addAtherosMulticastAddressToAllCablePort(void)
 	macEntry.entryState.ucEntryState = GT_UC_STATIC;
                                 /* This address is locked and will not be aged out.
                                 Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
-	
+
+	macEntry.trunkMember = GT_FALSE;
+								
 	/* get mgmt-vlan status */
 	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
 	{
@@ -816,7 +818,7 @@ GT_STATUS dsdTester_addAtherosMulticastAddressToAllCablePort(void)
 		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
 		macEntry.DBNum = 0;
 	}
-								
+
 	/* Add the MAC Address */
 	if((status = gfdbAddMacEntry(dev,&macEntry)) != GT_OK)
 	{
@@ -1641,13 +1643,18 @@ int main(int argc, char *argv[])
 	int cbsIncreament = 0x00;	
 	int cbsEnable= 0;	
 
-	if( argc != 2 )
+	if( argc > 2 )
 	{
-	    if( strcmp(argv[1], "case/7/1") != 0)
-            {
+		if( strcmp(argv[1], "case/7/1") != 0)
+		{
+			dsdTester_usage();
+			return 0;
+		}
+	}
+	else if( argc != 2 )
+	{
 		dsdTester_usage();
 		return 0;
-            }
 	}
 
 	dbsdev = dbsNoWaitOpen(MID_DSDT_TESTER);

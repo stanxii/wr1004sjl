@@ -80,7 +80,7 @@ void writePageHeader(FILE *fs) {
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n</head>\n<body>\n<blockquote>\n<form>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n</head>\n<body>\n<blockquote>\n<form>\n");
 }
 
 void writePopErrorPage(FILE *fs)
@@ -132,7 +132,7 @@ void cgiPortPropety(char *query, FILE *fs)
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 	
 	fprintf(fs, "<script language='javascript'>\n");
 
@@ -1131,7 +1131,7 @@ void cgiCltProfile(char *query, FILE *fs)
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 	fprintf(fs, "<script language='javascript' src='util.js'></script>\n");
 	fprintf(fs, "<SCRIPT language=JavaScript>\n");
 	fprintf(fs, "function frmLoad() {\n");
@@ -1511,7 +1511,7 @@ void cgiCnuProfile(char *query, FILE *fs)
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 	fprintf(fs, "<script language='javascript' src='util.js'></script>\n");
 	fprintf(fs, "<SCRIPT language=JavaScript>\n");
 	fprintf(fs, "function frmLoad() {\n");
@@ -2155,7 +2155,7 @@ void cgiCltMgmt(char *query, FILE *fs)
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 	fprintf(fs, "<script language='javascript'>\n");
 	fprintf(fs, "function cltAction(opt, cltid){\n");
 	fprintf(fs, "	if( opt == 0 ){var loc = 'editCltPro.cmd?cltid=';}\n");
@@ -2254,7 +2254,7 @@ void cgiCnuMgmt(char *query, FILE *fs)
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 	fprintf(fs, "<script language='javascript'>\n");
 	fprintf(fs, "function cnuAction(opt, cnuid){\n");
 	fprintf(fs, "	if( opt == 0 ){var loc = 'editCnuPro.cmd?cnuid=';}\n");
@@ -2373,7 +2373,7 @@ void cgiLinkDiag(char *query, FILE *fs)
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 	fprintf(fs, "<script language='javascript'>\n");
 	fprintf(fs, "function wecLinkDiag(){\n");
 	fprintf(fs, "	var loc = 'wecLinkDiag.cgi?';\n");

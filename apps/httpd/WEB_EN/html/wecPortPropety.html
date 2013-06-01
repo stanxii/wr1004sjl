@@ -4,7 +4,7 @@
 			<link rel="stylesheet" href='colors.css' type='text/css'>
 			<!--<meta http-equiv="Pragma" content="no-cache">-->
 			<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">			
-			<title>WEC9720EK</title>
+			<title>EoC</title>
 			<base target="_self">
 			<SCRIPT language=JavaScript> 
 				var eth1speed = '<%ejGet(eth1speed)%>';
@@ -67,16 +67,16 @@
             <br>
             <table border="1" cellpadding="3" cellspacing="0">
                <tr>
-                  <td class='hd' align="center" width=80>Port</td>
-                  <td class='hd' align="center" width=100>Link status</td>
-                  <td class='hd' align="center" width=120>Speed/Duplex</td>
-                  <td class='hd' align="center" width=60>pri</td>
+                  <td class='hd' align="center" width=110>Port</td>
+                  <td class='hd' align="center" width=90>Link status</td>
+                  <td class='hd' align="center" width=110>Speed/Duplex</td>
+                  <td class='hd' align="center" width=40>pri</td>
                   <td class='hd' align="center" width=80>Flow Control</td>
                   <td class='hd' align="center" width=80>Port status</td>
                   <td class='hd' align="center" width=80>Setup</td>
                </tr>
                <tr>
-                  <td align="center">ETH1</td>
+                  <td align="center">ETH1/UPLINK</td>
                   <script language="javascript">
                   	if( parseInt(eth1linksts) == 1 )
                   	{
@@ -175,7 +175,7 @@
                   <td align="center"><input type='button' class='btn2L' onClick='btnConfig(1)' value='Config'></td>
                </tr>
                <tr>
-                  <td align="center">ETH2</td>
+                  <td align="center">ETH2/MGMT</td>
                   <script language="javascript">
                   	if( parseInt(eth2linksts) == 1 )
                   	{
@@ -372,7 +372,7 @@
                   
                   <td align="center"><input type='button' class='btn2L' onClick='btnConfig(3)' value='Config'></td>
                </tr>
-               <tr>
+               <!--<tr>
                   <td align="center">Cable2</td>
                   <script language="javascript">
                   	if( parseInt(eth4linksts) == 1 )
@@ -470,7 +470,7 @@
                   </script>
                   
                   <td align="center"><input type='button' class='btn2L' onClick='btnConfig(4)' value='Config'></td>
-               </tr>              
+               </tr>-->            
         </table>
         <br>
         <p>

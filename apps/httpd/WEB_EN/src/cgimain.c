@@ -1188,7 +1188,7 @@ void cgiWriteUpgStep1Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=2';\n");
@@ -1224,7 +1224,7 @@ void cgiWriteUpgStep1Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "</head>\n");
 		fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
 		fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
@@ -1254,7 +1254,7 @@ void cgiWriteUpgStep2Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=3';\n");
@@ -1295,7 +1295,7 @@ void cgiWriteUpgStep2Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "</head>\n");
 		fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
 		fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
@@ -1325,7 +1325,7 @@ void cgiWriteUpgStep3Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=4';\n");
@@ -1371,7 +1371,7 @@ void cgiWriteUpgStep3Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "</head>\n");
 		fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
 		fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
@@ -1406,7 +1406,7 @@ void cgiWriteUpgStep4Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=5';\n");
@@ -1457,7 +1457,7 @@ void cgiWriteUpgStep4Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1518,7 +1518,7 @@ void cgiWriteUpgStep5Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=6';\n");
@@ -1574,7 +1574,7 @@ void cgiWriteUpgStep5Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1640,7 +1640,7 @@ void cgiWriteUpgStep0Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1706,7 +1706,7 @@ void cgiWriteUpgStep0Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1812,7 +1812,7 @@ void cgiWriteMessagePage(FILE *fs, char *title,
    fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
    fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
    fprintf(fs, "<meta HTTP-EQUIV='Pragma' CONTENT='no-cache'>\n");
-   fprintf(fs, "<title>WEC9720EK</title>\n");
+   fprintf(fs, "<title>EoC</title>\n");
 
    fprintf(fs, "<script language='javascript'>\n");
    fprintf(fs, "<!-- hide\n");
@@ -1854,7 +1854,7 @@ void do_auth(char *userid, char *passwd, char *realm,
    strcpy(passwd, glbWebVar.sysPassword);
    strcpy(sptPasswd, glbWebVar.sptPassword);
    strcpy(usrPasswd, glbWebVar.usrPassword);
-   strcpy(realm, "WECxx EoC CBAT");
+   strcpy(realm, "EoC CBAT");
 }
 
 /* Converts hexadecimal to decimal (character): */

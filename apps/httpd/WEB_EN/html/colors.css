@@ -25,12 +25,12 @@ input {
 	noresize:true;
 }
 .footerbody {
-    border-top: #205A7F 1px solid;
-    border-bottom: #205A7F 1px solid;
-    background: #205a7f none;
+    border-top: #000000 1px solid;
+    border-bottom: #000000 1px solid;
+    background: #000000 none;
 }
 .footertd {
-    background-color: #205a7f;
+    background-color: #000000;
 }
 .mainMenuBody {
     background: #f3f3f3 none;

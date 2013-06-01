@@ -2131,6 +2131,24 @@ int main(void)
 		dbsClose(dbsdev);
 		return CMM_FAILED;
 	}
+	if( cmm2dsdt_addAtherosMulticastAddressToAllCablePort() != CMM_SUCCESS )
+	{
+		fprintf(stderr, "cmm->init_network error, exited !\n");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module cmm init_network error, exited !");
+		cmm2sysmonitor_destroy();
+		cmm2alarm_destroy();
+		destroy_cmm_reg();
+		destroy_cmm_tm();
+		destroy_cmm_mmead();
+		close_socket_cmm();
+		dbsClose(dbsdev);
+		return CMM_FAILED;
+	}
+	else
+	{
+		fprintf(stderr, "cmm add atheros multicast address to all cable port\n");
+		dbs_sys_log(dbsdev, DBS_LOG_INFO, "cmm add atheros multicast address to all cable port");
+	}
 	
 	/*初始化网络信息配置*/
 	if( init_network() != CMM_SUCCESS )

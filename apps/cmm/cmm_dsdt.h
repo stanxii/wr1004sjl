@@ -19,6 +19,7 @@ int cmm2dsdt_getPortPri(int port);
 int cmm2dsdt_getPortFlowControl(int port);
 int cmm2dsdt_getPortState(int port);
 int cmm2dsdt_mgmtVlanInit(void);
+int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void);
 int cmm2dsdt_init(void);
 
 #endif 

@@ -1980,6 +1980,7 @@ GT_STATUS gfdbAddMacEntry
     gtMemCpy(entry.macAddr.arEther,macEntry->macAddr.arEther,6);
     entry.DBNum        = macEntry->DBNum;
     entry.portVec     = GT_LPORTVEC_2_PORTVEC(macEntry->portVec);
+    
     if(entry.portVec == GT_INVALID_PORT_VEC)
     {
         return GT_BAD_PARAM;
@@ -2034,7 +2035,7 @@ GT_STATUS gfdbAddMacEntry
         DBG_INFO(("Entry State should not be ZERO.\n"));
         return GT_BAD_PARAM;
     }
-
+    
     retVal = atuOperationPerform(dev,LOAD_PURGE_ENTRY,NULL,&entry);
     if(retVal != GT_OK)
     {
@@ -2495,11 +2496,13 @@ static GT_STATUS atuOperationPerform
                 }
                 else if(IS_IN_DEV_GROUP(dev,DEV_ATU_EXT_PRI))
                 {
-                    data = (GT_U16)( (((entry->portVec) & portMask) << 4) |
+			data = (GT_U16)( (((entry->portVec) & portMask) << 4) |
                              (((entry->entryState.ucEntryState) & 0xF)) |
                              (((entry->exPrio.macQPri) & 0x3) << 14) );
-                    if(entry->exPrio.useMacFPri == GT_TRUE)
-                        data |= ((1 << 13) | ((entry->exPrio.macFPri & 0x7) << 10));
+			if(entry->exPrio.useMacFPri == GT_TRUE)
+			{
+				data |= ((1 << 13) | ((entry->exPrio.macFPri & 0x7) << 10));
+			}                       
                 }
                 else
                 {

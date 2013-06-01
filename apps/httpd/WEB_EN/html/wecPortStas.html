@@ -3,7 +3,7 @@
 		<link rel="stylesheet" href='stylemain.css' type='text/css'>
 		<link rel="stylesheet" href='colors.css' type='text/css'>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
-		<title>WEC9720EK</title>
+		<title>EoC</title>
 		<base target="_self">
 		<SCRIPT language=JavaScript>
 			function btnClear()
@@ -37,21 +37,21 @@
             <br>
             <table border="1" cellpadding="3" cellspacing="0">
                <tr>
-                  <td class='hd' align="center" width=80>Port</td>
-                  <td class='hd' align="center" width=120>TX Packets</td>
+                  <td class='hd' align="center" width=120>Port</td>
+                  <td class='hd' align="center" width=100>TX Packets</td>
                   <td class='hd' align="center" width=140>TX bytes</td>
-                  <td class='hd' align="center" width=120>RX Packets</td>
-                  <td class='hd' align="center" width=140>RX bytes</td>                  
+                  <td class='hd' align="center" width=100>RX Packets</td>
+                  <td class='hd' align="center" width=140>RX bytes</td>              
                </tr>
                <tr>
-                  <td class='diagdata' align="center"><a href="portStatsDetail.cmd?portid=1">ETH1</a></td>
+                  <td class='diagdata' align="center"><a href="portStatsDetail.cmd?portid=1">ETH1/UPLINK</a></td>
                   <td class='diagdata' align="center"><%ejGet(eth1txp)%></td>
                   <td class='diagdata' align="center"><%ejGet(eth1txb)%></td>
                   <td class='diagdata' align="center"><%ejGet(eth1rxp)%></td>
                   <td class='diagdata' align="center"><%ejGet(eth1rxb)%></td>
                </tr>
                <tr>
-                  <td align="center"><a href="portStatsDetail.cmd?portid=2">ETH2</a></td>
+                  <td align="center"><a href="portStatsDetail.cmd?portid=2">ETH2/MGMT</a></td>
                   <td align="center"><%ejGet(eth2txp)%></td>
                   <td align="center"><%ejGet(eth2txb)%></td>
                   <td align="center"><%ejGet(eth2rxp)%></td>
@@ -64,13 +64,15 @@
                   <td align="center"><%ejGet(eth3rxp)%></td>
                   <td align="center"><%ejGet(eth3rxb)%></td>
                </tr>
+               <!--
                <tr>
                   <td align="center"><a href="portStatsDetail.cmd?portid=4">Cable2</a></td>
                   <td align="center"><%ejGet(eth4txp)%></td>
                   <td align="center"><%ejGet(eth4txb)%></td>
                   <td align="center"><%ejGet(eth4rxp)%></td>
                   <td align="center"><%ejGet(eth4rxb)%></td>
-               </tr>               
+               </tr>
+               -->
         </table>
         <br>
         <p>
