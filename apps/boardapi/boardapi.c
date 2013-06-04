@@ -183,8 +183,7 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC9720EK_C22:
 		{
-			//return "WEC9720EK C22";
-			return "EOC-MO350-2G";
+			return "WEC9720EK C22";
 		}
 		case WEC9720EK_E31:
 		{
@@ -208,8 +207,7 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC701_C4:
 		{
-			//return "WEC701 C4";
-			return "EOC-S100-4F";
+			return "WEC701 C4";
 		}
 		case WEC_3501I_XD25:
 		{
