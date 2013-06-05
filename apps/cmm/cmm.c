@@ -2146,7 +2146,7 @@ int main(void)
 	}
 	else
 	{
-		fprintf(stderr, "cmm add atheros multicast address to all cable port\n");
+		fprintf(stderr, "cmm binding atheros multicast address\n");
 		dbs_sys_log(dbsdev, DBS_LOG_INFO, "cmm add atheros multicast address to all cable port");
 	}
 	

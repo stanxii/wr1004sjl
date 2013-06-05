@@ -1474,7 +1474,7 @@ int init_nelib(void)
 	获取CLT的MAC地址，只需要从数据库取即可*/
 	if( memcmp(topology->tb_clt.Mac, null_mac, 6) == 0 )
 	{
-		printf("no clt info in dbs, try auto scanning......\n");
+		printf("no clt detected in dbs, try auto scanning......\n");
 		/* 获取CLT的MAC地址并写入数据库*/
 		if( msg_reg_mmead_get_clt(&(topology->tb_clt)) != CMM_SUCCESS )
 		{
@@ -1485,7 +1485,7 @@ int init_nelib(void)
 		}
 		else
 		{
-			printf("register->init_nelib: [discovered clt for the first time]\n");
+			printf("register: [discovered clt for the first time]\n");
 			/* 在这里并不做设备上线的处理*/
 			/* 仅仅只是将CLT的MAC地址写入数据库*/
 			clt.id = 1;

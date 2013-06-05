@@ -1854,7 +1854,7 @@ void do_auth(char *userid, char *passwd, char *realm,
    strcpy(passwd, glbWebVar.sysPassword);
    strcpy(sptPasswd, glbWebVar.sptPassword);
    strcpy(usrPasswd, glbWebVar.usrPassword);
-   strcpy(realm, "WEC9720EK");
+   strcpy(realm, "EoC CBAT");
 }
 
 /* Converts hexadecimal to decimal (character): */

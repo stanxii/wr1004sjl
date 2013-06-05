@@ -37,21 +37,21 @@
             <br>
             <table border="1" cellpadding="3" cellspacing="0">
                <tr>
-                  <td class='hd' align="center" width=80>端口</td>
-                  <td class='hd' align="center" width=120>发送数据包</td>
+                  <td class='hd' align="center" width=120>端口</td>
+                  <td class='hd' align="center" width=100>发送数据包</td>
                   <td class='hd' align="center" width=140>发送字节数</td>
-                  <td class='hd' align="center" width=120>接收数据包</td>
+                  <td class='hd' align="center" width=100>接收数据包</td>
                   <td class='hd' align="center" width=140>接收字节数</td>                  
                </tr>
                <tr>
-                  <td class='diagdata' align="center"><a href="portStatsDetail.cmd?portid=1">ETH1</a></td>
+                  <td class='diagdata' align="center"><a href="portStatsDetail.cmd?portid=1">ETH1/UPLINK</a></td>
                   <td class='diagdata' align="center"><%ejGet(eth1txp)%></td>
                   <td class='diagdata' align="center"><%ejGet(eth1txb)%></td>
                   <td class='diagdata' align="center"><%ejGet(eth1rxp)%></td>
                   <td class='diagdata' align="center"><%ejGet(eth1rxb)%></td>
                </tr>
                <tr>
-                  <td align="center"><a href="portStatsDetail.cmd?portid=2">ETH2</a></td>
+                  <td align="center"><a href="portStatsDetail.cmd?portid=2">ETH2/MGMT</a></td>
                   <td align="center"><%ejGet(eth2txp)%></td>
                   <td align="center"><%ejGet(eth2txb)%></td>
                   <td align="center"><%ejGet(eth2rxp)%></td>

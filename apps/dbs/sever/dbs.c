@@ -2437,6 +2437,7 @@ int main(void)
 	/* 写入系统日志*/
 	dbs_syslog(DBS_LOG_INFO, "starting module dbs success");
 	fprintf(stderr, "\n\n====================================================================\n\n");
+	printf("Current app version: %s\n\n", SYSINFO_APP_VERSION);
 	printf("Starting module dbs		......		[OK]\n");
 	
 	/* 注册异常退出句柄函数*/
