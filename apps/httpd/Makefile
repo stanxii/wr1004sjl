@@ -15,9 +15,10 @@ CFLAGS +=-g -O2
 # HTTPD_GUI_LANGUAGE = ZH
 HTTPD_GUI_LANGUAGE = EN
 
-
+ROOTFSDIR	=	${ROOTDIR}/apps/rootfs
 SRCDIR 		=	${ROOTDIR}/apps/httpd/src
-TARGETDIR 	=	${ROOTDIR}/apps/flashfs
+
+TARGETDIR 	=	$(ROOTFSDIR)/usr/mnt
 BIN_PATH 	=	$(TARGETDIR)/app
 WEB_PATH 	=	$(TARGETDIR)/html
 

@@ -15,9 +15,10 @@ BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 OBJ = register.o reg_dbs.o reg_alarm.o reg_mmead.o reg_tm.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
+BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-BIN_PATH = $(FLASHFSDIR)/app
+#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+#BIN_PATH = $(FLASHFSDIR)/app
 
 .PHONY: all clean distclean
 

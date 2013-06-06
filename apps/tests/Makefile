@@ -25,9 +25,10 @@ QD_LIB = $(DSDTSWDIR)/Library/qdDrv.o
 CFLAGS += -g -O2 -D__KERNEL__
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
+BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-BIN_PATH = $(FLASHFSDIR)/app
+#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+#BIN_PATH = $(FLASHFSDIR)/app
 
 .PHONY: all clean distclean
 

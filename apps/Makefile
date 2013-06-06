@@ -9,11 +9,12 @@ STRIP	= $(CROSS_COMPILE)strip
 
 CFLAGS += -g -O2
 
-USERFSDIR = ${ROOTDIR}/apps/flashfs
+#USERFSDIR = ${ROOTDIR}/apps/flashfs
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-ROOTFSIMG = rootfs.cramfs
-USERFSNAME = userfs.ubifs
-USERFSIMG = userfs.img
+#ROOTFSIMG = rootfs.cramfs
+ROOTFSIMG = rootfs.ubifs
+#USERFSNAME = userfs.ubifs
+#USERFSIMG = userfs.img
 NFS_DIR = /home/nfs
 TFTPROOT = /tftpboot
 
@@ -49,9 +50,9 @@ app:
 
 tftp:
 	rm -f $(TFTPROOT)/$(ROOTFSIMG)
-	rm -f $(TFTPROOT)/$(USERFSIMG)
 	cp mkimges/$(ROOTFSIMG) $(TFTPROOT)
-	cp mkimges/$(USERFSIMG) $(TFTPROOT)
+#	rm -f $(TFTPROOT)/$(USERFSIMG)
+#	cp mkimges/$(USERFSIMG) $(TFTPROOT)
 
 clean:
 	-for i in $(apps) ; do [ ! -d $$i ] || make -C $$i clean; \
@@ -63,7 +64,7 @@ nfs:
 
 distclean:	
 	rm -f $(TFTPROOT)/$(ROOTFSIMG)
-	rm -f $(TFTPROOT)/$(USERFSIMG)
+#	rm -f $(TFTPROOT)/$(USERFSIMG)
 	-for i in $(apps) ; do [ ! -d $$i ] || make -C $$i distclean; \
 	done
 

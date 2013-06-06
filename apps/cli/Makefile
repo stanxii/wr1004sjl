@@ -15,8 +15,10 @@ BUILDDIR = obj
 BINDIR = bin
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-BIN_PATH = $(FLASHFSDIR)/app
+BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
+
+#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+#BIN_PATH = $(FLASHFSDIR)/app
 
 BIN_NAME=cli
 

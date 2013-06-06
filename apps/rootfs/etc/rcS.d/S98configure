@@ -14,6 +14,10 @@ mkdir -p /var/tmp
 mkdir -p /var/log
 mkdir -p /var/run
 
+if [ ! -f "/dev/at91btns" ];then
+	mknod /dev/at91btns c 253 0
+fi
+
 if [ ! -d "/usr/mnt/config/" ] ;then
 	echo "@@ Copy config from default : @@"
 	cp /etc/config/ /usr/mnt/config/ -rf
@@ -67,7 +71,7 @@ else
 fi
 
 if [ -x "/usr/sbin/snmpd" ];then
-	/usr/sbin/snmpd -c /etc/config/snmpd.conf -f -Lf /var/log/snmplog -V &
+	/usr/sbin/snmpd -c /etc/config/snmpd.conf -f -Lf /dev/null -V &
 else
 	echo "@@ ERROR: Can not find /usr/sbin/snmpd @@"
 fi
@@ -91,7 +95,6 @@ else
 fi
 
 if [ -x "/usr/sbin/sysMonitor" ];then
-	mknod /dev/at91btns c 253 0
 	/usr/sbin/sysMonitor &
 else
 	echo "@@ ERROR: Can not find /usr/sbin/sysMonitor @@"

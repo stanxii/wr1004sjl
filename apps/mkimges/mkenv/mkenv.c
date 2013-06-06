@@ -39,7 +39,7 @@ char envtable[][256] = {
 	"fileaddr=21100000",
 	"ipaddr=192.168.223.1",
 	"serverip=192.168.223.254",
-	"bootargs=root=/dev/mtdblock4 rootfstype=cramfs console=ttyS0,115200 init=/sbin/init noinitrd mem=64M",
+	"bootargs=ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs console=ttyS0,115200 init=/sbin/init noinitrd mem=64M",
 	"bootcmd=nand read.jffs2 0x22200000 0xA0000 0x200000; bootm 0x22200000",
 	"devmodel=22",
 	"watchdog=on",

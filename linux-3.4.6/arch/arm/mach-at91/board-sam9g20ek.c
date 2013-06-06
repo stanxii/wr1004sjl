@@ -165,13 +165,13 @@ static struct mtd_partition __initdata ek_nand_partition[] = {
 	{
 		.name	= "rootfs",	/* MTD4 */
 		.offset	= 0x2A0000,
-		.size		= 0x560000,
+		.size		= 0xC00000,
 	},
-	{
-		.name	= "userfs",	/* MTD5 */
-		.offset	= SZ_8M,
-		.size		= 6 * SZ_1M,
-	},
+	//{
+	//	.name	= "userfs",	/* MTD5 */
+	//	.offset	= SZ_8M,
+	//	.size		= 6 * SZ_1M,
+	//},
 	{
 		.name	= "reserve",	/* MTD6 */
 		.offset	= MTDPART_OFS_NXTBLK,
