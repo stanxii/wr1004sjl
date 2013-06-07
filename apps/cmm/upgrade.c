@@ -17,10 +17,14 @@
 //#include "smtraps.h"
 //#include "smftp.h"
 #include <public.h>
+#include <dbsapi.h>
 //#include <mtd-abi.h>
 
 /* for debug */
 //int test_return_code = 0;
+
+extern T_DBS_DEV_INFO *dbsdev;
+
 ///////////////////////////////////////////////////////////////////////////////////////
 unsigned char wecDigitalHeader[64] = 
 {
@@ -29,8 +33,6 @@ unsigned char wecDigitalHeader[64] =
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //UPLOAD_ERROR_CODE g_smload_status = RC_UPG_OK;
@@ -352,7 +354,7 @@ UPLOAD_ERROR_CODE ftp_download_image(void)
 	SM_LAST_UPLOAD_STATUS = RC_UPG_ON_GOING;
 
 	/* 从数据库读取FTP 服务器的访问信息*/
-	if( CMM_SUCCESS == dbsGetSwmgmt(1, &ftp_info) )
+	if( CMM_SUCCESS == dbsGetSwmgmt(dbsdev, 1, &ftp_info) )
 	{		
 		strcpy(server.user, ftp_info.col_user);
 		memset(server.password, 0x00, 64);

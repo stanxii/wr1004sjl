@@ -12,8 +12,8 @@ CFLAGS +=-g -O2
 
 
 # Web language select [ZH|EN]
-# HTTPD_GUI_LANGUAGE = ZH
-HTTPD_GUI_LANGUAGE = EN
+HTTPD_GUI_LANGUAGE = ZH
+# HTTPD_GUI_LANGUAGE = EN
 
 
 SRCDIR 		=	${ROOTDIR}/apps/httpd/src
