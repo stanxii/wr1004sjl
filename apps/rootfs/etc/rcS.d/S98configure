@@ -67,7 +67,7 @@ else
 fi
 
 if [ -x "/usr/sbin/snmpd" ];then
-	/usr/sbin/snmpd -c /etc/config/snmpd.conf -f -Lf /var/log/snmplog -V &
+	/usr/sbin/snmpd -c /etc/config/snmpd.conf -f -Lf /dev/null -V &
 else
 	echo "@@ ERROR: Can not find /usr/sbin/snmpd @@"
 fi
