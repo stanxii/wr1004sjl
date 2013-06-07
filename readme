@@ -47,20 +47,21 @@ How to build u-boot:
 	3) make distclean;
 ####################################################################################################################
 
+flash nvm:
+	1) nand erase 0x60000 0x40000;tftp 0x21100000 env.bin
+	2) nand write.jffs2 0x21100000 0x60000 0x40000
+	
 flash kernel:
-	1) nand erase 0xA0000 0x200000
-	2) tftp 0x22200000 uImage
-	3) nand write.jffs2 0x22200000 0xA0000 0x200000
+	1) nand erase 0xA0000 0x200000;tftp 0x22200000 uImage
+	2) nand write.jffs2 0x22200000 0xA0000 0x200000
 
 flash rootfs:
-	1) nand erase 0x2A0000 0x560000
-	2) tftp 0x21100000 rootfs.bin
-	3) nand write.jffs2 0x21100000 0x2A0000 0x560000
+	1) nand erase 0x2A0000 0x560000;tftp 0x21100000 rootfs.bin
+	2) nand write.jffs2 0x21100000 0x2A0000 0x560000
 
 flash userfs:
-	1) nand erase 0x800000 0x600000
-	2) tftp 0x21100000 userfs.bin
-	3) nand write.jffs2 0x21100000 0x800000 0x600000
+	1) nand erase 0x800000 0x600000;tftp 0x21100000 userfs.bin
+	2) nand write.jffs2 0x21100000 0x800000 0x600000
 
 ####################################################################################################################
 How to compile apps:
