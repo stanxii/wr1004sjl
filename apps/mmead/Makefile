@@ -16,10 +16,10 @@ OBJDIR = ./obj
 OBJ = mmeapi.o mmead.o support/atheros/tools/*.o support/atheros/ihpapi/ihpapi.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
+#BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-#BIN_PATH = $(FLASHFSDIR)/app
+FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+BIN_PATH = $(FLASHFSDIR)/app
 
 .PHONY: all clean distclean
 

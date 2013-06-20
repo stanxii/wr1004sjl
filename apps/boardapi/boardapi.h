@@ -96,6 +96,14 @@ char * boardapi_getAlarmTypeStr(uint16_t alarmType);
 int boardapi_getAlarmLevelByCode(uint32_t alarmCode);
 
 /********************************************************************************************
+*	函数名称:boardapi_getAlarmLevel
+*	函数功能:根据告警码获取该告警的等级
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+int boardapi_getAlarmLevel(st_dbsAlarmlog *alarm);
+
+/********************************************************************************************
 *	函数名称:boardapi_setMTParameters
 *	函数功能:烧录NVM参数的接口函数
 *	作者:frank

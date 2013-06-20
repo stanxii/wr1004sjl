@@ -36,10 +36,10 @@ env_t;
 char envtable[][256] = {
 	"ethaddr=30:71:B2:00:00:00",
 	"filesize=1B4142",
-	"fileaddr=21100000",
+	"fileaddr=20000000",
 	"ipaddr=192.168.223.1",
 	"serverip=192.168.223.254",
-	"bootargs=ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs console=ttyS0,115200 init=/sbin/init noinitrd mem=64M",
+	"bootargs=ubi.mtd=4 root=ubi0:rootfs rootfstype=ubifs ro console=ttyS0,115200 init=/sbin/init noinitrd mem=64M",
 	"bootcmd=nand read.jffs2 0x22200000 0xA0000 0x200000; bootm 0x22200000",
 	"devmodel=22",
 	"watchdog=on",

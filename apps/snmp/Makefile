@@ -12,10 +12,10 @@ TARGET = arm-linux
 ENDIANNESS = little
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
+#BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-#BIN_PATH = $(FLASHFSDIR)/app
+FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+BIN_PATH = $(FLASHFSDIR)/app
 
 SNMPCONFIG_PATH = $(ROOTFSDIR)/etc/config
 

@@ -3080,13 +3080,25 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 	{
 		if( http2dbs_getAlarmlog(i, &st_log) == CMM_SUCCESS )
 		{
-			alarmLevel = boardapi_getAlarmLevelByCode(st_log.alarmCode);
+			alarmLevel = boardapi_getAlarmLevel(&st_log);
 			if( alarmLevel > level ) continue;
 			logCount++;
 			tim = localtime((const time_t *)&st_log.realTime);
 			sprintf(timenow,"%4d-%02d-%02d %02d:%02d",tim->tm_year+1900,tim->tm_mon+1,
 				tim->tm_mday, tim->tm_hour, tim->tm_min
 			);
+			/*convert temperature value*/
+			if( 200903 == st_log.alarmCode )
+			{
+				if( 0 == (st_log.alarmValue>>24) )
+				{
+					st_log.alarmValue = (st_log.alarmValue>>16)&0x000000ff;
+				}
+				else
+				{
+					st_log.alarmValue = (~(((st_log.alarmValue>>16)&0x000000ff)-1));
+				}
+			}
 			switch(alarmLevel)
 			{
 				case DBS_LOG_EMERG:
@@ -3243,7 +3255,7 @@ void cgiAlarmlogDetailView(char *query, FILE *fs)
 	sprintf(timenow,"%4d-%02d-%02d %02d:%02d",tim->tm_year+1900,tim->tm_mon+1,
 		tim->tm_mday, tim->tm_hour, tim->tm_min
 	);
-	alarmLevel = boardapi_getAlarmLevelByCode(st_log.alarmCode);
+	alarmLevel = boardapi_getAlarmLevel(&st_log);
 	
 	writePageHeader(fs);
 	

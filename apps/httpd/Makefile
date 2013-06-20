@@ -18,7 +18,8 @@ HTTPD_GUI_LANGUAGE = ZH
 ROOTFSDIR	=	${ROOTDIR}/apps/rootfs
 SRCDIR 		=	${ROOTDIR}/apps/httpd/src
 
-TARGETDIR 	=	$(ROOTFSDIR)/usr/mnt
+#TARGETDIR 	=	$(ROOTFSDIR)/usr/mnt
+TARGETDIR 	=	$(ROOTDIR)/apps/flashfs
 BIN_PATH 	=	$(TARGETDIR)/app
 WEB_PATH 	=	$(TARGETDIR)/html
 

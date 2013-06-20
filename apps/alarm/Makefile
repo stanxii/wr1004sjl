@@ -14,10 +14,10 @@ DBS_LIB = -ldbs -lnetsnmp
 BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
+#BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-#BIN_PATH = $(FLASHFSDIR)/app
+FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+BIN_PATH = $(FLASHFSDIR)/app
 
 OBJ = alarm.o
 

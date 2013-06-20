@@ -736,6 +736,104 @@ int boardapi_getAlarmLevelByCode(uint32_t alarmCode)
 }
 
 /********************************************************************************************
+*	函数名称:boardapi_getAlarmLevel
+*	函数功能:根据告警码获取该告警的等级
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+int boardapi_getAlarmLevel(st_dbsAlarmlog *alarm)
+{
+	switch(alarm->alarmCode)
+	{
+		/*Emergency*/
+		case 200903:		/* 环境温度告警*/
+		{
+			if( ALARM_STS_NOMINAL == alarm->alarmType )
+			{
+				return DBS_LOG_NOTICE;
+			}
+			else if( ALARM_STS_HIHI == alarm->alarmType )
+			{
+				return DBS_LOG_ALERT;
+			}
+			else if( ALARM_STS_HI == alarm->alarmType )
+			{
+				return DBS_LOG_WARNING;
+			}
+			else if( ALARM_STS_LO == alarm->alarmType )
+			{
+				return DBS_LOG_WARNING;
+			}
+			else if( ALARM_STS_LOLO == alarm->alarmType )
+			{
+				return DBS_LOG_ALERT;
+			}
+			else
+			{
+				return DBS_LOG_WARNING;
+			}
+			break;
+		}
+		case 200906:		/* 噪声过高告警*/
+		case 200907:		/* 链路衰减告警*/
+		case 200908:		/* 物理层速率告警*/				
+		case 200923:		/* can not find clt */
+		{
+			return DBS_LOG_EMERG;
+		}
+		/*DBS_LOG_ALERT*/
+		case 200904:		/* CBAT管理CPU负载过高告警以及恢复*/
+		case 200905:		/* CBAT内存利用率过高告警*/
+		case 200921:		/* CBAT down */
+		{
+			return DBS_LOG_ALERT;
+		}
+		/*DBS_LOG_CRIT*/
+		case 200915:		/* auto-config pib */
+		case 200916:		/* auto-config mod */
+		{
+			return DBS_LOG_CRIT;
+		}
+		/*DBS_LOG_ERR*/
+		case 200910:		/* 自动配置失败事件*/
+		case 200911:		/* INDEX重复告警以及恢复*/
+		{
+			return DBS_LOG_ERR;
+		}
+		/*DBS_LOG_WARNING*/
+		case 200912:		/* 非法CNU注册告警*/
+		case 200913:		/* CNU用户数量超限告警*/
+		case 200917:		/* abort auto config */
+		case 200922:		/* clt heartbeat loss */
+		{
+			return DBS_LOG_WARNING;
+		}
+		/*DBS_LOG_NOTICE*/
+		case 200909:		/*  升级状态告警标识OID */
+		case 200914:		/* block cnu */
+		case 200918:		/* kick off cnu */
+		case 200919:		/* force re-registration */
+		case 200920:		/* CBAT ColdStart */
+		{
+			return DBS_LOG_NOTICE;
+		}
+		/*DBS_LOG_INFO*/
+		case 200901:		/* CLT上下线*/
+		case 200902:		/* CNU上下线*/
+		case 200000:		/* 心跳TRAP-CBAT状态*/
+		case 200001:		/* 心跳TRAP-CNU状态*/
+		{
+			return DBS_LOG_INFO;
+		}
+		/*DBS_LOG_DEBUG*/
+		default:
+		{
+			return DBS_LOG_DEBUG;
+		}
+	}
+}
+
+/********************************************************************************************
 *	函数名称:boardapi_setMTParameters
 *	函数功能:烧录NVM参数的接口函数
 *	作者:frank

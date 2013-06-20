@@ -12,8 +12,8 @@ KERNELDIR = $(ROOTDIR)/linux-3.4.6
 IFLAGS = -I../include -I$(KERNELDIR)/include/mtd
 CFLAGS += -g -O2
 
-ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-BIN_PATH = $(ROOTFSDIR)/sbin
+#ROOTFSDIR = ${ROOTDIR}/apps/rootfs
+#BIN_PATH = $(ROOTFSDIR)/sbin
 
 OBJS = nvm-utils.o
 OBJS += hexdump.o

@@ -15,10 +15,10 @@ BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 OBJ = template.o tm_interface.o tm_reg.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
+#BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-#BIN_PATH = $(FLASHFSDIR)/app
+FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+BIN_PATH = $(FLASHFSDIR)/app
 
 PIB_PATH = $(ROOTFSDIR)/etc/config/template
 

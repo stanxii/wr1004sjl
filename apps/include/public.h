@@ -48,13 +48,13 @@
 #define __AT30TK175STK__
 
 #define SYS_TEMPERATURE_ALARM_HIHI	(60)
-#define SYS_TEMPERATURE_ALARM_HI		(50)
+#define SYS_TEMPERATURE_ALARM_HI		(55)
 #define SYS_TEMPERATURE_ALARM_LO		(5)		/* -5 */
 #define SYS_TEMPERATURE_ALARM_LOLO	(15)		/* -15 */
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.8.0-cr2"
+#define SYSINFO_APP_VERSION		"v1.3.6.0-cr6"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"

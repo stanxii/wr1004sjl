@@ -9,14 +9,20 @@ STRIP	= $(CROSS_COMPILE)strip
 
 CFLAGS += -g -O2
 
-#USERFSDIR = ${ROOTDIR}/apps/flashfs
-ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-#ROOTFSIMG = rootfs.cramfs
-ROOTFSIMG = rootfs.ubifs
-#USERFSNAME = userfs.ubifs
-#USERFSIMG = userfs.img
 NFS_DIR = /home/nfs
 TFTPROOT = /tftpboot
+
+SAFEFSDIR = ${ROOTDIR}/apps/safefs
+USERFSDIR = ${ROOTDIR}/apps/flashfs
+ROOTFSDIR = ${ROOTDIR}/apps/rootfs
+
+#ROOTFSNAME = rootfs.ubifs
+#ROOTFSIMG = rootfs.img
+
+#USERFSNAME = userfs.ubifs
+#USERFSIMG = userfs.img
+
+UBIFSIMG = ubifs.bin
 
 apps = sqlite
 apps += busybox
@@ -49,10 +55,8 @@ app:
 	done
 
 tftp:
-	rm -f $(TFTPROOT)/$(ROOTFSIMG)
-	cp mkimges/$(ROOTFSIMG) $(TFTPROOT)
-#	rm -f $(TFTPROOT)/$(USERFSIMG)
-#	cp mkimges/$(USERFSIMG) $(TFTPROOT)
+	rm -f $(TFTPROOT)/$(UBIFSIMG)
+	cp mkimges/$(UBIFSIMG) $(TFTPROOT)/
 
 clean:
 	-for i in $(apps) ; do [ ! -d $$i ] || make -C $$i clean; \
@@ -63,8 +67,7 @@ nfs:
 	sudo cp -a $(ROOTFSDIR)/* $(NFS_DIR)/
 
 distclean:	
-	rm -f $(TFTPROOT)/$(ROOTFSIMG)
-#	rm -f $(TFTPROOT)/$(USERFSIMG)
+	rm -f $(TFTPROOT)/$(UBIFSIMG)
 	-for i in $(apps) ; do [ ! -d $$i ] || make -C $$i distclean; \
 	done
 

@@ -16,10 +16,10 @@ CFLAGS +=-g -O2
 OBJS = dbsUtils.o dbs.o dbsUnderlayer.o dbsLog.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
+#BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-#BIN_PATH = $(FLASHFSDIR)/app
+FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+BIN_PATH = $(FLASHFSDIR)/app
 
 
 DB_PATH = $(ROOTFSDIR)/etc/config/databases

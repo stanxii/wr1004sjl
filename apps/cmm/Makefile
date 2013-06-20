@@ -27,10 +27,10 @@ QD_LIB = $(DSDTSWDIR)/Library/qdDrv.o
 OBJ = cmm.o cmm_tm.o cmm_mmead.o cmm_reg.o cmm_alarm.o cmm_dsdt.o cmm_sysMonitor.o upgrade.o at30ts75.o at30ts.o  i2c_recieve.o i2c_transmit.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
-BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
+#BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
 
-#FLASHFSDIR = ${ROOTDIR}/apps/flashfs
-#BIN_PATH = $(FLASHFSDIR)/app
+FLASHFSDIR = ${ROOTDIR}/apps/flashfs
+BIN_PATH = $(FLASHFSDIR)/app
 
 #PTHREAD_LIB=-lpthread
 

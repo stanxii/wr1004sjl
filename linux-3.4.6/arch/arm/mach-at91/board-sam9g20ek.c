@@ -143,37 +143,32 @@ static void __init ek_add_device_macb(void)
  */
 static struct mtd_partition __initdata ek_nand_partition[] = {
 	{
-		.name   = "bootstrap",	/* MTD0 */
+		.name   = "bootstrap",		/* MTD0 */
 		.offset = 0,
 		.size   = 0x20000,
 	},
 	{
-		.name	= "uboot",	/* MTD1 */
+		.name	= "uboot",		/* MTD1 */
 		.offset	= 0x20000,
 		.size		= 0x40000,
 	},
 	{
-		.name	= "nvm",		/* MTD2 */
+		.name	= "nvm",			/* MTD2 */
 		.offset	= 0x60000,
 		.size		= 0x40000,
 	},
 	{
-		.name	= "kernel",	/* MTD3 */
+		.name	= "kernel",		/* MTD3 */
 		.offset	= 0xA0000,
 		.size		= SZ_2M,
 	},
 	{
-		.name	= "rootfs",	/* MTD4 */
+		.name	= "filesystem",	/* MTD4 */
 		.offset	= 0x2A0000,
-		.size		= 0xC00000,
+		.size		= 0x1C00000,		/*28MiB*/
 	},
-	//{
-	//	.name	= "userfs",	/* MTD5 */
-	//	.offset	= SZ_8M,
-	//	.size		= 6 * SZ_1M,
-	//},
 	{
-		.name	= "reserve",	/* MTD6 */
+		.name	= "reserve",		/* MTD5 */
 		.offset	= MTDPART_OFS_NXTBLK,
 		.size	= MTDPART_SIZ_FULL,
 	},
