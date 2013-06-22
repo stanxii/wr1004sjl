@@ -79,4 +79,5 @@ distclean:
 	rm -f $(IMAGEDIR)/$(UBIFSIMG)
 	rm -f $(IMAGEDIR)/$(WEBIMGNAME)
 	rm -rf $(SAFEFSDIR)
+	rm -rf $(USERFSDIR)
 	rm -rf $(ROOTFSDIR)/dev
