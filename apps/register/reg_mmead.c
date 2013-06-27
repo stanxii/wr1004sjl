@@ -37,7 +37,7 @@ int __msg_reg_mmead_communicate(uint8_t *buf, uint32_t len)
 	FD_SET(sk->sk, &fdsr);
 
 	// timeout setting
-	tv.tv_sec = 60;
+	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 	
 	maxsock = sk->sk;
@@ -234,7 +234,7 @@ int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist)
 	return CMM_FAILED;
 }
 
-int msg_reg_mmead_reset_cnu(uint32_t devType, uint8_t ODA[])
+int msg_reg_mmead_reset_eoc(uint32_t devType, uint8_t ODA[])
 {
 	uint8_t buf[MAX_UDP_SIZE];
 	T_Msg_Header_MMEAD h;

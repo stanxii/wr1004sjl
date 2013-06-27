@@ -2366,6 +2366,7 @@ void cgiCnuMgmt(char *query, FILE *fs)
 void cgiLinkDiag(char *query, FILE *fs) 
 {
 	int i=0;
+	int n = 0;
 	//int iCount = 0;
 	st_dbsCnu cnu;
 
@@ -2436,7 +2437,8 @@ void cgiLinkDiag(char *query, FILE *fs)
 				//iCount++;
 				if( DEV_STS_ONLINE == cnu.col_sts )
 				{
-					fprintf(fs, "			<option value='%d'>CNU/1/%d: [%s]\n", cnu.id, cnu.id, cnu.col_mac);
+					n = i/MAX_CNUS_PER_CLT+1;
+					fprintf(fs, "			<option value='%d'>CNU/%d/%d: [%s]\n", n, cnu.id, cnu.id, cnu.col_mac);
 				}
 			}
 		}
@@ -2595,6 +2597,8 @@ void cgiLinkDiagResult(char *query, FILE *fs)
 void cgiTopologyView(char *query, FILE *fs) 
 {
 	int i=0;
+	int j = 0;
+	int n = 0;
 	int iCount = 0;
 	st_dbsClt clt;
 	st_dbsCnu cnu;
@@ -2617,76 +2621,96 @@ void cgiTopologyView(char *query, FILE *fs)
 	fprintf(fs, "<td class='diagret' align='center' width=100>Profile</td>\n</tr>\n</table>\n<br>\n");
 
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	if( dbsGetClt(dbsdev, 1, &clt) == CMM_SUCCESS )
-	{
-		fprintf(fs, "<tr>\n");
-		fprintf(fs, "<td class='clt' align='center' width=60>1</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=160>[%s]</td>\n", clt.col_mac);
-		fprintf(fs, "<td class='clt' align='center' width=120>CLT</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=80>--</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=120>--</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=60><IMG src='true.png' width='14' height='15'></td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=100><img src='show.gif' width=16 height=16 onclick='window.location=\"cltProfile.cmd?viewid=1\"'></td>\n");
-		fprintf(fs, "<tr>\n");
-		for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
+	for( i=1; i<=MAX_CLT_AMOUNT_LIMIT; i++ )
+	{	
+		if( CMM_SUCCESS == dbsGetClt(dbsdev, i, &clt) )
 		{
-			if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
+			/* no clt present in this port */
+			if( 0 == clt.col_row_sts )
 			{
-				break;
+				fprintf(fs, "<tr>\n");
+				fprintf(fs, "<td class='clt' align='center' width=60>%d</td>\n", i);
+				//fprintf(fs, "<td class='clt' align='center' width=160>[%s]</td>\n", clt.col_mac);
+				fprintf(fs, "<td class='clt' align='center' width=160><img src='help.gif'></td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=120>CLT</td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=80>--</td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=120>--</td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=60><IMG src='suppress.png'></td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=100><img src='show.gif'></td>\n");
+				fprintf(fs, "<tr>\n");
 			}
 			else
 			{
-				if( cnu.col_row_sts == 0 )
+				iCount = 0;
+				
+				fprintf(fs, "<tr>\n");
+				fprintf(fs, "<td class='clt' align='center' width=60>%d</td>\n", i);
+				fprintf(fs, "<td class='clt' align='center' width=160>[%s]</td>\n", clt.col_mac);
+				fprintf(fs, "<td class='clt' align='center' width=120>CLT</td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=80>--</td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=120>--</td>\n");
+				//fprintf(fs, "<td class='clt' align='center' width=60><IMG src='true.png' width='14' height='15'></td>\n");
+				fprintf(fs, "<td class='clt' align='center' width=60><IMG src='%s'></td>\n", clt.col_sts?"true.png":"net_down.gif");
+				fprintf(fs, "<td class='clt' align='center' width=100><img src='show.gif' onclick='window.location=\"cltProfile.cmd?viewid=%d\"'></td>\n", i);
+				fprintf(fs, "<tr>\n");
+				for( j=1; j<=MAX_CNUS_PER_CLT; j++ )
 				{
-					/**/
-					continue;
-				}
-				else
-				{
-					iCount++;
-					if( (iCount % 2) == 0 )
+					n = (i-1)*MAX_CNUS_PER_CLT+j;
+					if( dbsGetCnu(dbsdev, n, &cnu) != CMM_SUCCESS )
 					{
-						/**/
-						fprintf(fs, "<tr>\n");
-						fprintf(fs, "<td class='cnub' align='center'>1/%d</td>\n", cnu.id);
-						fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
-						fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
-						fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
-						fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
-						fprintf(fs, "<td class='cnub' align='center'><IMG src='%s' width=16 height=16></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
-						fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' width=16 height=16 onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", cnu.id);
-						fprintf(fs, "</tr>\n");
+						break;
 					}
 					else
 					{
-						/**/
-						fprintf(fs, "<tr>\n");
-						fprintf(fs, "<td class='cnua' align='center'>1/%d</td>\n", cnu.id);
-						fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
-						fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
-						fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
-						fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
-						fprintf(fs, "<td class='cnua' align='center'><IMG src='%s' width=16 height=16></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
-						//fprintf(fs, "<td class='cnua' align='center'><a href='cnuProfile.cmd?viewid=%d'><font color=blue>Show</font></a></td>\n", cnu.id);
-						fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' width=16 height=16 onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", cnu.id);
-						fprintf(fs, "</tr>\n");
+						if( cnu.col_row_sts == 0 )
+						{
+							/**/
+							continue;
+						}
+						else
+						{
+							
+							iCount++;
+							if( (iCount % 2) == 0 )
+							{
+								/**/
+								fprintf(fs, "<tr>\n");
+								fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", i, j);
+								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
+								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
+								fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+								fprintf(fs, "<td class='cnub' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+								fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+								fprintf(fs, "</tr>\n");
+							}
+							else
+							{
+								/**/
+								fprintf(fs, "<tr>\n");
+								fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", i, j);
+								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
+								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
+								fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+								fprintf(fs, "<td class='cnua' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+								//fprintf(fs, "<td class='cnua' align='center'><a href='cnuProfile.cmd?viewid=%d'><font color=blue>Show</font></a></td>\n", cnu.id);
+								fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+								fprintf(fs, "</tr>\n");
+							}
+						}
 					}
 				}
-			}
+			}			
 		}
-		if( iCount == 0 )
+		else
 		{
 			/**/
-			fprintf(fs, "<tr>\n<td class='cnua' align='center' colspan=7>** No CNU discovered ! **</td>\n</tr>\n");
+			fprintf(fs, "<tr>\n<td class='clt' align='center' width=700>** System Error **</td>\n<tr>\n");
+			strcpy(logmsg, "show topology");
+			http2dbs_writeOptlog(-1, logmsg);
 		}
-	}
-	else
-	{
-		/**/
-		fprintf(fs, "<tr>\n<td class='clt' align='center' width=700>** System Error, Please retry ! **</td>\n<tr>\n");
-		strcpy(logmsg, "show topology");
-		http2dbs_writeOptlog(-1, logmsg);
-	}
+	}	
 	fprintf(fs, "</table>\n");
 	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=700></td>\n</tr>\n</table>\n");
 	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"previewTopology.cgi\"' value='Refresh'>\n</p>\n");

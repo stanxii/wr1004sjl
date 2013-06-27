@@ -33,7 +33,9 @@ int dbs_register(void);
 int dbs_destroy(void);
 int dbs_syslog(uint32_t priority, const char *message);
 void dbs_msg_dump(const unsigned char memory [], size_t length, FILE *fp);
-void dbs_signalProcessHandle(int n);
+void dbs_signal_term(int n);
+void dbs_signal_int(int n);
+void dbs_signal_kill(int n);
 void dbs_ack(BBLOCK_QUEUE *this);
 void dbs_process(BBLOCK_QUEUE *this);
 BBLOCK_QUEUE * dbs_err(BBLOCK_QUEUE *this, uint32_t ErrorCode);
@@ -153,18 +155,27 @@ int dbs_syslog(uint32_t priority, const char *message)
 *	作者:frank
 *	时间:2010-08-13
 *********************************************************************************************/
-void dbs_signalProcessHandle(int n)
+void dbs_signal_term(int n)
+{
+	//BBLOCK_QUEUE *this = &bblock;
+	fprintf(stderr, "INFO: dbs skipped SIGTERM\n");
+}
+
+void dbs_signal_int(int n)
+{
+	//BBLOCK_QUEUE *this = &bblock;
+	fprintf(stderr, "INFO: dbs skipped SIGINT\n");
+}
+
+void dbs_signal_kill(int n)
 {
 	BBLOCK_QUEUE *this = &bblock;
-
-	fprintf(stderr, "INFO: dbs_signalProcessHandle close dbs !\n");
-	dbs_syslog(DBS_LOG_INFO, "dbs_signalProcessHandle close dbs");
-	
+	fprintf(stderr, "INFO: dbs_sigkillProcessHandle close dbs !\n");
+	dbs_syslog(DBS_LOG_INFO, "dbs_sigkillProcessHandle close dbs");	
 	dbs_destroy();
 	dbs_underlayer_close();
 	dbs_log_close();
-	dbs_close_socket(this);
-	
+	dbs_close_socket(this);	
 	exit(0);
 }
 
@@ -2436,12 +2447,15 @@ int main(void)
 
 	/* 写入系统日志*/
 	dbs_syslog(DBS_LOG_INFO, "starting module dbs success");
-	fprintf(stderr, "\n\n====================================================================\n\n");
-	printf("Current app version: %s\n\n", SYSINFO_APP_VERSION);
+	//fprintf(stderr, "\n\n====================================================================\n");
+	printf("Current app version: %s\n", SYSINFO_APP_VERSION);
 	printf("Starting module dbs		......		[OK]\n");
 	
 	/* 注册异常退出句柄函数*/
-	signal(SIGTERM, dbs_signalProcessHandle);		
+	signal(SIGTERM, dbs_signal_term);
+	signal(SIGINT, dbs_signal_int);
+	/* cannot capture SIGKILL by linux app */
+	//signal(SIGKILL, dbs_signal_kill);
 
 	/* 循环处理外部请求*/
 	dbs_process(this);

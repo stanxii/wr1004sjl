@@ -129,5 +129,8 @@
  #define PORT_CABLE4_PORT_ADDR	0x14
 #endif
 
+#define PORT_CABLE_PORT_ALL		0xfe
+#define PORT_CABLE_PORT_NULL		0xff
+
 #endif 
 

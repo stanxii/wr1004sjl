@@ -466,10 +466,14 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 	{
 		return CMM_SUCCESS;
 	}
-	if( req->HEADER.usMsgType == CMM_GET_CBAT_TEMPERATURE )
+	if( req->HEADER.usSrcMID == MID_REGISTER )
 	{
 		return CMM_SUCCESS;
 	}
+	if( req->HEADER.usMsgType == CMM_GET_CBAT_TEMPERATURE )
+	{
+		return CMM_SUCCESS;
+	}	
 
 	/* 获取系统当前时间*/
 	time(&b_time);
@@ -1368,6 +1372,100 @@ int CMM_ProcessSetDsdtPortMirroring(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+int CMM_ProcessAddAtherosMulticastAddr2CablePort(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	uint32_t portid = 0;
+	
+	T_Msg_CMM *msg = (T_Msg_CMM *)(this->b);
+	uint32_t cid = *(uint32_t *)(msg->BUF);
+
+	switch(cid)
+	{
+		case 1:
+		{
+			#ifdef PORT_CABLE1_PORT_ID
+			portid = PORT_CABLE1_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case 2:
+		{
+			#ifdef PORT_CABLE2_PORT_ID
+			portid = PORT_CABLE2_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case 3:
+		{
+			#ifdef PORT_CABLE3_PORT_ID
+			portid = PORT_CABLE3_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case 4:
+		{
+			#ifdef PORT_CABLE4_PORT_ID
+			portid = PORT_CABLE4_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case PORT_CABLE_PORT_ALL:
+		{
+			portid = PORT_CABLE_PORT_ALL;
+			break;
+		}
+		default:
+		{
+			portid = PORT_CABLE_PORT_NULL;
+			break;
+		}
+	}
+
+	/* del atu mac entry before add */
+	if( CMM_SUCCESS == cmm2dsdt_delAtherosMulticastAddressFromAtu() )
+	{
+		if( PORT_CABLE_PORT_ALL == portid )
+		{
+			opt_sts = cmm2dsdt_addAtherosMulticastAddressToAllCablePort();
+		}
+		else if( PORT_CABLE_PORT_NULL == portid )
+		{
+			opt_sts = CMM_SUCCESS;
+		}
+		else
+		{
+			opt_sts = cmm2dsdt_addAtherosMulticastAddress2Port(portid);
+		}
+	}
+	else
+	{
+		opt_sts = CMM_FAILED;
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
+
+int CMM_ProcessDelAtherosMulticastAddr(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+
+	opt_sts = cmm2dsdt_delAtherosMulticastAddressFromAtu();	
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
 
 int CMM_ProcessGetCbatTemperature(BBLOCK_QUEUE *this)
 {
@@ -1951,6 +2049,16 @@ void cmmProcessManager(void)
 				opt_sts=CMM_ProcessSetDsdtPortMirroring(this);
 				break;
 			}
+			case CMM_ADD_ATHEROS_ADDR:
+			{
+				opt_sts=CMM_ProcessAddAtherosMulticastAddr2CablePort(this);
+				break;
+			}
+			case CMM_DEL_ATHEROS_ADDR:
+			{
+				opt_sts=CMM_ProcessDelAtherosMulticastAddr(this);
+				break;
+			}
 			case CMM_CONNET:
 			{
 				opt_sts = CMM_ProcessMTConnect(this);
@@ -2146,7 +2254,7 @@ int main(void)
 	}
 	else
 	{
-		fprintf(stderr, "cmm binding atheros multicast address\n");
+		//fprintf(stderr, "cmm binding atheros multicast address\n");
 		dbs_sys_log(dbsdev, DBS_LOG_INFO, "cmm add atheros multicast address to all cable port");
 	}
 	

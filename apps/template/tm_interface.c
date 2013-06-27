@@ -107,7 +107,7 @@ BOOLEAN __is_cnu_profile_valid(uint16_t clt_index, uint16_t cnu_index)
 	DB_INTEGER_V iValue;
 	
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-	iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	iValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_ROWSTS;
 	iValue.ci.colType = DBS_INTEGER;
 	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
@@ -138,7 +138,7 @@ BOOLEAN __is_cnu_valid(uint16_t clt_index, uint16_t cnu_index)
 	uint8_t macaddr[6] = {0};
 	st_dbsCnu cnu;
 
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, (clt_index-1)*MAX_CLT_AMOUNT_LIMIT+cnu_index, &cnu))
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index, &cnu))
 	{
 		return BOOL_FALSE;
 	}
@@ -199,13 +199,13 @@ uint32_t __dbsGetProfileSts(int tid, uint32_t *sts)
 
 int __tmDbsGetCnu(uint16_t cltid, uint16_t cnuid, st_dbsCnu*cnu)
 {
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	return dbsGetCnu(dbsdev, id, cnu);
 }
 
 int __tmDbsGetProfile(uint16_t cltid, uint16_t cnuid, st_dbsProfile*profile)
 {
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	return dbsGetProfile(dbsdev, id, profile);
 }
 
@@ -213,7 +213,7 @@ int __tmDbsGetCnuOnlineSts(uint16_t cltid, uint16_t cnuid)
 {
 	DB_INTEGER_V v;
 	v.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+	v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	v.ci.col = DBS_SYS_TBL_CNU_COL_ID_STS;
 	v.ci.colType = DBS_INTEGER;
 
@@ -291,7 +291,7 @@ int __tmDbsAddCnuToWlist(uint16_t cltid, uint16_t cnuid)
 {
 	DB_INTEGER_V v;
 	v.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+	v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	v.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	v.ci.colType = DBS_INTEGER;
 	v.len = sizeof(uint32_t);
@@ -305,7 +305,7 @@ int __tmDbsSetCnuAuthEnable(uint16_t cltid, uint16_t cnuid)
 	DB_INTEGER_V v;
 	
 	v.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+	v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	v.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	v.ci.colType = DBS_INTEGER;
 	v.len = sizeof(uint32_t);
@@ -319,7 +319,7 @@ int __tmDbsSetCnuAuthDisable(uint16_t cltid, uint16_t cnuid)
 	DB_INTEGER_V v;
 	
 	v.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+	v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	v.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	v.ci.colType = DBS_INTEGER;
 	v.len = sizeof(uint32_t);
@@ -333,13 +333,13 @@ int __dbsCnuEnable(uint16_t cltid, uint16_t cnuid)
 	uint32_t sts = 0;
 	DB_INTEGER_V v;
 	
-	if( CMM_SUCCESS == __dbsGetProfileSts((cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid, &sts) )
+	if( CMM_SUCCESS == __dbsGetProfileSts((cltid-1)*MAX_CNUS_PER_CLT+cnuid, &sts) )
 	{
 		if(sts)
 		{
 			/* col_psctlSts = 1; col_cpuPortSts = 1 */
 			v.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-			v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+			v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 			v.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_PSCTL;
 			v.ci.colType = DBS_INTEGER;
 			v.len = sizeof(uint32_t);
@@ -350,7 +350,7 @@ int __dbsCnuEnable(uint16_t cltid, uint16_t cnuid)
 			}
 			/* col_psctlSts = 1; col_cpuPortSts = 1 */
 			v.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-			v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+			v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 			v.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_CPUPSTS;
 			v.ci.colType = DBS_INTEGER;
 			v.len = sizeof(uint32_t);
@@ -377,13 +377,13 @@ int __dbsCnuDisable(uint16_t cltid, uint16_t cnuid)
 	uint32_t sts = 0;
 	DB_INTEGER_V v;
 	
-	if( CMM_SUCCESS == __dbsGetProfileSts((cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid, &sts) )
+	if( CMM_SUCCESS == __dbsGetProfileSts((cltid-1)*MAX_CNUS_PER_CLT+cnuid, &sts) )
 	{
 		if(sts)
 		{
 			/* col_psctlSts = 1; col_cpuPortSts = 1 */
 			v.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-			v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+			v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 			v.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_PSCTL;
 			v.ci.colType = DBS_INTEGER;
 			v.len = sizeof(uint32_t);
@@ -394,7 +394,7 @@ int __dbsCnuDisable(uint16_t cltid, uint16_t cnuid)
 			}
 			/* col_psctlSts = 1; col_cpuPortSts = 1 */
 			v.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-			v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+			v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 			v.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_CPUPSTS;
 			v.ci.colType = DBS_INTEGER;
 			v.len = sizeof(uint32_t);
@@ -420,7 +420,7 @@ int __tmDbsDelCnuFromWlist(uint16_t cltid, uint16_t cnuid)
 {
 	DB_INTEGER_V v;
 	v.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	v.ci.row = (cltid-1)*MAX_CLT_AMOUNT_LIMIT+cnuid;
+	v.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	v.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	v.ci.colType = DBS_INTEGER;
 	v.len = sizeof(uint32_t);
@@ -1928,7 +1928,7 @@ size_t __get_cnu_pib_length(uint32_t clt_index, uint32_t cnu_index)
 	}
 	/* 获取该CNU  的BASE PIB */
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-	iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	iValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_BASE;
 	iValue.ci.colType = DBS_INTEGER;
 	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
@@ -1981,7 +1981,7 @@ uint32_t __prepare_atheros_cnu_source_pib(uint32_t clt_index, uint32_t cnu_index
 	
 	/* 获取该CNU  的BASE PIB */
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-	iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	iValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_BASE;
 	iValue.ci.colType = DBS_INTEGER;
 	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
@@ -2039,7 +2039,7 @@ uint32_t __init_atheros_cnu_pib_mac(uint32_t clt_index, uint32_t cnu_index, uint
 	}
 	/* 获取CNU 的MAC 地址*/
 	textValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	textValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	textValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	textValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_MAC;
 	textValue.ci.colType = DBS_TEXT;
 	if( CMM_SUCCESS == dbsGetText(dbsdev, &textValue) )
@@ -2081,7 +2081,7 @@ uint32_t __init_atheros_cnu_pib_device_type(uint32_t clt_index, uint32_t cnu_ind
 
 	/* 获取CNU 的设备类型*/
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	iValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_MODEL;
 	iValue.ci.colType = DBS_INTEGER;
 	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
@@ -2120,7 +2120,7 @@ uint32_t __init_atheros_cnu_pib_mac_limit(uint32_t clt_index, uint32_t cnu_index
 
 	/* 获取该CNU  的配置 */
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-	iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	iValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_MACLIMIT;
 	iValue.ci.colType = DBS_INTEGER;
 	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &iValue) )
@@ -2157,7 +2157,7 @@ uint32_t __init_atheros_cnu_pib_aging(uint32_t clt_index, uint32_t cnu_index, ui
 	uint16_t b2_l = 0;
 	uint16_t b2_r = 0;	
 	st_dbsProfile profile;
-	uint16_t id = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	uint16_t id = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 
 	if( NULL == data )
 	{
@@ -2201,7 +2201,7 @@ uint32_t __init_atheros_cnu_pib_qos(uint32_t clt_index, uint32_t cnu_index, uint
 	uint8_t b1 = 0;
 	uint32_t b4 = 0;
 	st_dbsProfile profile;
-	uint16_t id = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	uint16_t id = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 
 	if( NULL == data )
 	{
@@ -2283,7 +2283,7 @@ uint32_t __make_atheros_cnu_pib(uint32_t clt_index, uint32_t cnu_index, uint8_t 
 
 	/* 获取CNU 的MAC 地址*/
 	textValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	textValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	textValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	textValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_MAC;
 	textValue.ci.colType = DBS_TEXT;
 	if( CMM_SUCCESS == dbsGetText(dbsdev, &textValue) )
@@ -2559,7 +2559,7 @@ BOOLEAN __is_cnu_in_wlist(uint32_t clt_index, uint32_t cnu_index)
 {
 	DB_INTEGER_V v;
 	v.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	v.ci.row = (clt_index-1)*MAX_CLT_AMOUNT_LIMIT+cnu_index;
+	v.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	v.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	v.ci.colType = DBS_INTEGER;
 
@@ -2597,9 +2597,9 @@ void __tm_reg_del_cnu(uint32_t clt_index, uint32_t cnu_index)
 
 int __tm_delete_cnu(uint32_t clt_index, uint32_t cnu_index)
 {
-	if( 0 == dbsDestroyRowProfile(dbsdev, (clt_index-1)*MAX_CLT_AMOUNT_LIMIT+cnu_index ))
+	if( 0 == dbsDestroyRowProfile(dbsdev, (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index ))
 	{
-		if( 0 == dbsDestroyRowCnu(dbsdev, (clt_index-1)*MAX_CLT_AMOUNT_LIMIT+cnu_index ))
+		if( 0 == dbsDestroyRowCnu(dbsdev, (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index ))
 		{
 			return CMM_SUCCESS;
 		}
@@ -2700,7 +2700,7 @@ uint32_t tm_enable_wlist(void)
 
 	for( i=1; i<=MAX_CLT_AMOUNT_LIMIT; i++ )
 	{
-		for( j=1; j<=MAX_CNU_AMOUNT_LIMIT; j++ )
+		for( j=1; j<=MAX_CNUS_PER_CLT; j++ )
 		{
 			if( !__is_cnu_valid(i, j) )
 			{
@@ -2744,7 +2744,7 @@ uint32_t tm_disable_wlist(void)
 
 	for( i=1; i<=MAX_CLT_AMOUNT_LIMIT; i++ )
 	{
-		for( j=1; j<=MAX_CNU_AMOUNT_LIMIT; j++ )
+		for( j=1; j<=MAX_CNUS_PER_CLT; j++ )
 		{
 			if( !__is_cnu_valid(i, j) )
 			{
@@ -2860,7 +2860,7 @@ uint32_t tm_destroy_conf(stAutoGenConfig *pConf)
 	{
 		/*  标识CNU */
 		/* 判断CNU 索引是否有效*/
-		if( (pConf->cnu < 1)||(pConf->cnu > (MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT)) )
+		if( (pConf->cnu < 1)||(pConf->cnu > MAX_CNUS_PER_CLT) )
 		{
 			return CMM_FAILED;
 		}

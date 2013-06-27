@@ -69,7 +69,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 
-	if( (id < 1)||(id > MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT) )
+	if( (id < 1)||(id > MAX_CNU_AMOUNT_LIMIT) )
 	{
 		return 0;
 	}

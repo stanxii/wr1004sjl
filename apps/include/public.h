@@ -54,7 +54,7 @@
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.0-cr6"
+#define SYSINFO_APP_VERSION		"v1.3.6.1-cr4"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -76,8 +76,9 @@
 /********************************************************/
 #define MAX_ROW                                   512     /*操作日志最大存储数量*/
 #define ALARM_MAX_ROW                      256     /*告警日志最大存储数量*/
-#define MMEAD_MAX_CNU_NUM		64
-#define MAX_CNU_AMOUNT_LIMIT		64
+#define MAX_CNUS_PER_CLT			64		/* max cnus per clt supported */
+#define MMEAD_MAX_CNU_NUM		MAX_CNUS_PER_CLT
+#define MAX_CNU_AMOUNT_LIMIT		(MAX_CNUS_PER_CLT*MAX_CLT_AMOUNT_LIMIT)
 #define MAX_CNU_PORTLIMIT			4		/*cnu port max num*/
 #define MAX_CNU_AMOUNTLIMIT		2		/*the amount limitation of cnu ports*/
 #define MAX_SQL_LEN 				512		/*sql 字符串长度*/
@@ -364,6 +365,8 @@ enum
 	CMM_SYSMONITOR_LED_CONTROL,
 	CMM_MME_MDIO_READ,			/* read  PHY register by mme*/
 	CMM_MME_MDIO_WRITE,			/* write  PHY register by mme*/
+	CMM_ADD_ATHEROS_ADDR,		/* 100 */
+	CMM_DEL_ATHEROS_ADDR,		/* delete atheros multicast address from cable port */
 	
 	/* 请在中间增加其他枚举定义 */
 	
@@ -1991,7 +1994,7 @@ typedef struct
 
 typedef struct
 {
-	T_CLT_INFO tb_clt;
+	T_CLT_INFO tb_clt[MAX_CLT_AMOUNT_LIMIT];
 	T_CNU_INFO tb_cnu[MAX_CNU_AMOUNT_LIMIT];
 }T_TOPOLOGY_INFO;
 

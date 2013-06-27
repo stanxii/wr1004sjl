@@ -378,7 +378,7 @@ BBLOCK_QUEUE * TmCoreGetProfile(BBLOCK_QUEUE *this)
 	
 	st_dbsProfile profile;
 
-	profile.id = (tmUser->clt - 1)*MAX_CLT_AMOUNT_LIMIT + tmUser->cnu;
+	profile.id = (tmUser->clt - 1)*MAX_CNUS_PER_CLT + tmUser->cnu;
 
 	ret = tm_get_profile(&profile);
 

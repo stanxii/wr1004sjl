@@ -61,6 +61,43 @@ char * boardapi_getMacAddress(void)
 }
 
 /********************************************************************************************
+*	函数名称:boardapi_isValidUnicastMacb
+*	函数功能:判断是否为有效的单播MAC
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+int boardapi_isValidUnicastMacb(uint8_t *bin)
+{
+	uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	uint8_t MB[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
+	uint8_t MC[6] = {0x00,0xb0,0x52,0x00,0x00,0x01};
+	
+	if( NULL == bin )
+	{
+		return BOOL_FALSE;
+	}
+	/* 不允许00:00:00:00:00:00 */
+	else if( memcmp(bin, MA, 6) == 0 )
+	{
+		return BOOL_FALSE;
+	}
+	/* 不允许FF:FF:FF:FF:FF:FF */
+	else if( memcmp(bin, MB, 6) == 0 )
+	{
+		return BOOL_FALSE;
+	}
+	/* 不允许00:b0:52:00:00:01 */
+	else if( memcmp(bin, MC, 6) == 0 )
+	{
+		return BOOL_FALSE;
+	}
+	else
+	{
+		return BOOL_TRUE;
+	}
+}
+
+/********************************************************************************************
 *	函数名称:boardapi_macs2b
 *	函数功能:将字符串形式的MAC地址转换为6位二进制格式
 *	作者:frank
@@ -681,7 +718,11 @@ int boardapi_getAlarmLevelByCode(uint32_t alarmCode)
 		case 200908:		/* 物理层速率告警*/				
 		case 200923:		/* can not find clt */
 		{
+#ifdef CFG_USE_PLATFORM_WR1004SJL 
+			return DBS_LOG_NOTICE;
+#else
 			return DBS_LOG_EMERG;
+#endif
 		}
 		/*DBS_LOG_ALERT*/
 		case 200904:		/* CBAT管理CPU负载过高告警以及恢复*/
@@ -779,7 +820,11 @@ int boardapi_getAlarmLevel(st_dbsAlarmlog *alarm)
 		case 200908:		/* 物理层速率告警*/				
 		case 200923:		/* can not find clt */
 		{
+#ifdef CFG_USE_PLATFORM_WR1004SJL 
+			return DBS_LOG_NOTICE;
+#else
 			return DBS_LOG_EMERG;
+#endif		
 		}
 		/*DBS_LOG_ALERT*/
 		case 200904:		/* CBAT管理CPU负载过高告警以及恢复*/

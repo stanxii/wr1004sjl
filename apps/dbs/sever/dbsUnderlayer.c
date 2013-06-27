@@ -1261,7 +1261,7 @@ int __dbs_underlayer_SQLGetRowCnu(uint32_t id, uint8_t *sql)
 	assert( NULL != sql );
 
 	/* 判断行数量是否超出定义*/
-	if( (id>=1)&&(id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT)))
+	if( (id>=1)&&(id<=MAX_CNU_AMOUNT_LIMIT))
 	{
 		sprintf(sql, "SELECT * FROM [%s] WHERE [id]=%d",
 			db_system[DBS_SYS_TBL_ID_CNU].tbl_name, id);
@@ -1315,7 +1315,7 @@ int __dbs_underlayer_SQLGetRowProfile(uint32_t id, uint8_t *sql)
 	assert( NULL != sql );
 
 	/* 判断行数量是否超出定义*/
-	if( (id>=1)&&(id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT)))
+	if( (id>=1)&&(id<=MAX_CNU_AMOUNT_LIMIT))
 	{
 		sprintf(sql, "SELECT * FROM [%s] WHERE [id]=%d",
 			db_system[DBS_SYS_TBL_ID_CNUPRO].tbl_name, id);
@@ -1625,7 +1625,7 @@ int __dbs_underlayer_SQLUpdateRowCnu(st_dbsCnu *row, uint8_t *sql)
 	}
 	
 	/* 判断行数量是否超出定义*/
-	if( (row->id >= 1) && (row->id <= (MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT)))
+	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
 	{
 		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=%d, [%s]=%d WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNU].tbl_name, 
@@ -1874,7 +1874,7 @@ int __dbs_underlayer_SQLUpdateRowProfile(st_dbsProfile *row, uint8_t *sql)
 	assert( NULL != row );
 
 	/* 判断行数量是否超出定义*/
-	if( (row->id >= 1) && (row->id <= (MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT)))
+	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
 	{
 		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNUPRO].tbl_name, 			
@@ -2279,7 +2279,7 @@ int __dbs_underlayer_SQLDestroyRowCnu(uint16_t id, uint8_t *sql)
 	assert( NULL != sql );
 	
 	/* 判断行数量是否超出定义*/
-	if( (id >= 1) && (id <= (MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT)))
+	if( (id >= 1) && (id <= MAX_CNU_AMOUNT_LIMIT))
 	{
 		sprintf(sql, "UPDATE [%s] SET [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=0 WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNU].tbl_name, 
@@ -2310,7 +2310,7 @@ int __dbs_underlayer_SQLDestroyRowProfile(uint16_t id, uint8_t *sql)
 	assert( NULL != sql );
 
 	/* 判断行数量是否超出定义*/
-	if( (id >= 1) && (id <= (MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT)))
+	if( (id >= 1) && (id <= MAX_CNU_AMOUNT_LIMIT))
 	{
 		sprintf(sql, "UPDATE [%s] SET [%s]=0, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNUPRO].tbl_name, 			

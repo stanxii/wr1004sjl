@@ -236,7 +236,7 @@ GT_STATUS dsdtStart(int cpuPort)
 		return GT_FAIL;
 	}
 
-	printf("QuarterDeck has been started\n");
+	//printf("QuarterDeck has been started\n");
 
 	return GT_OK;
 }
@@ -847,6 +847,57 @@ int cmm2dsdt_mgmtVlanInit(void)
 	}
 }
 
+int cmm2dsdt_addAtherosMulticastAddress2Port(int portid)
+{
+	st_dbsNetwork networkinfo;
+	int status;
+	GT_ATU_ENTRY macEntry;	
+
+	macEntry.macAddr.arEther[0] = 0x00;
+	macEntry.macAddr.arEther[1] = 0xb0;
+	macEntry.macAddr.arEther[2] = 0x52;
+	macEntry.macAddr.arEther[3] = 0x00;
+	macEntry.macAddr.arEther[4] = 0x00;
+	macEntry.macAddr.arEther[5] = 0x01;
+
+	macEntry.portVec = (1 << portid);
+	macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
+                                any other priority determined by the frame's data. This value is
+                                meaningful only if the device does not support extended priority
+                                information such as MAC Queue Priority and MAC Frame Priority */
+	macEntry.exPrio.macQPri = 0;    /* If device doesnot support MAC Queue Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.macFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.useMacFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.entryState.ucEntryState = GT_UC_STATIC;
+                                /* This address is locked and will not be aged out.
+                                Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
+	macEntry.trunkMember = GT_FALSE;
+								
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = __find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+
+	/* Add the MAC Address */
+	return gfdbAddMacEntry(dev,&macEntry);
+}
+
 int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void)
 {
 	st_dbsNetwork networkinfo;
@@ -924,6 +975,42 @@ int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void)
 
 	return GT_OK;
 }
+
+int cmm2dsdt_delAtherosMulticastAddressFromAtu(void)
+{
+	int status;
+	st_dbsNetwork networkinfo;	
+	GT_ATU_ENTRY macEntry;	
+
+	macEntry.macAddr.arEther[0] = 0x00;
+	macEntry.macAddr.arEther[1] = 0xb0;
+	macEntry.macAddr.arEther[2] = 0x52;
+	macEntry.macAddr.arEther[3] = 0x00;
+	macEntry.macAddr.arEther[4] = 0x00;
+	macEntry.macAddr.arEther[5] = 0x01;
+								
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = __find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+
+	/* Delete the MAC Address from ATU */
+	return gfdbDelAtuEntry(dev, &macEntry);
+}
+
 
 int cmm2dsdt_init(void)
 {

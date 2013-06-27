@@ -18,11 +18,11 @@ int reg_dbsClose(void)
 	return dbsClose(dbsdev);
 }
 
-int db_init_clt(int index)
+int db_init_clt(int cltid)
 {
 	st_dbsClt clt;
 
-	if( CMM_SUCCESS != dbsGetClt(dbsdev, index, &clt))
+	if( CMM_SUCCESS != dbsGetClt(dbsdev, cltid, &clt))
 	{
 		return CMM_FAILED;
 	}
@@ -30,15 +30,16 @@ int db_init_clt(int index)
 	{
 		clt.col_numStas = 0;
 		clt.col_sts = DEV_STS_OFFLINE;
-		return dbsUpdateClt(dbsdev, index, &clt);
+		return dbsUpdateClt(dbsdev, cltid, &clt);
 	}
 }
 
-int db_init_cnu(int index)
+int db_init_cnu(int cltid, int cnuid)
 {
+	int rid = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	st_dbsCnu cnu;
 	
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, index, &cnu))
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, rid, &cnu))
 	{
 		return CMM_FAILED;
 	}
@@ -50,64 +51,75 @@ int db_init_cnu(int index)
 		strcpy(cnu.col_snr, "0%");
 		cnu.col_sts = DEV_STS_OFFLINE;
 		cnu.col_tx = 0;
-		return dbsUpdateCnu(dbsdev, index, &cnu);
+		return dbsUpdateCnu(dbsdev, rid, &cnu);
 	}	
 }
 
 int db_init_all(void)
 {
 	int i = 0;
+	int j = 0;
+	int cltid = 0;
+	int cnuid = 0;
 	
 	for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++ )
 	{
-		if( CMM_SUCCESS != db_init_clt(i+1) )
+		/* init clt */
+		cltid = i+1;
+		if( CMM_SUCCESS != db_init_clt(cltid) )
 		{
 			return CMM_FAILED;
 		}
-	}
-	for( i=0; i<(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT); i++ )
-	{
-		if( CMM_SUCCESS != db_init_cnu(i+1))
+		/* init cnu */
+		for( j=0; j<MAX_CNUS_PER_CLT; j++ )
 		{
-			return CMM_FAILED;
+			cnuid = j+1;
+			if( CMM_SUCCESS != db_init_cnu(cltid, cnuid))
+			{
+				return CMM_FAILED;
+			}
 		}
-	}
+	}	
 	return CMM_SUCCESS;
 }
 
-int db_get_clt(int index, st_dbsClt *clt)
+int db_get_clt(int cltid, st_dbsClt *clt)
 {
-	return dbsGetClt(dbsdev, index, clt);
+	return dbsGetClt(dbsdev, cltid, clt);
 }
 
-int db_get_cnu(int index, st_dbsCnu *cnu)
+int db_get_cnu(int cltid, int cnuid, st_dbsCnu *cnu)
 {
-	return dbsGetCnu(dbsdev, index, cnu);
+	int rid = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
+	return dbsGetCnu(dbsdev, rid, cnu);
 }
 
-int db_update_clt(int index, st_dbsClt *clt)
+int db_update_clt(int cltid, st_dbsClt *clt)
 {
-	return dbsUpdateClt(dbsdev, index, clt);
+	return dbsUpdateClt(dbsdev, cltid, clt);
 }
 
-int db_update_cnu(int index, st_dbsCnu *cnu)
+int db_update_cnu(int cltid, int cnuid, st_dbsCnu *cnu)
 {
-	return dbsUpdateCnu(dbsdev, index, cnu);
+	int rid = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
+	return dbsUpdateCnu(dbsdev, rid, cnu);
 }
 
-int db_unregister_clt(int index)
+int db_unregister_clt(int cltid)
 {
-	return db_init_clt(index);
+	return db_init_clt(cltid);
 }
 
-int db_unregister_cnu(int index)
+int db_unregister_cnu(int cltid, int cnuid)
 {
-	return db_init_cnu(index);
+	return db_init_cnu(cltid, cnuid);
 }
 
-int db_new_cnu(int index, st_dbsCnu *cnu)
+int db_new_cnu(int cltid, int cnuid, st_dbsCnu *cnu)
 {
 	int status = 0;
+	int rid = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
+	
 	if( 0 == db_get_anonymous_access_sts(&status) )
 	{
 		if( 0 == status )
@@ -117,17 +129,17 @@ int db_new_cnu(int index, st_dbsCnu *cnu)
 				case WEC701_C2:
 				case WEC701_C4:
 				{
-					if( 0 == dbsCreateDeblProfileForWec701Cnu(dbsdev, index) )
+					if( 0 == dbsCreateDeblProfileForWec701Cnu(dbsdev, rid) )
 					{
-						return dbsUpdateCnu(dbsdev, index, cnu);
+						return dbsUpdateCnu(dbsdev, rid, cnu);
 					}
 					break;
 				}
 				default:
 				{
-					if( 0 == dbsCreateDeblProfileForCnu(dbsdev, index) )
+					if( 0 == dbsCreateDeblProfileForCnu(dbsdev, rid) )
 					{
-						return dbsUpdateCnu(dbsdev, index, cnu);
+						return dbsUpdateCnu(dbsdev, rid, cnu);
 					}
 					break;
 				}
@@ -140,17 +152,17 @@ int db_new_cnu(int index, st_dbsCnu *cnu)
 				case WEC701_C2:
 				case WEC701_C4:
 				{
-					if( 0 == dbsCreateDewlProfileForWec701Cnu(dbsdev, index) )
+					if( 0 == dbsCreateDewlProfileForWec701Cnu(dbsdev, rid) )
 					{
-						return dbsUpdateCnu(dbsdev, index, cnu);
+						return dbsUpdateCnu(dbsdev, rid, cnu);
 					}
 					break;
 				}
 				default:
 				{
-					if( 0 == dbsCreateDewlProfileForCnu(dbsdev, index) )
+					if( 0 == dbsCreateDewlProfileForCnu(dbsdev, rid) )
 					{
-						return dbsUpdateCnu(dbsdev, index, cnu);
+						return dbsUpdateCnu(dbsdev, rid, cnu);
 					}
 					break;
 				}
@@ -160,24 +172,26 @@ int db_new_cnu(int index, st_dbsCnu *cnu)
 	return CMM_FAILED;
 }
 
-int db_new_su(int index, st_dbsCnu *cnu)
+int db_new_su(int cltid, int cnuid, st_dbsCnu *cnu)
 {
+	int rid = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
+	
 	switch(cnu->col_model)
 	{
 		case WEC701_C2:
 		case WEC701_C4:
 		{
-			if( 0 == dbsCreateSuProfileForWec701Cnu(dbsdev, index) )
+			if( 0 == dbsCreateSuProfileForWec701Cnu(dbsdev, rid) )
 			{
-				return dbsUpdateCnu(dbsdev, index, cnu);
+				return dbsUpdateCnu(dbsdev, rid, cnu);
 			}
 			break;
 		}
 		default:
 		{
-			if( 0 == dbsCreateSuProfileForCnu(dbsdev, index) )
+			if( 0 == dbsCreateSuProfileForCnu(dbsdev, rid) )
 			{
-				return dbsUpdateCnu(dbsdev, index, cnu);
+				return dbsUpdateCnu(dbsdev, rid, cnu);
 			}
 			break;
 		}
@@ -185,11 +199,13 @@ int db_new_su(int index, st_dbsCnu *cnu)
 	return CMM_FAILED;
 }
 
-int db_delete_cnu(int index)
+int db_delete_cnu(int cltid, int cnuid)
 {
-	if( 0 == dbsDestroyRowCnu(dbsdev, index) )
+	int rid = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
+	
+	if( 0 == dbsDestroyRowCnu(dbsdev, rid) )
 	{
-		if( 0 == dbsDestroyRowProfile(dbsdev, index) )
+		if( 0 == dbsDestroyRowProfile(dbsdev, rid) )
 		{
 			return CMM_SUCCESS;
 		}
@@ -197,12 +213,12 @@ int db_delete_cnu(int index)
 	return CMM_FAILED;
 }
 
-int db_get_user_type(uint32_t clt_index, uint32_t cnu_index, uint32_t *userType)
+int db_get_user_type(uint32_t cltid, uint32_t cnuid, uint32_t *userType)
 {
 	DB_INTEGER_V st_iValue;
 
 	st_iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	st_iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	st_iValue.ci.row = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	st_iValue.ci.colType = DBS_INTEGER;
 
@@ -225,12 +241,12 @@ int db_get_user_type(uint32_t clt_index, uint32_t cnu_index, uint32_t *userType)
 	}
 }
 
-int db_get_user_onused(uint32_t clt_index, uint32_t cnu_index, uint32_t *onUsed)
+int db_get_user_onused(uint32_t cltid, uint32_t cnuid, uint32_t *onUsed)
 {
 	DB_INTEGER_V st_iValue;
 
 	st_iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	st_iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	st_iValue.ci.row = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_ROWSTS;
 	st_iValue.ci.colType = DBS_INTEGER;
 
@@ -281,7 +297,7 @@ int db_get_anonymous_access_sts(uint32_t *anonyAccSts)
 	}	
 }
 
-int db_get_user_access_sts(uint32_t clt_index, uint32_t cnu_index, uint32_t *userAccSts)
+int db_get_user_access_sts(uint32_t cltid, uint32_t cnuid, uint32_t *userAccSts)
 {
 	*userAccSts = 1;
 	return CMM_SUCCESS;
@@ -315,7 +331,7 @@ int db_get_auto_config_sts(uint32_t *autoCfgSts)
 	}
 }
 
-int db_get_user_auto_config_sts(uint32_t clt_index, uint32_t cnu_index, uint32_t *userAutoCfgSts)
+int db_get_user_auto_config_sts(uint32_t cltid, uint32_t cnuid, uint32_t *userAutoCfgSts)
 {
 	*userAutoCfgSts = 1;
 	return CMM_SUCCESS;
@@ -324,49 +340,57 @@ int db_get_user_auto_config_sts(uint32_t clt_index, uint32_t cnu_index, uint32_t
 int db_init_nelib(T_TOPOLOGY_INFO *this)
 {
 	int i = 0;
+	int j = 0;
+	int cltid = 0;
+	int cnuid = 0;
+	int inode = 0;
 	st_dbsClt clt;
 	st_dbsCnu cnu;
 
 	/* 获取CLT的信息,这里假设只有1个CLT线卡，否则逻辑需要重新设计*/
 	for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++ )
 	{
-		if( CMM_SUCCESS != db_get_clt(i+1, &clt) )
+		cltid = i+1;
+		if( CMM_SUCCESS != db_get_clt(cltid, &clt) )
 		{
 			return CMM_DB_ACCESS_ERROR;
 		}
 		else
 		{
-			this->tb_clt.DevType = clt.col_model;
-			this->tb_clt.online = ((clt.col_sts)?BOOL_TRUE:BOOL_FALSE);
-			this->tb_clt.NumStas = clt.col_numStas;
-			this->tb_clt.MaxStas = clt.col_maxStas;
-			if( 0 != boardapi_macs2b(clt.col_mac, this->tb_clt.Mac) )
+			this->tb_clt[i].DevType = clt.col_model;
+			this->tb_clt[i].online = ((clt.col_sts)?BOOL_TRUE:BOOL_FALSE);
+			this->tb_clt[i].NumStas = clt.col_numStas;
+			this->tb_clt[i].MaxStas = clt.col_maxStas;
+			if( 0 != boardapi_macs2b(clt.col_mac, this->tb_clt[i].Mac) )
 			{
 				return CMM_FAILED;
 			}
 		}
+		/* 获取CNU列表信息*/
+		for( j=0; j<MAX_CNUS_PER_CLT; j++)
+		{
+			cnuid = j+1;
+			inode = i*MAX_CNUS_PER_CLT+j;
+			if( CMM_SUCCESS == db_get_cnu(cltid, cnuid, &cnu) )
+			{
+				this->tb_cnu[inode].DevType = cnu.col_model;
+				if( 0 != boardapi_macs2b(cnu.col_mac, this->tb_cnu[inode].Mac) )
+				{
+					return CMM_FAILED;
+				}
+				this->tb_cnu[inode].online = ((cnu.col_sts)?BOOL_TRUE:BOOL_FALSE);
+				this->tb_cnu[inode].RxRate = cnu.col_rx;
+				this->tb_cnu[inode].TxRate = cnu.col_tx;
+				this->tb_cnu[inode].OnUsed = ((cnu.col_row_sts)?BOOL_TRUE:BOOL_FALSE);
+			}
+			else
+			{
+				return CMM_DB_ACCESS_ERROR;
+			}
+		}	
 	}
 	
-	/* 获取CNU列表信息*/
-	for( i=0; i<(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT); i++)
-	{
-		if( CMM_SUCCESS == db_get_cnu(i+1, &cnu) )
-		{
-			this->tb_cnu[i].DevType = cnu.col_model;
-			if( 0 != boardapi_macs2b(cnu.col_mac, this->tb_cnu[i].Mac) )
-			{
-				return CMM_FAILED;
-			}
-			this->tb_cnu[i].online = ((cnu.col_sts)?BOOL_TRUE:BOOL_FALSE);
-			this->tb_cnu[i].RxRate = cnu.col_rx;
-			this->tb_cnu[i].TxRate = cnu.col_tx;
-			this->tb_cnu[i].OnUsed = ((cnu.col_row_sts)?BOOL_TRUE:BOOL_FALSE);
-		}
-		else
-		{
-			return CMM_DB_ACCESS_ERROR;
-		}
-	}	
+	
 	return CMM_SUCCESS;
 }
 

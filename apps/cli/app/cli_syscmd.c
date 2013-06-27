@@ -1372,7 +1372,7 @@ ULONG CLI_Cmd_ShowSysInfo()
 	//IO_Print("\r\n\r\n  Description:		WEC9720EK series EoC CBAT");
 	IO_Print("\r\n\r\n  Device Model:		%s", boardapi_getDeviceModelStr(szSysinfo.col_model));
 	IO_Print("\r\n  Maximum CLTs:		%d", MAX_CLT_AMOUNT_LIMIT);
-	IO_Print("\r\n  Maximum CNUs:		%d*%d", MAX_CLT_AMOUNT_LIMIT, MAX_CNU_AMOUNT_LIMIT);
+	IO_Print("\r\n  Maximum CNUs:		%d*%d", MAX_CLT_AMOUNT_LIMIT, MAX_CNUS_PER_CLT);
 	IO_Print("\r\n  White List Control:	%s", szSysinfo.col_wlctl?"Enable":"Disable");
 	IO_Print("\r\n  Watch dog:		%s", szSysinfo.col_wdt?"Enable":"Disable");	
 	IO_Print("\r\n  Hardware Version:	%s", szSysinfo.col_hwver);	
@@ -1552,7 +1552,7 @@ ULONG __CLI_Cmd_ShowCnuProfile(uint16_t id)
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 	
-	if( (id<1)||(id>MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT) )
+	if( (id<1)||(id>MAX_CLT_AMOUNT_LIMIT*MAX_CNUS_PER_CLT) )
 	{
 		return CMM_FAILED;
 	}
@@ -3448,7 +3448,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 
-	if( (id < 1)||(id > MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT) )
+	if( (id < 1)||(id > MAX_CLT_AMOUNT_LIMIT*MAX_CNUS_PER_CLT) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return 0;
@@ -4070,7 +4070,7 @@ int __cmd_set_cnu_qos_mode(uint16_t cltid, uint16_t cnuid, uint16_t mode)
 {
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
@@ -4293,7 +4293,7 @@ int __cmd_clt_cos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 int __cmd_cnu_cos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 {
 	DB_INTEGER_V iValue;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
@@ -4495,7 +4495,7 @@ int __cmd_clt_tos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 int __cmd_cnu_tos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 {
 	DB_INTEGER_V iValue;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
@@ -4757,7 +4757,7 @@ int __cmd_undo_cnu_qos(uint16_t cltid, uint16_t cnuid)
 {
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
@@ -5387,7 +5387,7 @@ ULONG CLI_Cmd_DoCnuPermit()
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
 		return CMM_SUCCESS;
 	}
-	else if( (b < 1)||( b > MAX_CNU_AMOUNT_LIMIT))
+	else if( (b < 1)||( b > MAX_CNUS_PER_CLT))
 	{
 		IO_Print("\r\n Invalid keyword value.");
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
@@ -5397,7 +5397,7 @@ ULONG CLI_Cmd_DoCnuPermit()
 	{
 		cltid = a;
 		cnuid = b;
-		id = (a-1)*MAX_CNU_AMOUNT_LIMIT+b;
+		id = (a-1)*MAX_CNUS_PER_CLT+b;
 	}	
 
 	/* 如果该CNU 槽位无效则禁止配置*/
@@ -5478,7 +5478,7 @@ ULONG CLI_Cmd_UndoCnuPermit()
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
 		return CMM_SUCCESS;
 	}
-	else if( (b < 1)||( b > MAX_CNU_AMOUNT_LIMIT))
+	else if( (b < 1)||( b > MAX_CNUS_PER_CLT))
 	{
 		IO_Print("\r\n Invalid keyword value.");
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
@@ -5488,7 +5488,7 @@ ULONG CLI_Cmd_UndoCnuPermit()
 	{
 		cltid = a;
 		cnuid = b;
-		id = (a-1)*MAX_CNU_AMOUNT_LIMIT+b;
+		id = (a-1)*MAX_CNUS_PER_CLT+b;
 	}
 
 	/* 如果该CNU 槽位无效则禁止配置*/
@@ -5568,7 +5568,7 @@ ULONG CLI_Cmd_DeleteCnu()
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
 		return CMM_SUCCESS;
 	}
-	else if( (b < 1)||( b > MAX_CNU_AMOUNT_LIMIT))
+	else if( (b < 1)||( b > MAX_CNUS_PER_CLT))
 	{
 		IO_Print("\r\n Invalid keyword value.");
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
@@ -5578,7 +5578,7 @@ ULONG CLI_Cmd_DeleteCnu()
 	{
 		cltid = a;
 		cnuid = b;
-		id = (a-1)*MAX_CNU_AMOUNT_LIMIT+b;
+		id = (a-1)*MAX_CNUS_PER_CLT+b;
 	}
 
 	/* 如果该CNU 槽位无效则禁止配置*/

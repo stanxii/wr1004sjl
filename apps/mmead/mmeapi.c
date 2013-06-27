@@ -38,7 +38,7 @@ static int readpacket
 (T_MME_SK_HANDLE *MME_SK, uint16_t MMtype, uint8_t *buffer, int buffersize, int *msg_len)
 {
 	int status;
-	int wait_time = 3000;
+	int wait_time = 800;
 	socklen_t socklen = sizeof(struct sockaddr_ll);
 
 	struct pollfd pollfd = 

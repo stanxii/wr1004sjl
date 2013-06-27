@@ -2590,7 +2590,7 @@ int TEST_DBS_TBL_ALL_ROW_INTERFACES(T_DBS_DEV_INFO *dev)
 		__test_dbs_row_tbl_cltconf_interfaces(dev, id);
 	}
 	/* step 4 : test row interfaces tbl_cnu */
-	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
+	for( id=1;id<=(MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
 		__test_dbs_row_tbl_cnu_interfaces(dev, id);
 	}
@@ -2605,7 +2605,7 @@ int TEST_DBS_TBL_ALL_ROW_INTERFACES(T_DBS_DEV_INFO *dev)
 		__test_dbs_row_tbl_network_interfaces(dev, id);
 	}
 	/* step 7 : test row interfaces tbl_profile */
-	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
+	for( id=1;id<=(MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
 		__test_dbs_row_tbl_profile_interfaces(dev, id);
 	}
@@ -2631,7 +2631,7 @@ int TEST_DBS_TBL_ALL_ROW_INTERFACES(T_DBS_DEV_INFO *dev)
 int TEST_DBS_CREATE_SU_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
-	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
+	for( id=1;id<=(MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
 		if( 0 != __test_dbs_create_su_profile_interfaces(dev, id) )
 		{
@@ -2648,7 +2648,7 @@ int TEST_DBS_CREATE_SU_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 int TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
-	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
+	for( id=1;id<=(MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
 		if( 0 != __test_dbs_create_dewl_profile_interfaces(dev, id) )
 		{
@@ -2665,7 +2665,7 @@ int TEST_DBS_CREATE_DEWL_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 int TEST_DBS_CREATE_DEBL_PROFILE_INTERFACES(T_DBS_DEV_INFO *dev)
 {
 	int id = 1;
-	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
+	for( id=1;id<=(MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
 		if( 0 != __test_dbs_create_debl_profile_interfaces(dev, id) )
 		{
@@ -2707,7 +2707,7 @@ int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(T_DBS_DEV_INFO *dev)
 		}
 	}
 	printf("\n==================================================================\n");
-	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
+	for( id=1;id<=(MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
 		if( 0 != __test_dbs_destroy_cnu_interfaces(dev, id) )
 		{
@@ -2719,7 +2719,7 @@ int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(T_DBS_DEV_INFO *dev)
 		}
 	}
 	printf("\n==================================================================\n");
-	for( id=1;id<=(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT);id++ )
+	for( id=1;id<=(MAX_CNU_AMOUNT_LIMIT);id++ )
 	{
 		if( 0 != __test_dbs_destroy_profile_interfaces(dev, id) )
 		{
