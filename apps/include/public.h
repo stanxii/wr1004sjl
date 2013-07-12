@@ -465,6 +465,8 @@ enum
 	MMEAD_AUTHORIZATION_USER,			/* 授权CNU用户端口*/
 	MMEAD_LINK_DIAG,
 	MMEAD_GET_TOPOLOGY_STATS,
+	MMEAD_GET_FREQUENCY_BAND_SELECTION,
+	MMEAD_SET_FREQUENCY_BAND_SELECTION,
 	
 	/* 请在中间增加其他枚举定义 */
 
@@ -1636,6 +1638,13 @@ typedef struct
 	T_MMEAD_CLT_INFO clt;
 	T_MMEAD_CNU_INFO cnu[MMEAD_MAX_CNU_NUM];
 }T_MMEAD_TOPOLOGY;
+
+typedef struct
+{
+	uint8_t FBSTATUS;
+	uint16_t START_BAND;
+	uint16_t STOP_BAND;	
+}T_MMEAD_FBS;
 
 typedef struct
 {

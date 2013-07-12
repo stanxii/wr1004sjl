@@ -333,6 +333,21 @@ int boardapi_isCnuSupported(uint32_t DevType)
 	}
 }
 
+int boardapi_isAr7400Device(uint32_t DevType)
+{
+	switch(DevType)
+	{
+		case WEC701_M0:
+		case WEC701_C2:
+		case WEC701_C4:
+		{
+			return BOOL_TRUE;
+		}		
+		default:
+			return BOOL_FALSE;
+	}
+}
+
 /********************************************************************************************
 *	函数名称:boardapi_getModNameStr
 *	函数功能:根据模块ID获取字符串表示的模块名称

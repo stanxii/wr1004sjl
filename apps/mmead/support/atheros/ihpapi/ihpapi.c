@@ -56,6 +56,8 @@
 #include "../ihpapi/SetSDRAMConfig.c"
 #include "../ihpapi/SetClassification.c"
 #include "../ihpapi/MDIOcommand.c"
+#include "../ihpapi/GetFrequencyBandSelection.c"
+#include "../ihpapi/SetFrequencyBandSelection.c"
  
 /*====================================================================*
  *   internal source files; see ihp.h;
@@ -85,6 +87,8 @@
 #include "../ihpapi/DecodeSetSDRAMCfg.c"
 #include "../ihpapi/DecodeSetClassification.c"
 #include "../ihpapi/DecodeMdioCommand.c"
+#include "../ihpapi/DecodeGetFrequencyBandSelection.c"
+#include "../ihpapi/DecodeSetFrequencyBandSelection.c"
 #include "../ihpapi/SequenceReadModule.c"
 #include "../ihpapi/SequenceWriteModule.c"
 #include "../ihpapi/SequenceWriteMemory.c"

@@ -257,6 +257,9 @@
 /* Atheros 6400增加了设备上线主动通知的MME */
 #define VS_DEVICEUP_TRAP 0xA0A2
 #define VS_MODULE_OPERATION 0xA0B0
+
+#define VS_GET_PROPERTY 0xA0F8
+#define VS_SET_PROPERTY 0xA100
  
 /*====================================================================*
  * HomePlug AV MMEs have 4 variants indicated by the 2 MMTYPE LSBs;
@@ -854,6 +857,8 @@ int ihp_DecodeGetRxToneMapInfo (const uint8_t buffer [], size_t length, ihpapi_r
 int ihp_DecodeEthernetPHYSettings (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeStartMAC (const uint8_t buffer [], size_t length, ihpapi_result_t * result, BlockInfo * block);
 int ihp_DecodeReadModule (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
+int ihp_DecodeGetFrequencyBandSelection (const uint8_t buffer [], size_t length, ihpapi_result_t * result) ;
+int ihp_DecodeSetFrequencyBandSelection (const uint8_t buffer [], size_t length, ihpapi_result_t * result) ;
 //int ihp_DecodeWriteModule (const uint8_t buffer [], size_t length, ihpapi_result_t * result, WrtModBlock * wrmodblk);
 int ihp_DecodeWriteModule (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeWriteMemory (const uint8_t buffer [], size_t length, ihpapi_result_t * result, WrtMemBlock * wrmemblk);

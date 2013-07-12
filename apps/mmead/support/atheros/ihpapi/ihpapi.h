@@ -384,6 +384,14 @@ typedef struct __packed ihpapi_getNetworkInfoData_s
 
 ihpapi_getNetworkInfoData_t;
 
+typedef struct __packed ihpapi_getFrequencyBandSelection_s 
+{
+	uint8_t FBSTATUS;
+	uint16_t START_BAND;
+	uint16_t STOP_BAND;	
+}
+ihpapi_getFrequencyBandSelection_t;
+
 
 /*====================================================================*
  *   
@@ -619,6 +627,7 @@ typedef struct __packed ihpapi_result_s
 		ihpapi_getToneMapData_t toneMap;
 		ihpapi_getRxToneMapData_t rxToneMap;
 		ihpapi_mdioCommandData_t mdioInfo;
+		ihpapi_getFrequencyBandSelection_t FrequencyBandSelectionInfo;
 	}
 	data;
 }
@@ -674,7 +683,6 @@ typedef struct vs_module_operation_data
 	uint16_t ERR_REC_CODE;
 }vs_module_operation_data;
 
-
 #pragma pack (pop)
 
 /*====================================================================*
@@ -696,6 +704,8 @@ size_t ihpapi_SetKey (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t bu
 size_t ihpapi_SetSDRAMConfig (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], size_t SDRAM_len, uint8_t SDRAM_buffer []);
 size_t ihpapi_SetClassification (uint8_t sa [], uint8_t da [], ClassifierInfo *pClassifierInfo, size_t bufferLen, uint8_t buffer []) ;
 size_t ihpapi_MdioCommand ( uint8_t sa [], uint8_t da [], MdioCmdInfo*pMdioCmdInfo, size_t bufferLen, uint8_t buffer [] ) ;
+size_t ihpapi_GetFrequencyBandSelection (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []) ;
+size_t ihpapi_SetFrequencyBandSelection(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_getFrequencyBandSelection_t *FrequencyBandSelectionInfo);
 
 /*====================================================================*
  *   decoder functions; see the Intellon HomePlug AV

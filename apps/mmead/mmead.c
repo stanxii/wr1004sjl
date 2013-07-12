@@ -18,6 +18,7 @@
 #include "support/atheros/ihpapi/ihpapi.h"
 #include "support/atheros/ihpapi/ihp.h"
 #include "../dbs/include/dbsapi.h"
+#include <boardapi.h>
 
 uint8_t OSA [6] = 
 {
@@ -291,6 +292,26 @@ void MME_Atheros_ProcessGetSwVer(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_
 	MMEAD_ProcessAck(MME_Atheros_MsgGetSwVer(MME_SK, h->ODA, VerStr), this, VerStr, 2*STRNG_MAX_LEN);
 }
 
+void MME_Atheros_ProcessGetFrequencyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	T_MMEAD_FBS fbs;
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgGetFrequencyBandSelection(MME_SK, h->ODA, &fbs), this, (uint8_t *)&fbs, sizeof(T_MMEAD_FBS));
+}
+
+void MME_Atheros_ProcessSetFrequencyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_MMETS_REQ_MSG *req= (T_MMETS_REQ_MSG *)(this->b);	
+	T_MMEAD_FBS fbs;
+
+	memcpy(&fbs, req->body, sizeof(T_MMEAD_FBS));
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgSetFrequencyBandSelection(MME_SK, req->header.ODA, &fbs), this, NULL, 0);
+}
+
 /********************************************************************************************
 *	函数名称:MME_Atheros_ProcessGetManufacturerInfo
 *	函数功能:该函数为MME_ProcessGetManufacturerInfo函数完成硬件屏蔽之后
@@ -466,6 +487,36 @@ void MME_ProcessGetSwVer(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 			break;
 		}
 	}
+}
+
+void MME_ProcessGetFrequecyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessGetFrequencyBandSelection(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
+}
+
+void MME_ProcessSetFrequecyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessSetFrequencyBandSelection(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
 }
 
 /********************************************************************************************
@@ -1417,6 +1468,12 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 			break;
 		case MMEAD_LINK_DIAG:
 			MME_ProcessLinkDiag(this, MME_SK);
+			break;
+		case MMEAD_GET_FREQUENCY_BAND_SELECTION:
+			MME_ProcessGetFrequecyBandSelection(this, MME_SK);
+			break;
+		case MMEAD_SET_FREQUENCY_BAND_SELECTION:
+			MME_ProcessSetFrequecyBandSelection(this, MME_SK);
 			break;
 		default:
 			/* 对于不支持的消息类型应该给予应答以便让请求者知道 */

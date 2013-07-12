@@ -70,6 +70,7 @@ const char *boardapi_getCnuHfid(uint32_t devType);
 *	时间:2010-08-19
 *********************************************************************************************/
 int boardapi_isCnuSupported(uint32_t DevType);
+int boardapi_isAr7400Device(uint32_t DevType);
 
 /********************************************************************************************
 *	函数名称:boardapi_mapDevModel

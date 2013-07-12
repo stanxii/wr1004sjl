@@ -1366,6 +1366,88 @@ int MME_Atheros_MsgGetSwVer
 	return CMM_MME_ERROR;
 }
 
+int MME_Atheros_MsgGetFrequencyBandSelection
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_FBS *pdata)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGetFrequencyBandSelection\n");
+	memset(buffer, 0, sizeof(buffer));
+	packetsize = ihpapi_GetFrequencyBandSelection(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_rx(MME_SK, VS_GET_PROPERTY, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		pdata->FBSTATUS = xresult.data.FrequencyBandSelectionInfo.FBSTATUS;
+		pdata->START_BAND = xresult.data.FrequencyBandSelectionInfo.START_BAND;
+		pdata->STOP_BAND = xresult.data.FrequencyBandSelectionInfo.STOP_BAND;
+		return CMM_SUCCESS;
+	}	
+	return CMM_MME_ERROR;
+}
+
+int MME_Atheros_MsgSetFrequencyBandSelection
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_FBS *pdata)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+	ihpapi_getFrequencyBandSelection_t FrequencyBandSelectionInfo;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgSetFrequencyBandSelection\n");
+	memset(buffer, 0, sizeof(buffer));
+	FrequencyBandSelectionInfo.FBSTATUS = pdata->FBSTATUS;
+	FrequencyBandSelectionInfo.START_BAND = pdata->START_BAND;
+	FrequencyBandSelectionInfo.STOP_BAND = pdata->STOP_BAND;
+	
+	packetsize = ihpapi_SetFrequencyBandSelection(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer, &FrequencyBandSelectionInfo);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_rx(MME_SK, VS_SET_PROPERTY, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		return xresult.opStatus.status;
+	}	
+	return CMM_MME_ERROR;
+}
+
 
 /********************************************************************************************
 *	º¯ÊýÃû³Æ:MME_Atheros_MsgGetCltMac

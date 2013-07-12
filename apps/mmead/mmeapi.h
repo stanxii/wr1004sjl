@@ -167,5 +167,19 @@ int MME_Atheros_MsgGetNetInfo
 	ihpapi_getNetworkInfoData_t *outputNetInfo
 );
 
+int MME_Atheros_MsgGetFrequencyBandSelection
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	T_MMEAD_FBS *pdata
+);
+
+int MME_Atheros_MsgSetFrequencyBandSelection
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	T_MMEAD_FBS *pdata
+);
+
 #endif
 

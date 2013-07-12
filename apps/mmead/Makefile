@@ -7,10 +7,11 @@ STRIP	= $(CROSS_COMPILE)strip
 CC = $(CROSS_COMPILE)gcc
 
 CFLAGS +=-g -O2
-IFLAGS = -I../include -I../dbs/include
+IFLAGS = -I../include -I../dbs/include -I../boardapi
 
 LDFLAGS += -L../dbs/client/lib
 DBS_LIB = -ldbs
+BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 
 OBJDIR = ./obj
 OBJ = mmeapi.o mmead.o support/atheros/tools/*.o support/atheros/ihpapi/ihpapi.o
@@ -30,7 +31,7 @@ build:
 	make -C support/atheros/ihpapi
 	$(CC) $(CFLAGS) $(IFLAGS) -c mmeapi.c
 	$(CC) $(CFLAGS) $(IFLAGS) -c mmead.c
-	$(CC) $(OBJ) -o mmead $(LDFLAGS) $(DBS_LIB)
+	$(CC) $(OBJ) -o mmead $(LDFLAGS) $(DBS_LIB) $(BOARDAPI_LD_FLAGS)
 	$(STRIP) mmead
 	
 install:

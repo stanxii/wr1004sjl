@@ -232,6 +232,12 @@ int ihpapi_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result)
 		result->opStatus.status = EAGAIN;
 		result->opStatus.type = XX_MMTYPE_BAD;
 		break;
+	case VS_GET_PROPERTY | MMTYPE_CNF:
+		rc = ihp_DecodeGetFrequencyBandSelection (buffer, length, result);
+		break;
+	case VS_SET_PROPERTY | MMTYPE_CNF:
+		rc = ihp_DecodeSetFrequencyBandSelection (buffer, length, result);
+		break;
 	default:
 		printf("ihpapi_RxFrame->case default: set errno = ENOSYS\n");
 		result->opStatus.status = errno = ENOSYS;
