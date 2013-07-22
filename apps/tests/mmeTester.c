@@ -50,11 +50,17 @@ void print_usage(void)
 	printf("	--16:	test mmead case [MMEAD_GET_TOPOLOGY_STATS]\n");
 	printf("	--17:	test mmead case [MMEAD_GET_FREQUENCY_BAND_SELECTION]\n");
 	printf("	--18:	test mmead case [MMEAD_SET_FREQUENCY_BAND_SELECTION]\n");
-	printf("			set to sub-band mode\n");
+	printf("		set to sub-band mode\n");
 	printf("	--19:	test mmead case [MMEAD_SET_FREQUENCY_BAND_SELECTION]\n");
-	printf("			set to full-band mode\n");
+	printf("		set to full-band mode\n");
 	printf("	--20:	test mmead case [MMEAD_SET_FREQUENCY_BAND_SELECTION]\n");
-	printf("			disable frequency band selection\n");
+	printf("		disable frequency band selection\n");
+	printf("	--21:	test mmead case [MMEAD_GET_TX_GAIN]\n");
+	printf("		get eoc tx gain value\n");
+	printf("	--22:	test mmead case [MMEAD_SET_TX_GAIN]\n");
+	printf("		increase tx gain value by 1db\n");
+	printf("	--23:	test mmead case [MMEAD_SET_TX_GAIN]\n");
+	printf("		decrease tx gain value by 1db\n");
 	
 	printf("\n\n");
 }
@@ -483,6 +489,76 @@ int TEST_MMEAD_SET_FBS_DISABLE(T_UDP_SK_INFO *sk)
 	p->FBSTATUS = 0;
 	p->START_BAND = 0;
 	p->STOP_BAND = 0;
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
+}
+
+int TEST_MMEAD_GET_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;
+	uint8_t *p = (uint8_t *)(reply->body);
+	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_GET_TX_GAIN;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = 0;
+
+	
+	if( 0 == msg_communicate(sk, buf, sizeof(T_MMETS_REQ_MSG)) )
+	{
+		printf("	TX GAIN = [%d]\n", *p);
+		return 0;
+	}
+	return -1;
+}
+
+int TEST_MMEAD_INCREASE_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	uint8_t *p = (uint8_t *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_TX_GAIN;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = sizeof(uint8_t);
+
+	*p = 0x01;
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
+}
+
+int TEST_MMEAD_DECREASE_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	uint8_t *p = (uint8_t *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_TX_GAIN;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = sizeof(uint8_t);
+
+	*p = 0xff;
 
 	len = sizeof(request->header) + request->header.LEN;
 	
@@ -1112,6 +1188,21 @@ int main(int argc, char *argv[])
 			case 20:
 			{
 				TEST_MMEAD_SET_FBS_DISABLE(&sk);
+				break;
+			}
+			case 21:
+			{
+				TEST_MMEAD_GET_TX_GAIN_VALUE(&sk);
+				break;
+			}
+			case 22:
+			{
+				TEST_MMEAD_INCREASE_TX_GAIN_VALUE(&sk);
+				break;
+			}
+			case 23:
+			{
+				TEST_MMEAD_DECREASE_TX_GAIN_VALUE(&sk);
 				break;
 			}
 			default:

@@ -58,7 +58,9 @@
 #include "../ihpapi/MDIOcommand.c"
 #include "../ihpapi/GetFrequencyBandSelection.c"
 #include "../ihpapi/SetFrequencyBandSelection.c"
- 
+#include "../ihpapi/GetTxGain.c"
+#include "../ihpapi/SetTxGain.c"
+
 /*====================================================================*
  *   internal source files; see ihp.h;
  *--------------------------------------------------------------------*/
@@ -89,6 +91,8 @@
 #include "../ihpapi/DecodeMdioCommand.c"
 #include "../ihpapi/DecodeGetFrequencyBandSelection.c"
 #include "../ihpapi/DecodeSetFrequencyBandSelection.c"
+#include "../ihpapi/DecodeGetTxGain.c"
+#include "../ihpapi/DecodeSetTxGain.c"
 #include "../ihpapi/SequenceReadModule.c"
 #include "../ihpapi/SequenceWriteModule.c"
 #include "../ihpapi/SequenceWriteMemory.c"

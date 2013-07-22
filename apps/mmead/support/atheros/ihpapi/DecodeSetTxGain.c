@@ -1,15 +1,15 @@
-#ifndef DECODESETFREQUENCYBANDSELECTION_SOURCE
-#define DECODESETFREQUENCYBANDSELECTION_SOURCE
+#ifndef DECODESETTXGAIN_SOURCE
+#define DECODESETTXGAIN_SOURCE
 
 #include <stdint.h>
 #include <string.h>
 
 #include "../ihpapi/ihp.h"
  
-int ihp_DecodeSetFrequencyBandSelection(const uint8_t buffer [ ], size_t length, ihpapi_result_t * result)
+int ihp_DecodeSetTxGain(const uint8_t buffer [ ], size_t length, ihpapi_result_t * result)
 
 {
-	vs_set_property_cnf_t* confirm = ( vs_set_property_cnf_t *)(buffer);
+	vs_set_property_cnf_t* confirm = (vs_set_property_cnf_t *)(buffer);
 
 #if INTELLON_SAFEMODE
  
@@ -24,7 +24,7 @@ int ihp_DecodeSetFrequencyBandSelection(const uint8_t buffer [ ], size_t length,
 
 #endif
 
-	if( 0x00 != intohl(confirm->COOKIE) )
+	if( 0x01 != intohl(confirm->COOKIE) )
 	{
 		result->validData = false;
 		result->opStatus.status = 0x01;

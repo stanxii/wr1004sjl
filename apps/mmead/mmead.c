@@ -312,6 +312,26 @@ void MME_Atheros_ProcessSetFrequencyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MM
 	MMEAD_ProcessAck(MME_Atheros_MsgSetFrequencyBandSelection(MME_SK, req->header.ODA, &fbs), this, NULL, 0);
 }
 
+void MME_Atheros_ProcessGetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	uint8_t tx_gain;
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgGetTxGain(MME_SK, h->ODA, &tx_gain), this, (uint8_t *)&tx_gain, sizeof(uint8_t));
+}
+
+void MME_Atheros_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_MMETS_REQ_MSG *req= (T_MMETS_REQ_MSG *)(this->b);	
+	uint8_t tx_gain;
+
+	memcpy(&tx_gain, req->body, sizeof(uint8_t));
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgSetTxGain(MME_SK, req->header.ODA, tx_gain), this, NULL, 0);
+}
+
 /********************************************************************************************
 *	函数名称:MME_Atheros_ProcessGetManufacturerInfo
 *	函数功能:该函数为MME_ProcessGetManufacturerInfo函数完成硬件屏蔽之后
@@ -511,6 +531,36 @@ void MME_ProcessSetFrequecyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HAND
 	if( boardapi_isAr7400Device(h->DEV_TYPE) )
 	{
 		MME_Atheros_ProcessSetFrequencyBandSelection(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
+}
+
+void MME_ProcessGetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessGetTxGain(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
+}
+
+void MME_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessSetTxGain(this, MME_SK);
 	}
 	else
 	{
@@ -1474,6 +1524,12 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 			break;
 		case MMEAD_SET_FREQUENCY_BAND_SELECTION:
 			MME_ProcessSetFrequecyBandSelection(this, MME_SK);
+			break;
+		case MMEAD_GET_TX_GAIN:
+			MME_ProcessGetTxGain(this, MME_SK);
+			break;
+		case MMEAD_SET_TX_GAIN:
+			MME_ProcessSetTxGain(this, MME_SK);
 			break;
 		default:
 			/* 对于不支持的消息类型应该给予应答以便让请求者知道 */

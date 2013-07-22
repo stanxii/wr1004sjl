@@ -11,12 +11,7 @@ int ihp_DecodeGetFrequencyBandSelection (const uint8_t buffer [], size_t length,
 {
 	struct __packed vs_get_frequency_band_selection_cnf 
 	{
-		struct header_vs header;
-		uint32_t MSTATUS;
-		uint32_t COOKIE;
-		uint8_t OUTPUT_FORMAT;
-		uint8_t RESERVED[3];
-		uint32_t PROP_STR_LENGTH;
+		vs_get_property_cnf_header_t get_property_cnf_header;
 		uint8_t FBSTATUS;
 		uint16_t START_BAND;
 		uint16_t STOP_BAND;		
@@ -36,14 +31,21 @@ int ihp_DecodeGetFrequencyBandSelection (const uint8_t buffer [], size_t length,
 
 #endif
 
-	result->validData = true;
-	result->opStatus.status = intohl(confirm->MSTATUS);	
-	
-	result->data.FrequencyBandSelectionInfo.FBSTATUS = confirm->FBSTATUS;
-	result->data.FrequencyBandSelectionInfo.START_BAND = intohs(confirm->START_BAND);
-	result->data.FrequencyBandSelectionInfo.STOP_BAND = intohs(confirm->STOP_BAND);
-	
-	return (0);
+	if(0x00 != intohl(confirm->get_property_cnf_header.COOKIE))
+	{
+		result->validData = false;
+		result->opStatus.status = 0x01;
+		return (-1);
+	}
+	else
+	{
+		result->validData = true;
+		result->opStatus.status = intohl(confirm->get_property_cnf_header.MSTATUS);			
+		result->data.FrequencyBandSelectionInfo.FBSTATUS = confirm->FBSTATUS;
+		result->data.FrequencyBandSelectionInfo.START_BAND = intohs(confirm->START_BAND);
+		result->data.FrequencyBandSelectionInfo.STOP_BAND = intohs(confirm->STOP_BAND);		
+		return (0);
+	}
 }
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef GETFREQUENCYBANDSELECTION_SOURCE
-#define GETFREQUENCYBANDSELECTION_SOURCE
+#ifndef GETTXGAIN_SOURCE
+#define GETTXGAIN_SOURCE
 
 #include <stdio.h>
 #include <stdint.h>
@@ -9,7 +9,7 @@
 #include "ihpapi.h"
 #include "ihp.h"
  
-size_t ihpapi_GetFrequencyBandSelection (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []) 
+size_t ihpapi_GetTxGain(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []) 
 
 {
 	vs_get_property_req_t* request = (vs_get_property_req_t *)(buffer);
@@ -31,7 +31,7 @@ size_t ihpapi_GetFrequencyBandSelection (uint8_t sa [], uint8_t da [], size_t bu
 	}
 
 	/* Unique ID for the request */
-	request->COOKIE = ihtonl(0);
+	request->COOKIE = ihtonl(0x01);
 	/* Output format(0x00=binary) */
 	request->OUTPUT_FORMAT = 0x00;
 	/* Property format(0x00=string, 0x01=4-byte ID) */
@@ -44,7 +44,7 @@ size_t ihpapi_GetFrequencyBandSelection (uint8_t sa [], uint8_t da [], size_t bu
 	/* Property string length, it should by 4 bytes for "ID" property format */
 	request->PROP_STR_LENGTH = ihtonl(4);
 	/* Proterty string, for "ID" property format, the next 4 bytes are the ID in little endian format */
-	request->PRO_STR = ihtonl(109);
+	request->PRO_STR = ihtonl(111);
 	
 	return (IHPAPI_ETHER_MIN_LEN);
 }

@@ -67,6 +67,8 @@ int ihpapi_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result)
 	TxInfo *tcb = &scb.tcb;
 	BlockInfo block;
 	struct header_cnf * header = (struct header_cnf *)(buffer);
+	vs_get_property_cnf_header_t *pget_property_cnf_header = (vs_get_property_cnf_header_t *)buffer;
+	vs_set_property_cnf_t *pset_property_cnf = (vs_set_property_cnf_t *)buffer;
 	memset (result, 0, sizeof (* result));
 	result->opCode = IHPAPI_OPCODE_NOOP;
 	result->opCompltCode = IHPAPI_OPCMPLTCODE_NOOP;
@@ -233,10 +235,38 @@ int ihpapi_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result)
 		result->opStatus.type = XX_MMTYPE_BAD;
 		break;
 	case VS_GET_PROPERTY | MMTYPE_CNF:
-		rc = ihp_DecodeGetFrequencyBandSelection (buffer, length, result);
+		
+		if(0x00 == intohl(pget_property_cnf_header->COOKIE))
+		{
+			rc = ihp_DecodeGetFrequencyBandSelection (buffer, length, result);
+		}
+		else if(0x01 == intohl(pget_property_cnf_header->COOKIE))
+		{
+			rc = ihp_DecodeGetTxGain (buffer, length, result);
+		}
+		else
+		{
+			printf("ihpapi_RxFrame->case VS_GET_PROPERTY: set errno = ENOSYS\n");
+			result->opStatus.status = errno = ENOSYS;
+			result->opStatus.type = XX_MMTYPE_BAD;
+		}
 		break;
 	case VS_SET_PROPERTY | MMTYPE_CNF:
-		rc = ihp_DecodeSetFrequencyBandSelection (buffer, length, result);
+		
+		if(0x00 == intohl(pset_property_cnf->COOKIE))
+		{
+			rc = ihp_DecodeSetFrequencyBandSelection (buffer, length, result);
+		}
+		else if(0x01 == intohl(pset_property_cnf->COOKIE))
+		{
+			rc = ihp_DecodeSetTxGain (buffer, length, result);
+		}
+		else
+		{
+			printf("ihpapi_RxFrame->case VS_GET_PROPERTY: set errno = ENOSYS\n");
+			result->opStatus.status = errno = ENOSYS;
+			result->opStatus.type = XX_MMTYPE_BAD;
+		}
 		break;
 	default:
 		printf("ihpapi_RxFrame->case default: set errno = ENOSYS\n");

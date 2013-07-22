@@ -410,6 +410,50 @@ typedef struct __packed header_v1_cnf
 
 header_V1_cnf;
 
+typedef struct __packed vs_get_property_req_s 
+{
+	header_vs header;
+	uint32_t COOKIE;
+	uint8_t OUTPUT_FORMAT;
+	uint8_t PROP_FORMAT;
+	uint8_t RESERVED[2];
+	uint32_t PROP_VERSION;
+	uint32_t PROP_STR_LENGTH;
+	uint32_t PRO_STR;
+}
+vs_get_property_req_t;
+
+typedef struct __packed vs_get_property_cnf_header_s 
+{
+	header_vs header;
+	uint32_t MSTATUS;
+	uint32_t COOKIE;
+	uint8_t OUTPUT_FORMAT;
+	uint8_t RESERVED[3];
+	uint32_t PROP_STR_LENGTH;
+}
+vs_get_property_cnf_header_t;
+
+typedef struct __packed vs_set_property_req_header_s 
+{
+	header_vs header;
+	uint32_t COOKIE;
+	uint8_t OPTION;
+	uint8_t RESERVED[3];
+	uint32_t PROP_VERSION;
+	uint32_t PROP_ID;
+	uint32_t PROP_DATA_LENGTH;
+}
+vs_set_property_req_header_t;
+
+typedef struct __packed vs_set_property_cnf_s 
+{
+	header_vs header;
+	uint32_t MSTATUS;
+	uint32_t COOKIE;
+}
+vs_set_property_cnf_t;
+
 
 #pragma pack (pop)
  
@@ -859,6 +903,8 @@ int ihp_DecodeStartMAC (const uint8_t buffer [], size_t length, ihpapi_result_t 
 int ihp_DecodeReadModule (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeGetFrequencyBandSelection (const uint8_t buffer [], size_t length, ihpapi_result_t * result) ;
 int ihp_DecodeSetFrequencyBandSelection (const uint8_t buffer [], size_t length, ihpapi_result_t * result) ;
+int ihp_DecodeGetTxGain(const uint8_t buffer [], size_t length, ihpapi_result_t * result);
+int ihp_DecodeSetTxGain(const uint8_t buffer [ ], size_t length, ihpapi_result_t * result);
 //int ihp_DecodeWriteModule (const uint8_t buffer [], size_t length, ihpapi_result_t * result, WrtModBlock * wrmodblk);
 int ihp_DecodeWriteModule (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeWriteMemory (const uint8_t buffer [], size_t length, ihpapi_result_t * result, WrtMemBlock * wrmemblk);

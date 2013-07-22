@@ -374,6 +374,8 @@ ihpapi_getManufacturerInfoData_t;
  *  see the INT6000 Firmware Technical Reference Manual 
  *  for more information;
  */
+
+
  
 typedef struct __packed ihpapi_getNetworkInfoData_s 
 
@@ -391,6 +393,12 @@ typedef struct __packed ihpapi_getFrequencyBandSelection_s
 	uint16_t STOP_BAND;	
 }
 ihpapi_getFrequencyBandSelection_t;
+
+typedef struct __packed ihpapi_getTxGain_s 
+{
+	uint8_t TX_GAIN;
+}
+ihpapi_getTxGain_t;
 
 
 /*====================================================================*
@@ -628,6 +636,7 @@ typedef struct __packed ihpapi_result_s
 		ihpapi_getRxToneMapData_t rxToneMap;
 		ihpapi_mdioCommandData_t mdioInfo;
 		ihpapi_getFrequencyBandSelection_t FrequencyBandSelectionInfo;
+		ihpapi_getTxGain_t txGainInfo;
 	}
 	data;
 }
@@ -706,6 +715,8 @@ size_t ihpapi_SetClassification (uint8_t sa [], uint8_t da [], ClassifierInfo *p
 size_t ihpapi_MdioCommand ( uint8_t sa [], uint8_t da [], MdioCmdInfo*pMdioCmdInfo, size_t bufferLen, uint8_t buffer [] ) ;
 size_t ihpapi_GetFrequencyBandSelection (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []) ;
 size_t ihpapi_SetFrequencyBandSelection(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_getFrequencyBandSelection_t *FrequencyBandSelectionInfo);
+size_t ihpapi_GetTxGain(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
+size_t ihpapi_SetTxGain(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], uint8_t tx_gain);
 
 /*====================================================================*
  *   decoder functions; see the Intellon HomePlug AV
