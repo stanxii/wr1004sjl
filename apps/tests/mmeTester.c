@@ -501,7 +501,8 @@ int TEST_MMEAD_GET_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
 	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
 	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;
 	uint8_t *p = (uint8_t *)(reply->body);
-	
+	uint8_t temp = 0;
+	int tx_gain = 0;
 	
 	request->header.M_TYPE = 0xCC08;
 	request->header.DEV_TYPE = WEC701_M0;
@@ -513,9 +514,20 @@ int TEST_MMEAD_GET_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
 	
 	if( 0 == msg_communicate(sk, buf, sizeof(T_MMETS_REQ_MSG)) )
 	{
-		printf("	TX GAIN = [%d]\n", *p);
+		temp = *p;
+		tx_gain = ((temp>>7)==0)?temp:(temp|0xffffff00|temp);
+		if( tx_gain < 0 )
+		{
+			printf("	TX GAIN : [%ddB]\n", tx_gain);
+		}
+		else
+		{
+			printf("	TX GAIN : [+%ddB]\n", tx_gain);
+		}
+		
 		return 0;
 	}
+	
 	return -1;
 }
 
