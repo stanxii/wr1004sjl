@@ -260,7 +260,7 @@ int http2dbs_getDevModel(char *varValue)
 
 int http2dbs_getEocType(char *varValue)
 {
-	strcpy(varValue, "AR7410");
+	strcpy(varValue, boardapi_getCltStandardStr());
 	return CMM_SUCCESS;
 }
 

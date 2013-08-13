@@ -1382,8 +1382,8 @@ ULONG CLI_Cmd_ShowSysInfo()
 	IO_Print("\r\n  Flash Size:		%dMB", szSysinfo.col_flashsize);
 	IO_Print("\r\n  Sdram Size:		%dMB", szSysinfo.col_ramsize);
 	/* demo version info */
-	IO_Print("\r\n  Manufacturer:		");
-	//IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
+	//IO_Print("\r\n  Manufacturer:		");
+	IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
 
 #ifdef __AT30TK175STK__
 	if( CMM_SUCCESS == ret )

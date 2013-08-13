@@ -48,6 +48,22 @@ int boardapi_macs2b(const char *str, uint8_t *bin);
 char * boardapi_getDeviceModelStr(uint32_t model);
 
 /********************************************************************************************
+*	函数名称:boardapi_getCltStandardStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getCltStandardStr(void);
+
+/********************************************************************************************
+*	函数名称:boardapi_getMenufactoryStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getMenufactoryStr(void);
+
+/********************************************************************************************
 *	函数名称:boardapi_getModNameStr
 *	函数功能:根据模块ID获取字符串表示的模块名称
 *	作者:frank

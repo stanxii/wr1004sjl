@@ -41,6 +41,15 @@
 #define FIRMWARE_MD5_DOWNLOADS_PATH "/var/downloads/firmware.img.md5"
 
 //#define WEC3502I_SOCKET_UN_ENABLE 1
+/********************************************************/
+enum
+{
+	CUSTOM_LOGO_DEMO = 0,
+	CUSTOM_LOGO_PREVAIL,
+	CUSTOM_LOGO_PX
+};
+#define CUSTOM_LOGO_ID CUSTOM_LOGO_DEMO
+/********************************************************/
 
 /********************************************************/
 /* define __AT30TK175STK__ to enable temperature sensor driver */
@@ -54,7 +63,7 @@
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.1-cr5"
+#define SYSINFO_APP_VERSION		"v1.3.6.1-cr6"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"

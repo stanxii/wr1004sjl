@@ -172,11 +172,28 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC_3501I_C22:
 		{
-			return "WEC-3501I C22";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 6402";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3501I C22";
+				
+			}			
 		}
 		case WEC_3501I_S220:
 		{
-			return "WEC-3501I S220";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 6401";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3501I S220";				
+			}
 		}
 		case WEC_3501I_S60:
 		{
@@ -216,11 +233,27 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC_604:
 		{
-			return "WEC-3702I C4";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 64";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3702I C4";			
+			}			
 		}
 		case WEC9720EK_C22:
 		{
-			return "WEC9720EK C22";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 7402";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC9720EK C22";
+			}			
 		}
 		case WEC9720EK_E31:
 		{
@@ -236,7 +269,15 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC9720EK_SD220:
 		{
-			return "WEC9720EK SD220";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 7401";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC9720EK SD220";
+			}			
 		}
 		case WEC701_C2:
 		{
@@ -244,7 +285,15 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC701_C4:
 		{
-			return "WEC701 C4";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 74";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC701 C4";
+			}			
 		}
 		case WEC_3501I_XD25:
 		{
@@ -252,7 +301,15 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC9720EK_XD25:
 		{
-			return "WEC9720EK XD25";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 7402";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC9720EK XD25";
+			}			
 		}
 		case WR1004JL:
 		{
@@ -267,6 +324,57 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 			return "UNKNOWN";
 		}
 	}
+}
+
+/********************************************************************************************
+*	函数名称:boardapi_getCltStandardStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getCltStandardStr(void)
+{
+	const char *pStandardStr = NULL;
+
+	
+	switch(CUSTOM_LOGO_ID)
+	{				
+		case CUSTOM_LOGO_PX:
+			pStandardStr = "AR7400";
+			break;
+		case CUSTOM_LOGO_DEMO:
+		case CUSTOM_LOGO_PREVAIL:
+		default:
+			pStandardStr = "AR7410";
+			break;
+	}
+	return pStandardStr;	
+}
+
+/********************************************************************************************
+*	函数名称:boardapi_getMenufactoryStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getMenufactoryStr(void)
+{
+	const char *pMenufactoryStr = NULL;
+
+	
+	switch(CUSTOM_LOGO_ID)
+	{				
+		case CUSTOM_LOGO_PX:
+			pMenufactoryStr = "PX";
+			break;
+		case CUSTOM_LOGO_PREVAIL:
+			pMenufactoryStr = "Prevail";
+			break;
+		default:
+			pMenufactoryStr = " ";
+			break;
+	}
+	return pMenufactoryStr;	
 }
 
 /********************************************************************************************

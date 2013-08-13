@@ -2,6 +2,7 @@
 #include <assert.h>
 
 #include <dbsUnderlayer.h>
+#include <boardapi.h>
 
 uint8_t gBuf_dbsUnderlayer[DBS_SQL_LARGE_LEN] = {0};
 
@@ -4887,8 +4888,10 @@ int __dbs_underlayer_get_row_sysinfo(st_dbsSysinfo *row)
 		}
 		else
 		{
+			/*
 			strncpy(row->col_mfinfo, sqlite3_column_text(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_MF), 
-				tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_MF].col_len);
+				tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_MF].col_len);*/
+			strcpy(row->col_mfinfo, boardapi_getMenufactoryStr());
 		}
 		/* SQLITE_INTEGER	| col_p6rxdelay */
 		/* 为了兼容老的数据表格式，AR7410和88E6171R是通过port6的RGMII接口
