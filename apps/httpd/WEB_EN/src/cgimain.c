@@ -51,6 +51,8 @@ void do_cgi(char *path, FILE *fs) {
    char* query = NULL;
    char* ext = NULL;
    int ret = 0;
+   int cltid = 0;
+   int cnuid = 0;
 
    query = strchr(path, '?');
    if ( query != NULL )
@@ -200,7 +202,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "cnuReboot.html") != NULL )
 	{
-		sprintf(logmsg, "reboot cnu/1/%d", glbWebVar.cnuid);
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "reboot cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_rebootCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -210,7 +214,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "cnuReload.html") != NULL )
 	{
-		sprintf(logmsg, "reload profile for cnu/1/%d", glbWebVar.cnuid);
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "reload profile for cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_reloadCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -220,7 +226,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "cnuDelete.html") != NULL )
 	{
-		sprintf(logmsg, "delete cnu/1/%d", glbWebVar.cnuid);
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "delete cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_deleteCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -230,7 +238,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "cnuPermit.html") != NULL )
 	{
-		sprintf(logmsg, "permit cnu/1/%d", glbWebVar.cnuid);
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "permit cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_permitCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -240,7 +250,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "cnuUndoPermit.html") != NULL )
 	{
-		sprintf(logmsg, "undo permit cnu/1/%d", glbWebVar.cnuid);
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "undo permit cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_undoPermitCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -250,13 +262,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "macLimit.html") != NULL )
 	{
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
 		if( glbWebVar.col_macLimit )
 		{
-			sprintf(logmsg, "do mac address limiting for cnu/1/%d", glbWebVar.cnuid);
+			sprintf(logmsg, "do mac address limiting for cnu/%d/%d",  cltid, cnuid);
 		}
 		else
 		{
-			sprintf(logmsg, "uodo mac address limiting for cnu/1/%d", glbWebVar.cnuid);
+			sprintf(logmsg, "uodo mac address limiting for cnu/%d/%d",  cltid, cnuid);
 		}		
 		ret = http2cmm_doMacLimiting(&glbWebVar);
 		/*opt-log*/			
@@ -271,7 +285,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setAgTime.html") != NULL )
 	{
-		sprintf(logmsg, "do aging time settings for cnu/1/%d", glbWebVar.cnuid);	
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "do aging time settings for cnu/%d/%d", cltid, cnuid);	
 		ret = http2cmm_doAgTimeSettings(&glbWebVar);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -285,13 +301,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setSFilter.html") != NULL )
 	{
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
 		if(glbWebVar.col_sfbSts|glbWebVar.col_sfuSts|glbWebVar.col_sfmSts)
 		{
-			sprintf(logmsg, "do storm filter settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do storm filter settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "undo storm filter settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo storm filter settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		ret = http2cmm_doSFilterSettings(&glbWebVar);
 		/*opt-log*/			
@@ -306,13 +324,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setCnuVlan.html") != NULL )
 	{
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
 		if(glbWebVar.col_vlanSts)
 		{
-			sprintf(logmsg, "do vlan settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do vlan settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "undo vlan settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo vlan settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		ret = http2cmm_doCnuVlanSettings(&glbWebVar);
 		/*opt-log*/			
@@ -327,13 +347,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setPLinkSts.html") != NULL )
 	{
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
 		if(glbWebVar.col_eth1sts && glbWebVar.col_eth2sts && glbWebVar.col_eth3sts && glbWebVar.col_eth4sts)
 		{
-			sprintf(logmsg, "undo port shut down settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo port shut down settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "do port shut down settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do port shut down settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		ret = http2cmm_doShutdownSettings(&glbWebVar);
 		/*opt-log*/			
@@ -348,13 +370,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "doRateLimit.html") != NULL )
 	{
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
 		if(glbWebVar.col_rxLimitSts|glbWebVar.col_txLimitSts)
 		{
-			sprintf(logmsg, "do port speed limit settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do port speed limit settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "undo port speed limit settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo port speed limit settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		ret = http2cmm_doSpeedLimitSettings(&glbWebVar);
 		/*opt-log*/			
@@ -369,7 +393,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "saveProfile.html") != NULL )
 	{
-		sprintf(logmsg, "save profile for cnu/1/%d", glbWebVar.cnuid);
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "save profile for cnu/%d/%d", cltid, cnuid);
 		ret = http2dbs_saveConfig();
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -449,7 +475,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "wecLinkDiag.html") != NULL )
 	{
-		sprintf(logmsg, "do physical link status diagnosis for cnu/1/%d", glbWebVar.cnuid);
+		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		sprintf(logmsg, "do physical link status diagnosis for cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_doLinkDiag(&glbWebVar);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);

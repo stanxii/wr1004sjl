@@ -63,7 +63,7 @@ enum
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.1-cr6"
+#define SYSINFO_APP_VERSION		"v1.3.6.1-cr9"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -376,6 +376,7 @@ enum
 	CMM_MME_MDIO_WRITE,			/* write  PHY register by mme*/
 	CMM_ADD_ATHEROS_ADDR,		/* 100 */
 	CMM_DEL_ATHEROS_ADDR,		/* delete atheros multicast address from cable port */
+	CMM_GET_CLT_PORT_LINK_STS,	/* get clt port link status to check if there is a clt connected to the switch port */
 	
 	/* 请在中间增加其他枚举定义 */
 	

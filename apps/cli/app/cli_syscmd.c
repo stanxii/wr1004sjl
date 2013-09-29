@@ -1066,52 +1066,55 @@ ULONG  CLI_CmdHelp()
 ULONG CLI_Cmd_ShowTopology()
 {
 	int i = 0;
+	int j = 0;
+	int cnuid = 0;
 	st_dbsClt clt;
 	st_dbsCnu cnu;
 
-	/* 获取CLT */
-	if( CMM_SUCCESS != dbsGetClt(dbsdev, 1, &clt) )
-	{
-		/* 写日志*/
-		__clt_opt_log(CMM_TOPOLOGY_SHOW, CMM_FAILED);
-		return CMM_FAILED;
-	}
+	IO_Print("\r\n\r\n-------------------------------------------------------------------------------");
+	IO_Print("\r\n    Index        DevType         MAC Address             RX/TX    Status"); 
+	IO_Print("\r\n-------------------------------------------------------------------------------");
 
-	/* 没有发现线卡*/
-	if( clt.col_row_sts == 0 )
+	for( j=1; j<=MAX_CLT_AMOUNT_LIMIT; j++ )
 	{
-		IO_Print("\r\n  No EoC device discovered !");
-		/* 写日志*/
-		__clt_opt_log(CMM_TOPOLOGY_SHOW, CMM_SUCCESS);
-		return CMM_SUCCESS;
-	}
-	else
-	{
-		IO_Print("\r\n\r\n-------------------------------------------------------------------------------");
-		IO_Print("\r\n          Index   DevType            MAC Address        RX/TX   Status"); 
-		IO_Print("\r\n-------------------------------------------------------------------------------");
-		IO_Print("\r\n-+--CLT     %d	*		[ %s ]	-/-	%d", clt.id, clt.col_mac, clt.col_sts);
-	}
-
-	/* CNU */
-	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
-	{
-		if( CMM_SUCCESS == dbsGetCnu(dbsdev, i+1, &cnu) )
+		/* 获取CLT */
+		if( CMM_SUCCESS != dbsGetClt(dbsdev, j, &clt) )
 		{
-			if( 0 == cnu.col_row_sts )
+			IO_Print("\r\n-+--CLT/%d        *               [ Not detected ]", j);
+			continue;
+		}
+		/* 没有发现线卡*/
+		else if( clt.col_row_sts == 0 )
+		{
+			IO_Print("\r\n-+--CLT/%d        *               [ Not detected ]", j);
+			continue;
+		}
+		/* clt is detected */
+		else
+		{		
+			IO_Print("\r\n-+--CLT/%d        *               [ %s ]    -/-       %d", clt.id, clt.col_mac, clt.col_sts);
+			/* CNU */
+			for( i=1; i<=MAX_CNUS_PER_CLT; i++ )
 			{
-				continue;
-			}
-			else
-			{
-				IO_Print("\r\n    --CNU   %d	%s	[ %s ]	%d/%d	%d",
-					cnu.id,
-					boardapi_getDeviceModelStr(cnu.col_model),
-					cnu.col_mac,
-					cnu.col_rx,
-					cnu.col_tx,
-					cnu.col_sts
-				);
+				cnuid = (j-1)*MAX_CNUS_PER_CLT + i;
+				if( CMM_SUCCESS == dbsGetCnu(dbsdev, cnuid, &cnu) )
+				{
+					if( 0 == cnu.col_row_sts )
+					{
+						continue;
+					}
+					else
+					{
+						IO_Print("\r\n    --CNU/%d/%-2d   %-16s[ %s ]  %3d/%-3d     %d",
+							j, i, 
+							boardapi_getDeviceModelStr(cnu.col_model),
+							cnu.col_mac,
+							cnu.col_rx,
+							cnu.col_tx,
+							cnu.col_sts
+						);
+					}
+				}
 			}
 		}
 	}
@@ -1126,6 +1129,8 @@ ULONG CLI_Cmd_ShowTopology()
 ULONG CLI_Cmd_ShowWlistUsers()
 {
 	int i = 0;
+	int cltid = 0;
+	int cnuid = 0;
 	int num = 0;
 	st_dbsSysinfo rowSysinfo;
 	st_dbsCnu cnu;
@@ -1144,7 +1149,7 @@ ULONG CLI_Cmd_ShowWlistUsers()
 	}
 
 	IO_Print("\r\n\r\n--------------------------------------------------------------------");
-	IO_Print("\r\n%-4s  %-16s  %-20s  %-6s", "ID", "DevType", "MAC", "Status"); 
+	IO_Print("\r\n%-10s  %-16s  %-20s  %-6s", "ID", "DevType", "MAC", "Status"); 
 	IO_Print("\r\n--------------------------------------------------------------------");
 
 	/* CNU */
@@ -1162,7 +1167,9 @@ ULONG CLI_Cmd_ShowWlistUsers()
 			}
 			else
 			{
-				IO_Print("\r\n%-4d  %-16s  %-20s  %-6d", cnu.id, 
+				cltid = cnu.id/MAX_CNUS_PER_CLT + 1;
+				cnuid = cnu.id%MAX_CNUS_PER_CLT;
+				IO_Print("\r\nCNU/%d/%-4d  %-16s  %-20s  %-6d", cltid, cnuid, 
 					boardapi_getDeviceModelStr(cnu.col_model), cnu.col_mac,	cnu.col_sts);
 				num++;
 			}

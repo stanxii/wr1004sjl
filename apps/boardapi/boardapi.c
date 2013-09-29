@@ -1023,3 +1023,81 @@ int boardapi_setMTParameters(stMTmsgInfo *para)
 		return nvm_set_mt_parameters(para);
 	}	
 } 
+
+/********************************************************************************************
+*	函数名称:boardapi_getCltDsdtPortid
+*	函数功能:根据CLT索引号找到其对应的交换端口
+*	作者:frank
+*	时间:2013-08-19
+*********************************************************************************************/
+uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
+{	
+#ifdef CFG_USE_PLATFORM_WEC9720EK_C22
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_S220
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_XD25
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004SJL
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		case 2:
+		{
+			return PORT_CABLE2_PORT_ID;
+		}
+		case 3:
+		{
+			return PORT_CABLE3_PORT_ID;
+		}
+		case 4:
+		{
+			return PORT_CABLE4_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+}  
+  

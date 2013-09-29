@@ -82,6 +82,35 @@ int __reg2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 	}
 }
 
+int reg2cmm_getCltPortLinkStatus(T_UDP_SK_INFO *sk, uint32_t cltid)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	int linkStatus = 0;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	uint32_t *req_data = (uint32_t *)(req->BUF);
+
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	uint32_t *ack_data = (uint32_t *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_REGISTER;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_GET_CLT_PORT_LINK_STS;
+	req->HEADER.ulBodyLength = sizeof(uint32_t);
+	req->HEADER.fragment = 0;
+
+	*req_data = cltid;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+
+	if( CMM_SUCCESS ==  __reg2cmm_comm(sk, buf, len) )
+	{
+		linkStatus = (*ack_data == 0)?0:1;
+	}
+	return linkStatus;
+}
+
 int reg2cmm_bindingAtheroesAddr2CablePort(T_UDP_SK_INFO *sk, int portid)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};

@@ -218,7 +218,7 @@ int db_get_user_type(uint32_t cltid, uint32_t cnuid, uint32_t *userType)
 	DB_INTEGER_V st_iValue;
 
 	st_iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	st_iValue.ci.row = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	st_iValue.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_AUTH;
 	st_iValue.ci.colType = DBS_INTEGER;
 
@@ -246,7 +246,7 @@ int db_get_user_onused(uint32_t cltid, uint32_t cnuid, uint32_t *onUsed)
 	DB_INTEGER_V st_iValue;
 
 	st_iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	st_iValue.ci.row = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	st_iValue.ci.row = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_ROWSTS;
 	st_iValue.ci.colType = DBS_INTEGER;
 

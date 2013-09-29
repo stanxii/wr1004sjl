@@ -786,6 +786,8 @@ void cgiCltProfileView(char *query, FILE *fs)
 void cgiCnuProfileView(char *query, FILE *fs) 
 {
 	int id = 0;
+	int cltid = 0;
+  	int cnuid = 0;
 	st_dbsProfile profile;
 	char action[IFC_LARGE_LEN];
 
@@ -802,13 +804,15 @@ void cgiCnuProfileView(char *query, FILE *fs)
 		
 	if( CMM_SUCCESS == dbsGetProfile(dbsdev, id, &profile) )
 	{
+		cltid = id/MAX_CNUS_PER_CLT + 1;
+		cnuid = id%MAX_CNUS_PER_CLT;
 		fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
 		fprintf(fs, "<tr>\n<td class='diagret' width=300>General Information</td>\n");
 		fprintf(fs, "<td class='diagret' width=260>&nbsp;</td>\n</tr>\n");
 		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
 		
 		fprintf(fs, "<tr>\n<td class='diagdata'>CNU ID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>1/%d</td>\n</tr>\n", profile.id);
+		fprintf(fs, "<td class='diagdata'>%d/%d</td>\n</tr>\n", cltid, cnuid);
 
 		fprintf(fs, "<tr>\n<td class='diagdata'>Additional PIB ID:</td>\n");
 		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_base);
@@ -1492,6 +1496,8 @@ void cgiCltProfile(char *query, FILE *fs)
 void cgiCnuProfile(char *query, FILE *fs) 
 {
 	int id = 0;
+	int cltid = 0;
+   	int cnuid = 0;
 	st_dbsProfile profile;
 	char action[IFC_LARGE_LEN];
 
@@ -1506,6 +1512,9 @@ void cgiCnuProfile(char *query, FILE *fs)
 		do_ej("/webs/wecOptResult2.html", fs);
 		return;
 	}
+
+	cltid = id/MAX_CNUS_PER_CLT + 1;
+	cnuid = id%MAX_CNUS_PER_CLT;
 
 	fprintf(fs, "<html><head>\n");
 	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
@@ -1735,7 +1744,7 @@ void cgiCnuProfile(char *query, FILE *fs)
 	fprintf(fs, "<tr><td class='maintitle'><b>Profile Settings</b></td>\n</tr>\n</table>\n");
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
 	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Through this page, you can complete profile settings for CNU/1/%d.\n", id);	
+	fprintf(fs, "<br>Through this page, you can complete profile settings for CNU/%d/%d.\n", cltid, cnuid);
 	fprintf(fs, "<br>-- Please click the 'Save' button to submit the appropriate configuration.\n");
 	fprintf(fs, "<br>-- Click the 'Clear' button if you want to undo the appropriate configuration.\n");
 	fprintf(fs, "<br>-- Please click the 'Done' button to save all configuration to flash finally.</br>\n");
@@ -2247,6 +2256,8 @@ void cgiCltMgmt(char *query, FILE *fs)
 void cgiCnuMgmt(char *query, FILE *fs)
 {
 	int i=0;
+	int cltid = 0;
+	int cnuid = 0;
 	int iCount = 0;
 	st_dbsCnu cnu;
 
@@ -2310,6 +2321,8 @@ void cgiCnuMgmt(char *query, FILE *fs)
 	fprintf(fs, "	</tr>\n");
 	for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
+		cltid = i/MAX_CNUS_PER_CLT + 1;
+		cnuid = i%MAX_CNUS_PER_CLT;
 		if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
 		{
 			/*Read CNU Error, Exit*/
@@ -2326,7 +2339,7 @@ void cgiCnuMgmt(char *query, FILE *fs)
 			{
 				iCount++;
 				fprintf(fs, "	<tr>\n");
-				fprintf(fs, "		<td align='center'>1/%d</td>\n", cnu.id);
+				fprintf(fs, "		<td align='center'>%d/%d</td>\n", cltid, cnuid);
 				fprintf(fs, "		<td align='center'>%s</td>\n", cnu.col_mac);
 				fprintf(fs, "		<td align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
 				fprintf(fs, "		<td align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
@@ -2366,7 +2379,9 @@ void cgiCnuMgmt(char *query, FILE *fs)
 void cgiLinkDiag(char *query, FILE *fs) 
 {
 	int i=0;
-	int n = 0;
+	//int n = 0;
+	int cltid = 0;
+	int cnuid = 0;
 	//int iCount = 0;
 	st_dbsCnu cnu;
 
@@ -2420,6 +2435,8 @@ void cgiLinkDiag(char *query, FILE *fs)
 
 	for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
+		cltid = i/MAX_CNUS_PER_CLT + 1;
+		cnuid = i%MAX_CNUS_PER_CLT;
 		if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
 		{
 			/* Read CNU failed, exit */
@@ -2437,8 +2454,8 @@ void cgiLinkDiag(char *query, FILE *fs)
 				//iCount++;
 				if( DEV_STS_ONLINE == cnu.col_sts )
 				{
-					n = i/MAX_CNUS_PER_CLT+1;
-					fprintf(fs, "			<option value='%d'>CNU/%d/%d: [%s]\n", n, cnu.id, cnu.id, cnu.col_mac);
+					//n = i/MAX_CNUS_PER_CLT+1;
+					fprintf(fs, "			<option value='%d'>CNU/%d/%d: [%s]\n", i, cltid, cnuid, cnu.col_mac);
 				}
 			}
 		}
@@ -2471,6 +2488,12 @@ void cgiLinkDiag(char *query, FILE *fs)
 
 void cgiLinkDiagResult(char *query, FILE *fs)
 {
+	int cltid = 0;
+   	int cnuid = 0;
+
+	cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
+	cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+	
 	writePageHeader(fs);
 	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
 	fprintf(fs, "<tr><td class='maintitle'><b>Link Diagnosis</b></td>\n</tr>\n</table>\n");
@@ -2497,7 +2520,7 @@ void cgiLinkDiagResult(char *query, FILE *fs)
 
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>Index:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>CNU/1/%d</td>\n", glbWebVar.cnuid);
+	fprintf(fs, "		<td class='diagdata' colspan=2>CNU/%d/%d</td>\n", cltid, cnuid);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>MAC Address:</td>\n");

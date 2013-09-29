@@ -68,6 +68,7 @@ void dsdTester_usage(void)
 	printf("  --case/6/4: sample del intellon multicast address 00:b0:52:00:00:01 from the ATU\n");
 	printf("  --case/6/5: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, and all cable port\n");
 	printf("  --case/7/1 1 0x200000 0x3D: 1 is Enable ,cbsLimit 0x200000 < 0xFFFFFF , cbsIncreament < 0xFF sample:: --case/7/1 0 is disable Storm prevent test for broadcast unknow unicast and multicast\n");
+	printf("  --case/8/1: reset 88e6171r by software\n");
 	
 	printf("\n\n");
 }
@@ -2030,6 +2031,24 @@ int main(int argc, char *argv[])
 		{
 			goto DSDT_END;
 		}		
+
+		printf("\n");
+		goto DSDT_END;
+	}
+	else if( strcmp(argv[1], "case/8/1") == 0)
+	{
+		printf("\n");
+		dsdtInit(cpuPort);
+
+		if( GT_OK != gsysSwReset(dev) )
+		{
+			printf("Failed.\n");
+			goto DSDT_END;
+		}
+		else
+		{
+			printf("OK.\n");
+		}
 
 		printf("\n");
 		goto DSDT_END;

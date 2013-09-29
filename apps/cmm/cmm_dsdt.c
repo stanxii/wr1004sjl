@@ -559,6 +559,13 @@ int cmm2dsdt_clearPortCounters(void)
 		printf("gstatsFlushAll returned failed.\n");
 		return CMM_FAILED;
 	}
+	if((status = gprtClearAllCtr(dev)) != GT_OK)
+	{
+		//Why call gprtClearAllCtr return failed???
+		//printf("gprtClearAllCtr returned failed.\n");
+		//return CMM_FAILED;
+		return GT_OK;
+	}
 	return GT_OK;
 }
 
@@ -608,6 +615,7 @@ int cmm2dsdt_getPortAllCounters(int port, T_CMM_PORT_STATS_INFO *stats)
 int cmm2dsdt_debugPrintPortAllCounters(int port)
 {
 	GT_STATS_COUNTER_SET3 statsCounterSet;
+	GT_PORT_STAT2 ctr2;
 	
 	if( gstatsGetPortAllCounters3(dev, port, &statsCounterSet) != GT_OK )
 	{
@@ -650,7 +658,21 @@ int cmm2dsdt_debugPrintPortAllCounters(int port)
 		printf("\r\n  InMACRcvErr:	%u", statsCounterSet.InMACRcvErr);
 		printf("\r\n  InFCSErr:	%u", statsCounterSet.InFCSErr);
 		printf("\r\n  Collisions:	%u", statsCounterSet.Collisions);
-		printf("\r\n  Late:	%u\n", statsCounterSet.Late);
+		printf("\r\n  Late:	%u", statsCounterSet.Late);
+		
+		//return CMM_SUCCESS;
+	}
+	if( gprtGetPortCtr2(dev, port, &ctr2) != GT_OK )
+	{
+		printf("gprtGetPortCtr2 returned failed.\n");
+		return CMM_FAILED;
+	}
+	else
+	{
+		printf("\r\n  inDiscardLo:	%u", ctr2.inDiscardLo);
+		printf("\r\n  inDiscardHi:		%u", ctr2.inDiscardHi);
+		printf("\r\n  inFiltered:	%u", ctr2.inFiltered);
+		printf("\r\n  outFiltered:	%u\n", ctr2.outFiltered);		
 		
 		return CMM_SUCCESS;
 	}
@@ -660,8 +682,12 @@ int cmm2dsdt_debugPrintPortAllCounters(int port)
 int cmm2dsdt_getPortLinkStatus(int port)
 {
 	GT_BOOL status;
-	
-	if( gprtGetLinkState(dev, port, &status) != GT_OK )
+
+	if( PORT_CABLE_PORT_NULL == port)
+	{
+		return 0;
+	}
+	else if( gprtGetLinkState(dev, port, &status) != GT_OK )
 	{
 		return 0;
 	}

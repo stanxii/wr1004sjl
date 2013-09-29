@@ -122,7 +122,7 @@ BOOLEAN isCnuIndexOnUsed(uint32_t clt_index, uint32_t cnu_index)
 	}
 	else
 	{
-		fprintf(stderr, "ERROR: isCnuIndexOnUsed->db_get_user_onused !\n");
+		fprintf(stderr, "ERROR: isCnuIndexOnUsed->db_get_user_onused(%d, %d) !\n", clt_index, cnu_index);
 		return BOOL_TRUE;
 	}
 }
@@ -133,7 +133,7 @@ int set_cnu_pro_sync(uint32_t clt_index, uint32_t cnu_index, BOOLEAN status)
 	BOOLEAN flag = status?BOOL_TRUE:BOOL_FALSE;
 	
 	st_iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	st_iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	st_iValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_SYNCH;
 	st_iValue.ci.colType = DBS_INTEGER;
 	st_iValue.len = sizeof(uint32_t);
@@ -166,6 +166,7 @@ int find_idle(int cltid)
 	for( i=0; i<MAX_CNUS_PER_CLT; i++ )
 	{
 		cnuid = i+1;
+		//printf("\n##find_idle->isCnuIndexOnUsed()\n");
 		if( BOOL_FALSE == isCnuIndexOnUsed(cltid, cnuid))
 		{
 			break;
@@ -1086,10 +1087,11 @@ void do_cnu_dropped(int cltid, T_MMEAD_TOPOLOGY *plist)
 
 	/* 如果之前在线的CNU设备在plist中找不到，则说明该设备下线了*/
 	
-	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
+	for( i=0; i<MMEAD_MAX_CNU_NUM; i++ )
 	{
 		inode = (cltid-1)*MAX_CNUS_PER_CLT+i;
 		cnuid = i+1;
+		//printf("\n##do_cnu_dropped->isCnuIndexOnUsed()\n");
 		isCnuOnused = isCnuIndexOnUsed(cltid, cnuid);
 		/* 寻找前一次拓扑中在线的CNU设备*/
 		if( boardapi_isValidUnicastMacb(this->tb_cnu[inode].Mac)
@@ -1149,6 +1151,7 @@ void do_cnu_discorver(int cltid, T_MMEAD_TOPOLOGY *plist)
 			}
 			else
 			{
+				//printf("\n##do_cnu_discorver->isCnuIndexOnUsed()\n");
 				isCnuOnused = isCnuIndexOnUsed(cltid, cnuid);
 				if( BOOL_TRUE == isCnuOnused )
 				{
@@ -1297,7 +1300,7 @@ void ProcessRegist(void)
 			cltid = i+1;
 			if( REG_CLT_RESET == cltFlags[i] )
 			{
-				printf("\n-->register event call : reset clt\n");				
+				printf("\n-->register event call : reset clt\n");
 				//还原标志位
 				cltFlags[i] = 0;				
 				/* 发送MME重启CLT */
@@ -1313,13 +1316,13 @@ void ProcessRegist(void)
 					continue;
 				}
 				/* 从MMEAD获取在线设备列表*/
-				if( msg_reg_mmead_get_nelist(topEntry.tb_clt[i].Mac, &nelist) != CMM_SUCCESS )
+				else if( msg_reg_mmead_get_nelist(topEntry.tb_clt[i].Mac, &nelist) != CMM_SUCCESS )
 				{
 					/* 可能意味着CLT都下线了，但是这种情况很少发生的*/
 					cltLossTimes[i]++;
 					if( cltLossTimes[i] > 3 )
 					{
-						printf("ProcessRegist: loss clt%d\n", cltid);
+						printf("\nProcessRegist: loss clt%d\n", cltid);
 						ProcessTopologyChange(cltid, NULL);
 					}
 					continue;
@@ -1510,10 +1513,8 @@ int init_nelib(void)
 			}			
 		}
 	}	
-	/* 我们假设只有1个CLT线卡，且CBAT启动之后CLT一定在线，
-	但是系统第一次启动时CBAT并不知道CLT的MAC，此时系统
-	需要获取CLT的MAC并写入数据库，下次启动就不用再次
-	获取CLT的MAC地址，只需要从数据库取即可*/
+	
+	/* get clt info and save to dbs */
 	for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++ )
 	{
 		clt.id = i+1;
@@ -1522,9 +1523,8 @@ int init_nelib(void)
 		clt.col_maxStas = MAX_CNUS_PER_CLT;
 		clt.col_numStas = 0;
 		strcpy(clt.col_swVersion, "v7.1.1-FINAL");
-		clt.col_synch = 0;
+		clt.col_synch = 0;		
 		
-		//if( memcmp(topology->tb_clt[i].Mac, null_mac, 6) == 0 ){
 		/* 每次启动时都重新搜索每个端口的clt */		
 		/* bingding atheros address to clt port i */
 		if( CMM_SUCCESS != reg2cmm_bindingAtheroesAddr2CablePort(&SK_REG2CMM, clt.id) )
@@ -1539,8 +1539,18 @@ int init_nelib(void)
 		}
 		else
 		{
+			/* check clt port link status first */
+			if( 0 == reg2cmm_getCltPortLinkStatus(&SK_REG2CMM, clt.id) )
+			{
+				printf("probe clt%d: no clt present\r\n", i+1);
+				/* delete this clt in dbs */
+				clt.col_row_sts = 0;
+				db_update_clt(i+1, &clt);
+				/* 发送不能发现线卡的异常告警*/
+				clt_cannot_finded_notification(i+1);
+			}
 			/* 获取CLT的MAC地址并写入数据库*/
-			if( msg_reg_mmead_get_clt(&(topology->tb_clt[i])) != CMM_SUCCESS )
+			else if( msg_reg_mmead_get_clt(&(topology->tb_clt[i])) != CMM_SUCCESS )
 			{
 				printf("probe clt%d: no clt present\r\n", i+1);
 				/* delete this clt in dbs */
@@ -1564,10 +1574,11 @@ int init_nelib(void)
 				db_update_clt(i+1, &clt);				
 			}
 		}
-		//}			
+		
 	}
 	db_fflush();
-	return cltdetected?CMM_SUCCESS:CMM_FAILED;
+	//return cltdetected?CMM_SUCCESS:CMM_FAILED;
+	return CMM_SUCCESS;
 }
 
 /********************************************************************************************

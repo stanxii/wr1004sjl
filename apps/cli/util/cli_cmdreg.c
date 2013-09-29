@@ -29,9 +29,9 @@ extern "C" {
 #include "cli_io.h"
 
 /* 子功能全局变量声明 */
-static UCHAR m_ucPosIndex = 1;   /* 变量的绝对位置索引 */
+static USHORT m_ucPosIndex = 1;   /* 变量的绝对位置索引 */
 
-ULONG  CLI_CmdRegist(const char  *szCmd,  UCHAR  ucMode,
+ULONG  CLI_CmdRegist(const char  *szCmd,  USHORT  ucMode,
                 CLI_OPERAT_LEVEL_T   ucLevel,  PFUN_CLI_CALLBACK_EXEC pFunc,
                 PCSTR  strHelp1, PCSTR  strHelp2, PCSTR  strHelp3)
 {
@@ -57,11 +57,11 @@ ULONG  CLI_CmdRegist(const char  *szCmd,  UCHAR  ucMode,
 /*-------------------------------------------------------------------*/
 ULONG  CLI_CmdAutoRegist
               (const char  *szCmd,              //命令格式化串
-               UCHAR  ucMode,                   //命令所属模式
+               USHORT  ucMode,                   //命令所属模式
                CLI_OPERAT_LEVEL_T   ucLevel,    //命令使用等级
                PFUN_CLI_CALLBACK_EXEC pFunc,    //命令执行函数
-               UCHAR  ucModeChange,             //模式转换属性(非模式转换命令填CLI_MC_NULL)
-               UCHAR  ucNewMode,                //新模式的ID  (仅当上一参数为CLI_MC_NEW时有意义 )
+               USHORT  ucModeChange,             //模式转换属性(非模式转换命令填CLI_MC_NULL)
+               USHORT  ucNewMode,                //新模式的ID  (仅当上一参数为CLI_MC_NEW时有意义 )
                PCSTR  strHelp1,                 //第一个对象的帮助信息
                PCSTR  strHelp2,                 //第二个对象的帮助信息
                PCSTR  strHelp3)
@@ -71,7 +71,7 @@ ULONG  CLI_CmdAutoRegist
     char  *pCurPos;
     ULONG   ulRet, ulIndex = 0;
     PCSTR strObjHelp[CLI_MAX_KEY_NUM], strCheckID = NULL;
-    UCHAR   ucIsNoForm = 0;
+    USHORT   ucIsNoForm = 0;
     PST_CLI_CMDKEY pCmdKey[CLI_MAX_KEY_NUM], pObj = NULL;
     PST_CLI_CMDKEY pFirstObj = NULL;
     ST_CLI_MODE   *sMode;

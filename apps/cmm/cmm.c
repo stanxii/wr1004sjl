@@ -1205,6 +1205,7 @@ int CMM_ProcessWriteAr8236Reg(BBLOCK_QUEUE *this)
 int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
+	int tblCnuRid = 0;
 	st_dbsCnu cnu;
 	st_dbsClt clt;
 	uint8_t oda[6] = {0};
@@ -1215,6 +1216,8 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	T_MMEAD_LINK_DIAG_INFO inputInfo;
 	T_MMEAD_LINK_DIAG_RESULT outputInfo;	
 
+	tblCnuRid = (msg_data->clt - 1)*MAX_CNUS_PER_CLT + msg_data->cnu;
+		
 	/* RX/TX */
 	if( msg_data->dir > 1 )
 	{
@@ -1225,7 +1228,7 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	}
 
 	/* Get CCo MAC address */
-	if( CMM_SUCCESS == dbsGetClt(dbsdev, 1, &clt) )
+	if( CMM_SUCCESS == dbsGetClt(dbsdev, msg_data->clt, &clt) )
 	{
 		inputInfo.dir = msg_data->dir;
 		if( CMM_SUCCESS != boardapi_macs2b(clt.col_mac, inputInfo.ccoMac) )
@@ -1246,7 +1249,7 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	}
 
 	/* CNU 不在线禁止诊断*/
-	if( CMM_SUCCESS == dbsGetCnu(dbsdev, msg_data->cnu, &cnu) )
+	if( CMM_SUCCESS == dbsGetCnu(dbsdev, tblCnuRid, &cnu) )
 	{
 		if( DEV_STS_ONLINE != cnu.col_sts )
 		{
@@ -1317,6 +1320,25 @@ int CMM_ProcessGetPortPropety(BBLOCK_QUEUE *this)
 	/* 将处理信息发送给请求者 */
 	CMM_ProcessAck(opt_sts, this, (uint8_t *)&ack_data, sizeof(T_CMM_PORT_PROPETY_INFO));
 	return opt_sts;
+}
+
+int CMM_ProcessGetCltPortLinkSts(BBLOCK_QUEUE *this)
+{
+	//int opt_sts = CMM_SUCCESS;
+	uint32_t cltid = 0;
+	uint32_t portid = 0;
+	uint32_t linkStatus = 0;
+
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	uint32_t *req_data = (uint32_t *)(req->BUF);
+	cltid = *req_data;
+
+	portid = boardapi_getCltDsdtPortid(cltid);
+	linkStatus = cmm2dsdt_getPortLinkStatus(portid);
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(CMM_SUCCESS, this, (uint32_t *)&linkStatus, sizeof(linkStatus));
+	return CMM_SUCCESS;
 }
 
 int CMM_ProcessGetDsdtRgmiiDelay(BBLOCK_QUEUE *this)
@@ -2059,6 +2081,11 @@ void cmmProcessManager(void)
 				opt_sts=CMM_ProcessDelAtherosMulticastAddr(this);
 				break;
 			}
+			case CMM_GET_CLT_PORT_LINK_STS:
+			{
+				opt_sts = CMM_ProcessGetCltPortLinkSts(this);
+				break;
+			}
 			case CMM_CONNET:
 			{
 				opt_sts = CMM_ProcessMTConnect(this);
@@ -2068,7 +2095,7 @@ void cmmProcessManager(void)
 			{
 				opt_sts = CMM_ProcessMTProgram(this);
 				break;
-			}
+			}			
 			default:
 			{
 				/* 对于不支持的消息类型应该给予应答以便让请求者知道 */

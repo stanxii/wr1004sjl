@@ -105,8 +105,8 @@ typedef struct CmdDefine
     PCSTR  strHelp2;       /*第二个对象的帮助信息(若命令对象少于2个，该参数为空)*/
     PCSTR  strHelp3;       /*第三个对象的帮助信息(若命令对象少于3个，该参数为空)*/
     PFUN_CLI_CALLBACK_EXEC pFunc; /*命令执行函数*/
-    UCHAR   ucLevel;       /*命令使用等级 */
-    UCHAR   ucMode;        /*命令所属模式*/
+    USHORT   ucLevel;       /*命令使用等级 */
+    USHORT   ucMode;        /*命令所属模式*/
 } ST_CLI_CMD_REG, *PST_CLI_CMD_REG;
 
 
@@ -134,9 +134,9 @@ typedef struct PointStack
 
 
 
-ULONG  CLI_CmdAutoRegist(const char  *szCmd,  UCHAR  ucMode,
+ULONG  CLI_CmdAutoRegist(const char  *szCmd,  USHORT  ucMode,
                 CLI_OPERAT_LEVEL_T   ucLevel,  PFUN_CLI_CALLBACK_EXEC pFunc,
-                UCHAR  ucModeChange, UCHAR  ucNewMode,
+                USHORT  ucModeChange, USHORT  ucNewMode,
                 PCSTR  strHelp1, PCSTR  strHelp2, PCSTR  strHelp3);
 ULONG  CLI_IsCmdValid(char  * szCmd);
 PST_CLI_CMDKEY CLI_GetSubObjByName(PST_CLI_CMDKEY pCmdKey, char  *szName);

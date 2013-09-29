@@ -635,8 +635,8 @@ int http2cmm_doLinkDiag( PWEB_NTWK_VAR pWebVar )
 		pWebVar->diagResult = CMM_FAILED;
 		return CMM_FAILED;
 	}	
-	req_data->clt = 1;
-	req_data->cnu = pWebVar->cnuid;	
+	req_data->clt = pWebVar->cnuid/MAX_CNUS_PER_CLT + 1;
+	req_data->cnu = pWebVar->cnuid%MAX_CNUS_PER_CLT;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
 	
