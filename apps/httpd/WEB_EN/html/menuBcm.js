@@ -37,4 +37,6 @@ function createBcmMenu()
    insFld(wecAccountMgmt, gFld(getMenuTitle(MENU_WEC_ACCOUNT_CLI), 'wecCliUsers.html'));
    //ÍË³ö²Ëµ¥
    insFld(foldersTree, gFld(getMenuTitle(MENU_WEC_WEB_EXIT), 'wecLogout.html'));
+   //debug
+   //insFld(foldersTree, gFld(getMenuTitle(MENU_WEC_WEB_TEST_A), 'test001.html'));
 }
