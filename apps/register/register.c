@@ -966,7 +966,9 @@ int try_to_add_cnu(int cltid, T_MMEAD_CNU_INFO activeCnu)
 		}
 		else
 		{
-			cnu.col_auth = 0;
+			/* Modified by frank */
+			//cnu.col_auth = 0;
+			cnu.col_auth = 1;
 			/* 解决移机后配置会被局端作为匿名用户而覆盖的问题*/
 			/* 用户希望在A局点下开通之后直接拿到B局点下就可以使用*/
 			/* 如下2种情况可以正常移机使用*/
@@ -1320,8 +1322,9 @@ void ProcessRegist(void)
 				{
 					/* 可能意味着CLT都下线了，但是这种情况很少发生的*/
 					cltLossTimes[i]++;
-					if( cltLossTimes[i] > 3 )
+					if( cltLossTimes[i] > 5 )
 					{
+						cltLossTimes[i] = 0;
 						printf("\nProcessRegist: loss clt%d\n", cltid);
 						ProcessTopologyChange(cltid, NULL);
 					}
@@ -1332,8 +1335,12 @@ void ProcessRegist(void)
 					/*  还原计数器*/
 					if( 0 != cltLossTimes[i] )
 					{
-						/*  产生一条线卡暂时丢失的告警*/
-						clt_heartbeat_loss_notification(cltid, cltLossTimes[i]);
+						/* 防止故障时告警发送过于频繁*/
+						if( cltLossTimes[i] > 5 )
+						{
+							/*  产生一条线卡暂时丢失的告警*/
+							clt_heartbeat_loss_notification(cltid, cltLossTimes[i]);
+						}
 						cltLossTimes[i] = 0;
 					}
 					/* 与上一次的拓扑信息相比较，处理状态变迁的节点*/

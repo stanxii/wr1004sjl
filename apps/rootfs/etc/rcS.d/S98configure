@@ -90,11 +90,11 @@ else
 	echo "ERROR: Can not find /sbin/telnetd"
 fi
 
-# sleep 10
+sleep 6
 
 echo "===================================================================="
 echo "				SUCCESS"
 echo "===================================================================="
 
-sleep 2
+sleep 1
 

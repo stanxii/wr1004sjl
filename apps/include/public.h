@@ -63,7 +63,7 @@ enum
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.1-cr9"
+#define SYSINFO_APP_VERSION		"v1.3.6.1-cr20"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -100,6 +100,7 @@ enum
 /********************************************************/
 #define MAX_MME_SIZE    				1500
 #define MAX_UDP_SIZE    				1472
+#define MAX_BODY_SIZE				1280
 /********************************************************/
 
 /********************************************************/
@@ -266,6 +267,8 @@ enum
 	WEC9720EK_XD25,	/* du channel */
 	WR1004JL,			/* 2*clt + 1*onu module */
 	WR1004SJL,			/* 4*clt + 1*onu module */
+	WEC_3702I_E4,		/* cnu ar6400+rtl8306e */
+	WEC701_E4,			/* cnu ar7411+rtl8306e */
 
 	/* 请在中间增加其他枚举定义 */
 	WEC_INVALID = 0xFE,
@@ -377,6 +380,10 @@ enum
 	CMM_ADD_ATHEROS_ADDR,		/* 100 */
 	CMM_DEL_ATHEROS_ADDR,		/* delete atheros multicast address from cable port */
 	CMM_GET_CLT_PORT_LINK_STS,	/* get clt port link status to check if there is a clt connected to the switch port */
+	CMM_CNU_SWITCH_READ,			/* read cnu switch register*/
+	CMM_CNU_SWITCH_WRITE,		/* write cnu switch register*/
+	CMM_CNU_SWITCH_CONFIG_READ, /* read rtl8306e configs */
+	CMM_CNU_SWITCH_CONFIG_WRITE,/* write rtl8306e configs */
 	
 	/* 请在中间增加其他枚举定义 */
 	
@@ -479,6 +486,10 @@ enum
 	MMEAD_SET_FREQUENCY_BAND_SELECTION,
 	MMEAD_GET_TX_GAIN,
 	MMEAD_SET_TX_GAIN,
+	MMEAD_MDIO_READ,			/* read register by mme*/
+	MMEAD_MDIO_WRITE,			/* write register by mme*/
+	MMEAD_GET_RTL8306E_CONFIG,	/* get rtl8306e configuration from cnu by mme mdio */
+	MMEAD_WRITE_MOD,				/* write mod */
 	
 	/* 请在中间增加其他枚举定义 */
 
@@ -1456,6 +1467,60 @@ typedef struct
 	uint16_t dest;
 }st_dsdtPortMirroring;
 
+////////////////////////////////////////////////////////
+typedef struct
+{
+	uint16_t pvid;
+	uint8_t admit_control;
+	uint8_t egress_mode;
+}st_PortVlanInfo;
+
+typedef struct
+{
+	uint8_t vlan_enable;
+	uint8_t vlan_tag_aware;
+	uint8_t ingress_filter;
+	uint8_t g_admit_control;
+	st_PortVlanInfo vlan_port[6];
+	
+}st_cnuSwitchVlanConfig;
+
+typedef struct
+{
+	uint8_t bandwidth_control_enable;
+	uint16_t bandwidth_value;	
+}st_portRxBandwidthInfo;
+
+typedef struct
+{
+	uint8_t bandwidth_control_enable;
+	uint16_t bandwidth_value;	
+}st_portTxBandwidthInfo;
+
+typedef struct
+{
+	uint8_t g_rx_bandwidth_control_enable;
+	uint8_t g_tx_bandwidth_control_enable;
+	st_portRxBandwidthInfo rxPort[6];
+	st_portTxBandwidthInfo txPort[6];
+	
+}st_cnuSwitchBandwidthConfig;
+
+typedef struct
+{
+	uint8_t status;
+	uint8_t port_loop_status[6];
+}st_cnuSwitchLoopDetect;
+
+typedef struct
+{
+	st_cnuSwitchVlanConfig vlanConfig;
+	st_cnuSwitchBandwidthConfig bandwidthConfig;
+	st_cnuSwitchLoopDetect loopDetect;
+}st_rtl8306eSettings;
+
+////////////////////////////////////////////////////////
+
 #if 0
 /* 数据表基本信息字段*/
 typedef struct
@@ -1507,6 +1572,14 @@ typedef struct
 	uint32_t reg;
 	uint32_t value;
 }T_szMdioSw;
+
+typedef struct
+{
+	uint32_t phy;
+	uint32_t reg;
+	uint32_t page;
+	uint32_t value;
+}T_szMdioRtl8306e;
 
 /*==============================================================*/
 
@@ -1790,6 +1863,14 @@ typedef struct
 	uint32_t cnu;	/* CNU的索引号，从1开始计算*/
 	T_szMdioSw mdioReg;
 }T_szAr8236Reg;
+
+/* CLI进行RTL8306E 寄存器操作时与CMM通讯的接口*/
+typedef struct
+{
+	uint32_t clt;	/* CLT的索引号，从1开始计算*/
+	uint32_t cnu;	/* CNU的索引号，从1开始计算*/
+	T_szMdioRtl8306e mdioInfo;
+}T_szSwRtl8306eConfig;
 
 /* CLI进行set vlan 操作时与CMM通讯的接口*/
 typedef struct
@@ -2567,6 +2648,13 @@ typedef struct
 	uint32_t cnu;	/* CNU的索引号，从1开始计算*/
 }
 stTmUserInfo;
+
+typedef struct
+{
+	stTmUserInfo node;
+	st_rtl8306eSettings rtl8306eConfig;
+}
+rtl8306eWriteInfo;
 
 typedef struct
 {
