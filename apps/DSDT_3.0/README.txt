@@ -97,7 +97,8 @@ In more detail see README_SW and README_PHY in each driver.
         dir first)
         <source setenv>
         <cd switch/src>
-        <make> in switch/src directory.    
+        <make> in switch/src directory. 
+        <make clean> in switch/src directory. 
 
 6) Example of global building variables		
 ---------------------------------
