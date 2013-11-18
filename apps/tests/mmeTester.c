@@ -61,6 +61,7 @@ void print_usage(void)
 	printf("		increase tx gain value by 1db\n");
 	printf("	--23:	test mmead case [MMEAD_SET_TX_GAIN]\n");
 	printf("		decrease tx gain value by 1db\n");
+	printf("	--24:	test mmead case [MMEAD_GET_RTL8306E_CONFIG]\n");
 	
 	printf("\n\n");
 }
@@ -1028,6 +1029,58 @@ int TEST_MMEAD_LINK_DIAG_TX(T_UDP_SK_INFO *sk)
 	return -1;
 }
 
+int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
+{
+	T_Msg_Header_MMEAD h;
+	T_REQ_Msg_MMEAD *r = NULL;
+	uint8_t buf[MAX_UDP_SIZE];
+	st_rtl8306eSettings *rtl8306e = NULL;
+	int i = 0;
+	
+	h.M_TYPE = 0xCC08;
+	h.DEV_TYPE = WEC_3801I;
+	h.MM_TYPE = MMEAD_GET_RTL8306E_CONFIG;
+	h.fragment = 0;
+	memcpy(h.ODA, oda, sizeof(oda));
+	h.LEN = 0;
+
+	memcpy(buf, &h, sizeof(h));
+	
+	if( 0 == msg_communicate(sk, buf, sizeof(h)) )
+	{
+		r = (T_REQ_Msg_MMEAD *)buf;
+		rtl8306e = (st_rtl8306eSettings *)(r->BUF);
+		printf("\nRead rtl8306e configs:\n");
+		printf("-vlan config\n");
+		printf("-vlan_enable: %d\n", rtl8306e->vlanConfig.vlan_enable);
+		printf("-vlan_tag_aware: %d\n", rtl8306e->vlanConfig.vlan_tag_aware);
+		printf("-ingress_filter: %d\n", rtl8306e->vlanConfig.ingress_filter);
+		printf("-g_admit_control: %d\n", rtl8306e->vlanConfig.g_admit_control);
+		for(i=0;i<=4;i++)
+		{
+			printf("-p%d pvid: %d\n", i, rtl8306e->vlanConfig.vlan_port[i].pvid);
+			printf("-p%d egress_mode: %d\n", i, rtl8306e->vlanConfig.vlan_port[i].egress_mode);
+			printf("-p%d admit_control: %d\n", i, rtl8306e->vlanConfig.vlan_port[i].admit_control);
+		}
+		
+		printf("-bandwidth control config\n");
+		printf("-g_rx_bandwidth_control_enable: %d\n", rtl8306e->bandwidthConfig.g_rx_bandwidth_control_enable);
+		printf("-g_tx_bandwidth_control_enable: %d\n", rtl8306e->bandwidthConfig.g_tx_bandwidth_control_enable);
+		for(i=0;i<=4;i++)
+		{
+			printf("-p%d rx_bandwidth_control_enable: %d\n", i, rtl8306e->bandwidthConfig.rxPort[i].bandwidth_control_enable);
+			printf("-p%d rx_bandwidth_value: 0x%03x\n", i, rtl8306e->bandwidthConfig.rxPort[i].bandwidth_value);
+			printf("-p%d tx_bandwidth_control_enable: %d\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_control_enable);
+			printf("-p%d tx_bandwidth_value: 0x%03x\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_value);
+		}
+		
+		printf("\n\n");
+		return 0;
+	}
+	return -1;
+}
+
+
 int MMEAD_MSG_DEBUG_ENABLE(T_UDP_SK_INFO *sk, uint32_t enable)
 {
 	T_Msg_Header_MMEAD h;
@@ -1215,6 +1268,11 @@ int main(int argc, char *argv[])
 			case 23:
 			{
 				TEST_MMEAD_DECREASE_TX_GAIN_VALUE(&sk);
+				break;
+			}
+			case 24:
+			{
+				TEST_MMEAD_GET_RTL8306E_CONFIGS(&sk);
 				break;
 			}
 			default:
