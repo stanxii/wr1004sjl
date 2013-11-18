@@ -75,3 +75,39 @@ void BcmWeb_getAllInfo(PWEB_NTWK_VAR pWebVar)
 	pWebVar->eth4linksts = PORT_LINK_DOWN;
 }
 
+void BcmWeb_initRtl8306eSettings(PWEB_NTWK_VAR pWebVar)
+{
+	pWebVar->swVlanEnable = 0;
+	pWebVar->swUplinkPortVMode = 0;
+	pWebVar->swEth1PortVMode = 0;
+	pWebVar->swEth2PortVMode = 0;
+	pWebVar->swEth3PortVMode = 0;
+	pWebVar->swEth4PortVMode = 0;
+
+	pWebVar->swUplinkPortVid = 1;
+	pWebVar->swEth1PortVid = 1;
+	pWebVar->swEth2PortVid = 1;
+	pWebVar->swEth3PortVid = 1;
+	pWebVar->swEth4PortVid = 1;
+
+	pWebVar->swRxRateLimitEnable = 0;
+	pWebVar->swTxRateLimitEnable = 0;
+
+	pWebVar->swUplinkRxRate = 0x7ff;
+	pWebVar->swEth1RxRate = 0x7ff;
+	pWebVar->swEth2RxRate = 0x7ff;
+	pWebVar->swEth3RxRate = 0x7ff;
+	pWebVar->swEth4RxRate = 0x7ff;
+	pWebVar->swUplinkTxRate = 0x7ff;
+	pWebVar->swEth1TxRate = 0x7ff;
+	pWebVar->swEth2TxRate = 0x7ff;
+	pWebVar->swEth3TxRate = 0x7ff;
+	pWebVar->swEth4TxRate = 0x7ff;
+
+	pWebVar->swLoopDetect = 0;
+	pWebVar->swEth1LoopStatus = 0;
+	pWebVar->swEth2LoopStatus = 0;
+	pWebVar->swEth3LoopStatus = 0;
+	pWebVar->swEth4LoopStatus = 0;
+}
+

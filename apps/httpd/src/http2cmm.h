@@ -32,6 +32,9 @@ int http2cmm_sysReboot(void);
 int http2cmm_restoreDefault(void);
 int http2cmm_upgrade(void);
 
+int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar);
+int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar);
+
 int http2cmm_destroy(void);
 int http2cmm_init(void);
 
