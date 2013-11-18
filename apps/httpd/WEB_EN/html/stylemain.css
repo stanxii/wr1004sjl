@@ -124,11 +124,12 @@ input {
     font-family: "tahoma", "sans-serif", "arial", "helvetica";
 }
 input.btn2L {
-		background-color:#E6E6FA;
+    background-color:#E6E6FA;
     font-size: 12px;
     font-family: "tahoma", "sans-serif", "arial", "helvetica";
     height:20px;
     width:60px;
+    cursor:pointer;
 }
 input.btn4L {
 		background-color:#E6E6FA;
@@ -136,6 +137,7 @@ input.btn4L {
     font-family: "tahoma", "sans-serif", "arial", "helvetica";
     height:20px;
     width:75px;
+    cursor:pointer;
 }
 input.btn5L {
 		background-color:#E6E6FA;
@@ -143,9 +145,17 @@ input.btn5L {
     font-family: "tahoma", "sans-serif", "arial", "helvetica";
     height:20px;
     width:85px;
+    cursor:pointer;
 }
 input.btn8L {
 		background-color:#E6E6FA;
+    font-size: 12px;
+    font-family: "tahoma", "sans-serif", "arial", "helvetica";
+    height:20px;
+    width:120px;
+    cursor:pointer;
+}
+input.btn8Ldis {
     font-size: 12px;
     font-family: "tahoma", "sans-serif", "arial", "helvetica";
     height:20px;

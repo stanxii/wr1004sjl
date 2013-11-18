@@ -323,6 +323,25 @@ function isValidVlanId(vlanid) {
 	return true;
 }
 
+function isValidBctrlValue(value) {
+	var msg;
+	var value;
+	if ( isNaN(parseInt(value)) == true )
+	{
+            msg = 'Bandwidth value "' + value + '" is invalid.';
+            alert(msg);
+            return false;
+       }
+	value = parseInt(value);
+	if ( value < 0 || value > 1526 )
+	{
+            msg = 'Bandwidth value "' + value + '" is out of range [0-1526].';
+            alert(msg);
+            return false;
+       }
+	return true;
+}
+
 var hexVals = new Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
               "A", "B", "C", "D", "E", "F");
 var unsafeString = "\"<>%\\^[]`\+\$\,'#&";

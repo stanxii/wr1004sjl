@@ -550,6 +550,28 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(glbWebVar.frmloadUrl, "wecSnmpCfg.html");
 		strcpy(filename, "/webs/wecPreView.html");	
 	}
+	else if ( strstr(filename, "previewCnuSwConfig.html") != NULL )
+	{
+		cgiInitRtl8306eSettings();
+		sprintf(glbWebVar.frmloadUrl, "rtl8306eConfig.cgi?cnuid=%d", glbWebVar.cnuid);
+		strcpy(filename, "/webs/wecPreView.html");
+	}	
+	else if ( strstr(filename, "rtl8306eConfigRead.html") != NULL )
+	{	
+		ret = http2cmm_readSwitchSettings(&glbWebVar);
+		strcpy(filename, "/webs/rtl8306eConfig.html");
+		/*opt-log*/
+		strcpy(logmsg, "read cnu switch settings");
+		http2dbs_writeOptlog(ret, logmsg);
+	}
+	else if ( strstr(filename, "rtl8306eConfigWrite.html") != NULL )
+	{
+		ret = http2cmm_writeSwitchSettings(&glbWebVar);
+		strcpy(filename, "/webs/rtl8306eConfig.html");
+		strcpy(logmsg, "write cnu switch settings");
+		/*opt-log*/			
+		http2dbs_writeOptlog(ret, logmsg);
+	}
 	
 	if( strstr(filename, ".cmd") != NULL )
 	{
@@ -754,6 +776,38 @@ CGI_ITEM CgiGetTable[] = {
    { "frmloadUrl", (void *)glbWebVar.frmloadUrl, CGI_TYPE_STR },
    { "returnUrl", (void *)glbWebVar.returnUrl, CGI_TYPE_STR },
    { "wecOptCode", (void *)&glbWebVar.wecOptCode, CGI_TYPE_NUM }, 
+
+   { "swVlanEnable", (void *)&glbWebVar.swVlanEnable, CGI_TYPE_NUM }, 
+   { "swUplinkPortVMode", (void *)&glbWebVar.swUplinkPortVMode, CGI_TYPE_NUM }, 
+   { "swEth1PortVMode", (void *)&glbWebVar.swEth1PortVMode, CGI_TYPE_NUM }, 
+   { "swEth2PortVMode", (void *)&glbWebVar.swEth2PortVMode, CGI_TYPE_NUM }, 
+   { "swEth3PortVMode", (void *)&glbWebVar.swEth3PortVMode, CGI_TYPE_NUM }, 
+   { "swEth4PortVMode", (void *)&glbWebVar.swEth4PortVMode, CGI_TYPE_NUM }, 
+
+   { "swUplinkPortVid", (void *)&glbWebVar.swUplinkPortVid, CGI_TYPE_NUM }, 
+   { "swEth1PortVid", (void *)&glbWebVar.swEth1PortVid, CGI_TYPE_NUM }, 
+   { "swEth2PortVid", (void *)&glbWebVar.swEth2PortVid, CGI_TYPE_NUM }, 
+   { "swEth3PortVid", (void *)&glbWebVar.swEth3PortVid, CGI_TYPE_NUM }, 
+   { "swEth4PortVid", (void *)&glbWebVar.swEth4PortVid, CGI_TYPE_NUM }, 
+
+   { "swRxRateLimitEnable", (void *)&glbWebVar.swRxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swTxRateLimitEnable", (void *)&glbWebVar.swTxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swUplinkRxRate", (void *)&glbWebVar.swUplinkRxRate, CGI_TYPE_NUM }, 
+   { "swEth1RxRate", (void *)&glbWebVar.swEth1RxRate, CGI_TYPE_NUM }, 
+   { "swEth2RxRate", (void *)&glbWebVar.swEth2RxRate, CGI_TYPE_NUM },
+   { "swEth3RxRate", (void *)&glbWebVar.swEth3RxRate, CGI_TYPE_NUM },
+   { "swEth4RxRate", (void *)&glbWebVar.swEth4RxRate, CGI_TYPE_NUM },
+   { "swUplinkTxRate", (void *)&glbWebVar.swUplinkTxRate, CGI_TYPE_NUM },
+   { "swEth1TxRate", (void *)&glbWebVar.swEth1TxRate, CGI_TYPE_NUM },
+   { "swEth2TxRate", (void *)&glbWebVar.swEth2TxRate, CGI_TYPE_NUM },
+   { "swEth3TxRate", (void *)&glbWebVar.swEth3TxRate, CGI_TYPE_NUM },
+   { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
+
+   { "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
+   { "swEth1LoopStatus", (void *)&glbWebVar.swEth1LoopStatus, CGI_TYPE_NUM },
+   { "swEth2LoopStatus", (void *)&glbWebVar.swEth2LoopStatus, CGI_TYPE_NUM },
+   { "swEth3LoopStatus", (void *)&glbWebVar.swEth3LoopStatus, CGI_TYPE_NUM },
+   { "swEth4LoopStatus", (void *)&glbWebVar.swEth4LoopStatus, CGI_TYPE_NUM },
    
    { NULL, NULL, CGI_TYPE_NONE }
 };
@@ -1055,6 +1109,34 @@ CGI_ITEM CgiSetTable[] = {
    { "cliAdminPwd", (void *)&glbWebVar.cliAdminPwd, CGI_TYPE_STR },
    { "cliOptPwd", (void *)&glbWebVar.cliOptPwd, CGI_TYPE_STR },
    { "cliUserPwd", (void *)&glbWebVar.cliUserPwd, CGI_TYPE_STR },
+
+   { "swVlanEnable", (void *)&glbWebVar.swVlanEnable, CGI_TYPE_NUM }, 
+   { "swUplinkPortVMode", (void *)&glbWebVar.swUplinkPortVMode, CGI_TYPE_NUM }, 
+   { "swEth1PortVMode", (void *)&glbWebVar.swEth1PortVMode, CGI_TYPE_NUM }, 
+   { "swEth2PortVMode", (void *)&glbWebVar.swEth2PortVMode, CGI_TYPE_NUM }, 
+   { "swEth3PortVMode", (void *)&glbWebVar.swEth3PortVMode, CGI_TYPE_NUM }, 
+   { "swEth4PortVMode", (void *)&glbWebVar.swEth4PortVMode, CGI_TYPE_NUM }, 
+
+   { "swUplinkPortVid", (void *)&glbWebVar.swUplinkPortVid, CGI_TYPE_NUM }, 
+   { "swEth1PortVid", (void *)&glbWebVar.swEth1PortVid, CGI_TYPE_NUM }, 
+   { "swEth2PortVid", (void *)&glbWebVar.swEth2PortVid, CGI_TYPE_NUM }, 
+   { "swEth3PortVid", (void *)&glbWebVar.swEth3PortVid, CGI_TYPE_NUM }, 
+   { "swEth4PortVid", (void *)&glbWebVar.swEth4PortVid, CGI_TYPE_NUM }, 
+
+   { "swRxRateLimitEnable", (void *)&glbWebVar.swRxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swTxRateLimitEnable", (void *)&glbWebVar.swTxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swUplinkRxRate", (void *)&glbWebVar.swUplinkRxRate, CGI_TYPE_NUM }, 
+   { "swEth1RxRate", (void *)&glbWebVar.swEth1RxRate, CGI_TYPE_NUM }, 
+   { "swEth2RxRate", (void *)&glbWebVar.swEth2RxRate, CGI_TYPE_NUM },
+   { "swEth3RxRate", (void *)&glbWebVar.swEth3RxRate, CGI_TYPE_NUM },
+   { "swEth4RxRate", (void *)&glbWebVar.swEth4RxRate, CGI_TYPE_NUM },
+   { "swUplinkTxRate", (void *)&glbWebVar.swUplinkTxRate, CGI_TYPE_NUM },
+   { "swEth1TxRate", (void *)&glbWebVar.swEth1TxRate, CGI_TYPE_NUM },
+   { "swEth2TxRate", (void *)&glbWebVar.swEth2TxRate, CGI_TYPE_NUM },
+   { "swEth3TxRate", (void *)&glbWebVar.swEth3TxRate, CGI_TYPE_NUM },
+   { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
+
+   { "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
    
    { NULL, NULL, CGI_TYPE_NONE }
 };
@@ -1096,8 +1178,14 @@ void cgiSetTestVar(char *varName, char *varValue) {
 }
 
 
-void cgiGetAllInfo(void) {
-   BcmWeb_getAllInfo(&glbWebVar);
+void cgiGetAllInfo(void) 
+{
+	BcmWeb_getAllInfo(&glbWebVar);
+}
+
+void cgiInitRtl8306eSettings(void)
+{
+	BcmWeb_initRtl8306eSettings(&glbWebVar);
 }
 
 int UpgradeBegin(PWEB_NTWK_VAR pWebVar)

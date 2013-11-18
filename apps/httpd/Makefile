@@ -63,7 +63,7 @@ install:
 	mkdir -p $(BIN_PATH)
 	cp $(SRCDIR)/httpd $(BIN_PATH)/
 	mkdir -p $(WEB_PATH)
-	cp -Pf $(HTML_SRC_DIR)/html/* $(WEB_PATH)/
+	cp -r $(HTML_SRC_DIR)/html/* $(WEB_PATH)/
 	
 clean:
 	make clean -C $(SRCDIR)

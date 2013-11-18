@@ -2256,6 +2256,7 @@ void cgiCltMgmt(char *query, FILE *fs)
 void cgiCnuMgmt(char *query, FILE *fs)
 {
 	int i=0;
+	int isCnuSupported = BOOL_TRUE;
 	int cltid = 0;
 	int cnuid = 0;
 	int iCount = 0;
@@ -2291,6 +2292,13 @@ void cgiCnuMgmt(char *query, FILE *fs)
 	fprintf(fs, "}\n");
 	fprintf(fs, "function btnNewCnu(){\n");
 	fprintf(fs, "	window.location='wecNewCnu.html';\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function rtl8306e_config(cnuid){\n");
+	fprintf(fs, "	var loc = 'previewCnuSwConfig.cgi?cnuid=';\n");
+	fprintf(fs, "	loc += cnuid;\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
 	fprintf(fs, "</script>\n");
 	fprintf(fs, "</head>\n<body>\n<blockquote>\n<form>\n\n");
@@ -2338,22 +2346,45 @@ void cgiCnuMgmt(char *query, FILE *fs)
 			else
 			{
 				iCount++;
+				isCnuSupported = boardapi_isCnuSupported(cnu.col_model);
 				fprintf(fs, "	<tr>\n");
 				fprintf(fs, "		<td align='center'>%d/%d</td>\n", cltid, cnuid);
 				fprintf(fs, "		<td align='center'>%s</td>\n", cnu.col_mac);
 				fprintf(fs, "		<td align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
 				fprintf(fs, "		<td align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
-				fprintf(fs, "		<td align='center'><IMG src='ico_Editor.gif' width=16 height=16 onclick='cnuAction(0,%d)'></td>\n", cnu.id);
-				fprintf(fs, "		<td>\n");
-				fprintf(fs, "			<input type='button' class='btn1Tbd' value='Reboot' onclick='cnuAction(1,%d)'>\n", cnu.id);
-				fprintf(fs, "			<input type='button' class='btn2Tbd' value='Reload' onclick='cnuAction(2,%d)'>\n", cnu.id);
-				if(cnu.col_auth)
+				if(isCnuSupported)
 				{
-					fprintf(fs, "			<input type='button' class='btn5L' value='Undo-Permit' onclick='cnuAction(5,%d)'>\n", cnu.id);
+					fprintf(fs, "		<td align='center'><IMG src='ico_Editor.gif' width=16 height=16 onclick='cnuAction(0,%d)'></td>\n", cnu.id);
 				}
 				else
 				{
-					fprintf(fs, "			<input type='button' class='btn2L' value='Permit' onclick='cnuAction(4,%d)'>\n", cnu.id);
+					fprintf(fs, "		<td align='center'><IMG src='suppress.png' width=16 height=16'></td>\n", cnu.id);
+				}
+				
+				fprintf(fs, "		<td>\n");
+				fprintf(fs, "			<input type='button' class='btn1Tbd' value='Reboot' onclick='cnuAction(1,%d)'>\n", cnu.id);
+				if(isCnuSupported)
+				{
+					fprintf(fs, "			<input type='button' class='btn2Tbd' value='Reload' onclick='cnuAction(2,%d)'>\n", cnu.id);
+					if(cnu.col_auth)
+					{
+						fprintf(fs, "			<input type='button' class='btn5L' value='Undo-Permit' onclick='cnuAction(5,%d)'>\n", cnu.id);
+					}
+					else
+					{
+						fprintf(fs, "			<input type='button' class='btn2L' value='Permit' onclick='cnuAction(4,%d)'>\n", cnu.id);
+					}
+				}
+				else
+				{
+					if(cnu.col_sts)
+					{
+						fprintf(fs, "			<input type='button' class='btn8L' value='Switch Settings' onclick='rtl8306e_config(%d)'>\n", cnu.id);
+					}
+					else
+					{
+						fprintf(fs, "			<input type='button' class='btn8Ldis' value='Switch Settings' disabled='disabled'>\n", cnu.id);
+					}
 				}
 				
 				fprintf(fs, "		</td>\n");
@@ -2674,7 +2705,7 @@ void cgiTopologyView(char *query, FILE *fs)
 				fprintf(fs, "<td class='clt' align='center' width=120>--</td>\n");
 				//fprintf(fs, "<td class='clt' align='center' width=60><IMG src='true.png' width='14' height='15'></td>\n");
 				fprintf(fs, "<td class='clt' align='center' width=60><IMG src='%s'></td>\n", clt.col_sts?"true.png":"net_down.gif");
-				fprintf(fs, "<td class='clt' align='center' width=100><img src='show.gif' onclick='window.location=\"cltProfile.cmd?viewid=%d\"'></td>\n", i);
+				fprintf(fs, "<td class='clt' align='center' width=100><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cltProfile.cmd?viewid=%d\"'></td>\n", i);
 				fprintf(fs, "<tr>\n");
 				for( j=1; j<=MAX_CNUS_PER_CLT; j++ )
 				{
@@ -2704,7 +2735,7 @@ void cgiTopologyView(char *query, FILE *fs)
 								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
 								fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
 								fprintf(fs, "<td class='cnub' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
-								fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+								fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
 								fprintf(fs, "</tr>\n");
 							}
 							else
@@ -2718,7 +2749,7 @@ void cgiTopologyView(char *query, FILE *fs)
 								fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
 								fprintf(fs, "<td class='cnua' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
 								//fprintf(fs, "<td class='cnua' align='center'><a href='cnuProfile.cmd?viewid=%d'><font color=blue>Show</font></a></td>\n", cnu.id);
-								fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+								fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
 								fprintf(fs, "</tr>\n");
 							}
 						}
