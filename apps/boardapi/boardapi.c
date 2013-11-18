@@ -319,6 +319,14 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		{
 			return "WR1004SJL";
 		}
+		case WEC_3702I_E4:
+		{
+			return "WEC-3702I E4";
+		}
+		case WEC701_E4:
+		{
+			return "WEC701 E4";
+		}
 		default:
 		{
 			return "UNKNOWN";
@@ -410,6 +418,12 @@ const char *boardapi_getCnuHfid(uint32_t devType)
 		case WEC701_C4:
 			user_HFID = "WEC701-C4";
 			break;
+		case WEC_3702I_E4:
+			user_HFID = "WEC-3702I-E4";
+			break;
+		case WEC701_E4:
+			user_HFID = "WEC701-E4";
+			break;
 		default :
 			user_HFID = "Intellon Enabled Product";
 			break;
@@ -448,6 +462,7 @@ int boardapi_isAr7400Device(uint32_t DevType)
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
 		{
 			return BOOL_TRUE;
 		}		
@@ -663,6 +678,14 @@ int boardapi_mapDevModel(int model)
 		{
 			return 41;
 		}
+		case WEC_3702I_E4:
+		{
+			return 42;
+		}
+		case WEC701_E4:
+		{
+			return 43;
+		}
 		default:
 		{
 			return 256;
@@ -771,6 +794,14 @@ int boardapi_umapDevModel(int model)
 		case 41:
 		{
 			return WEC701_C4;
+		}
+		case 42:
+		{
+			return WEC_3702I_E4;
+		}
+		case 43:
+		{
+			return WEC701_E4;
 		}
 		default:
 		{

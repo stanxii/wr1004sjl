@@ -216,6 +216,10 @@ ST_CLI_CMD_REG m_CliCmdPool[] =
 	{CLI_CMD_FORMAT_AR8236_SMI_PHY,      CMDHELP_GLB_AR8236_SMI_PHY, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_CmdAr8236SmiPhy,      CLI_AL_ADMIN,          CTM_GLOBAL },
 
+	/* cnu switch debug *//* 该命令仅在CNU 模式下可执行*/
+	{CLI_CMD_FORMAT_CNU_SWITCH,      CMDHELP_GLB_CNU_SWITCH, CLI_ML_NULL,    CLI_ML_NULL,
+	CLI_CmdCnuSwitch,      CLI_AL_ADMIN,          CTM_GLOBAL },
+
 	/* MME mdio phy debug *//* 该命令仅在CLT或者CNU 模式下可执行*/
 	{CLI_CMD_FORMAT_MME_MDIO,      CMDHELP_GLB_MME_MDIO, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_CmdMmeMdio,      CLI_AL_ADMIN,          CTM_GLOBAL },
@@ -5086,6 +5090,148 @@ ULONG CLI_CmdAr8236SmiPhy()
 	
 	return TBS_SUCCESS;
 }
+
+
+/*********************************************************************/
+/* 函数功能 :CLI_CmdCnuSwitch 命令实现                                 */
+/*********************************************************************/
+ULONG CLI_CmdCnuSwitch()
+{
+	char  *szP=NULL;
+	char *pParam;
+	T_szSwRtl8306eConfig rtl8306eSettings;
+
+	uint32_t iMode = 0;
+	uint32_t prevailMode = 0;
+	uint16_t id = 0;
+	st_dbsCnu cnu;
+	st_dbsProfile profile;
+
+	iMode = CLI_GetCurrentMode();
+	prevailMode = CLI_GetPrevailMode(iMode);
+
+	/* 判断模式并显示打印信息*/
+	/* 该命令只能在CNU模式下执行*/
+	if( 2 != prevailMode )
+	{
+		/* 其他模式下禁止执行该命令*/
+		IO_Print("\r\n\r\n  Incorrect command");
+		return CMM_FAILED;
+	}
+	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
+	id = CLI_GetCnuTidByMode(iMode);
+
+	/* 如果该CNU 槽位无效则禁止配置*/
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	{
+		IO_Print("\r\n\r\n  System Error !");
+		return CMM_FAILED;
+	}	
+	else if( 0 == cnu.col_row_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Interface Unreachable !");
+		return CMM_SUCCESS;
+	}
+	else if( 0 == cnu.col_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Status Unreachable !");
+		return CMM_SUCCESS;
+	}
+
+	/* 如果该PROFILE 槽位无效则禁止配置*/
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	{
+		IO_Print("\r\n\r\n  System Error !");
+		return CMM_FAILED;
+	}	
+	else if( 0 == profile.col_row_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Profile Unreachable !");
+		return CMM_SUCCESS;
+	}
+
+	rtl8306eSettings.clt=1;
+	rtl8306eSettings.cnu=id;
+	if((pParam=CLI_GetParamByName("read |write"))==NULL)
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	if (!STB_StriCmp(pParam, "read"))
+	{
+		if((szP=CLI_GetParamByName("phyad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.phy);
+
+		if((szP=CLI_GetParamByName("regad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.reg);
+
+		if((szP=CLI_GetParamByName("pageid"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.page);
+
+		if( cli2cmm_readCnuSwitchRegister(&rtl8306eSettings) != TBS_SUCCESS )
+		{
+			IO_Print("\r\n\r\n  Read phy %d register %d page %d",rtl8306eSettings.mdioInfo.phy, rtl8306eSettings.mdioInfo.reg, rtl8306eSettings.mdioInfo.page);
+			return TBS_FAILED;
+		}
+		IO_Print("\r\n\r\n  Value:	0x%04X",rtl8306eSettings.mdioInfo.value);
+	}
+	else if (!STB_StriCmp(pParam, "write"))
+	{
+		if((szP=CLI_GetParamByName("regvalue"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%x",&rtl8306eSettings.mdioInfo.value);
+		
+		if((szP=CLI_GetParamByName("phyad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.phy);
+
+		if((szP=CLI_GetParamByName("regad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.reg);
+
+		if((szP=CLI_GetParamByName("pageid"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.page);
+		
+		if( cli2cmm_writeCnuSwitchRegister(&rtl8306eSettings) != TBS_SUCCESS )
+		{
+			return TBS_FAILED;
+		}
+		
+	}
+	else
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	
+	return TBS_SUCCESS;
+}
+
 
 /*********************************************************************/
 /* 函数功能 :CLI_CmdMmeMdio 命令实现                                 */

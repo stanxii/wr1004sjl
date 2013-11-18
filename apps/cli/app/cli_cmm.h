@@ -24,6 +24,8 @@ int cli2cmm_readAr8236Phy(T_szAr8236Phy *szAr8236Phy);
 int cli2cmm_writeAr8236Phy(T_szAr8236Phy *szAr8236Phy);
 int cli2cmm_mdioReadPhy(T_szAr8236Phy *szAr8236Phy);
 int cli2cmm_mdioWritePhy(T_szAr8236Phy *szAr8236Phy);
+int cli2cmm_readCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings);
+int cli2cmm_writeCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings);
 int cli2cmm_shutdownConfig(st_dbsProfile *profile);
 int cli2cmm_macLimitConfig(st_dbsProfile *profile);
 int cli2cmm_stormFilterConfig(st_dbsProfile *profile);
