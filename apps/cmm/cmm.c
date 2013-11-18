@@ -31,6 +31,7 @@
 #include "cmm_reg.h"
 #include "cmm_alarm.h"
 #include "cmm_dsdt.h"
+#include "cmm_rtl8306e.h"
 #include "upgrade.h"
 #include "at30tk175stk/at30ts75.h"
 
@@ -651,6 +652,16 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 			strcpy(log.cmd, "CMM_SET_DSDT_RGMII_DELAY");
 			break;
 		}
+		case CMM_CNU_SWITCH_READ:
+		{
+			strcpy(log.cmd, "read cnu switch register");
+			break;
+		}
+		case CMM_CNU_SWITCH_WRITE:
+		{
+			strcpy(log.cmd, "write cnu switch register");
+			break;
+		}
 		default:
 		{
 			strcpy(log.cmd, "CMM_UNKONEN_CMD");
@@ -1108,6 +1119,192 @@ int CMM_ProcessWriteAr8236Phy(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+int CMM_ProcessCnuSwitchConfigRead(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+	
+	st_rtl8306eSettings ack_data;
+
+	if( (req_data->cnu<1)||(req_data->cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, req_data->cnu, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != mmead_get_rtl8306e_configs(bMac, &ack_data) )
+	{
+		printf("\n#ERROR[05]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, (uint8_t *)&ack_data, sizeof(st_rtl8306eSettings));
+
+	return opt_sts;
+	
+}
+
+
+int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
+{
+	uint32_t len = 0;
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	uint8_t mod[1024] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	
+	//st_rtl8306eSettings ack_data;
+
+	if( (req_data->node.cnu<1)||(req_data->node.cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, req_data->node.cnu, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	//gen mod
+	len = rtl8306e_gen_mod(&req_data->rtl8306eConfig, mod);
+	if( len == 0 )
+	{
+		printf("\n#ERROR[05]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	//**************send to mmead*************//
+	opt_sts = mmead_write_rtl8306e_mod(bMac, mod, len);
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+
+	return opt_sts;
+	
+}
+
+int CMM_ProcessCnuSwitchRead(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	T_szSwRtl8306eConfig *req_data = (T_szSwRtl8306eConfig *)(req->BUF);
+	
+	T_szSwRtl8306eConfig ack_data;
+	//T_szMdioPhy ar8236_phy;
+	
+
+	ack_data.clt = req_data->clt;
+	ack_data.cnu = req_data->cnu;
+	ack_data.mdioInfo.phy = req_data->mdioInfo.phy;
+	ack_data.mdioInfo.reg = req_data->mdioInfo.reg;
+	ack_data.mdioInfo.page = req_data->mdioInfo.page;
+	ack_data.mdioInfo.value = 0x0000;
+	//printf("\nRead phy %d register %d page %d\n", ack_data.mdioInfo.phy, ack_data.mdioInfo.reg, ack_data.mdioInfo.page);
+
+	if( (ack_data.cnu<1)||(ack_data.cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}	
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, ack_data.cnu, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != mmead_get_rtl8306e_register(bMac, &ack_data) )
+	{
+		printf("\n#ERROR[05]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, (uint8_t *)&ack_data, sizeof(T_szSwRtl8306eConfig));
+
+	return opt_sts;
+}
+
+int CMM_ProcessCnuSwitchWrite(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	T_szSwRtl8306eConfig *req_data = (T_szSwRtl8306eConfig *)(req->BUF);
+	
+	if( (req_data->cnu < 1)||(req_data->cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		opt_sts = CMM_FAILED;
+	}	
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, req_data->cnu, &cnu) )
+	{
+		opt_sts = CMM_DB_GETCNU_ERROR;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else
+	{
+		/* 从MMEAD获取信息*/
+		opt_sts = mmead_set_rtl8306e_register(bMac, req_data);		
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
+
 int CMM_ProcessReadAr8236Reg(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
@@ -1337,7 +1534,7 @@ int CMM_ProcessGetCltPortLinkSts(BBLOCK_QUEUE *this)
 	linkStatus = cmm2dsdt_getPortLinkStatus(portid);
 
 	/* 将处理信息发送给请求者 */
-	CMM_ProcessAck(CMM_SUCCESS, this, (uint32_t *)&linkStatus, sizeof(linkStatus));
+	CMM_ProcessAck(CMM_SUCCESS, this, (uint8_t *)&linkStatus, sizeof(linkStatus));
 	return CMM_SUCCESS;
 }
 
@@ -1955,6 +2152,26 @@ void cmmProcessManager(void)
 			case CMM_AR8236_SW_REG_WRITE:
 			{
 				opt_sts = CMM_ProcessWriteAr8236Reg(this);
+				break;
+			}
+			case CMM_CNU_SWITCH_READ:
+			{
+				opt_sts = CMM_ProcessCnuSwitchRead(this);
+				break;
+			}
+			case CMM_CNU_SWITCH_CONFIG_READ:
+			{
+				opt_sts = CMM_ProcessCnuSwitchConfigRead(this);
+				break;
+			}
+			case CMM_CNU_SWITCH_CONFIG_WRITE:
+			{
+				opt_sts = CMM_ProcessCnuSwitchConfigWrite(this);
+				break;
+			}
+			case CMM_CNU_SWITCH_WRITE:
+			{
+				opt_sts = CMM_ProcessCnuSwitchWrite(this);
 				break;
 			}
 			case CMM_MME_MDIO_READ:

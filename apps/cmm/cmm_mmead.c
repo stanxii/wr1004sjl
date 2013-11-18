@@ -182,6 +182,297 @@ int mmead_set_ar8236_reg(uint8_t ODA[], T_szMdioSw *v)
 	return __cmm_mmead_communicate(buf, len);
 }
 
+int mmead_get_rtl8306e_configs(uint8_t ODA[], st_rtl8306eSettings *rtl8306e)
+{
+	assert( NULL != rtl8306e );
+	
+	int len = 0;
+	uint8_t buf[MAX_UDP_SIZE];
+	
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *MMETS_ACK = (T_MMETS_ACK_MSG *)buf;
+	st_rtl8306eSettings *MMETS_ACK_DATA = (st_rtl8306eSettings *)(MMETS_ACK->body);
+	
+	MMETS_REQ->header.M_TYPE = 0xCC08;
+	MMETS_REQ->header.DEV_TYPE = WEC_3702I;	
+	MMETS_REQ->header.MM_TYPE = MMEAD_GET_RTL8306E_CONFIG;
+	MMETS_REQ->header.fragment = 0;
+	MMETS_REQ->header.LEN = 0;
+	memcpy(MMETS_REQ->header.ODA, ODA, 6);
+
+	len = sizeof(T_MMETS_REQ_MSG) + MMETS_REQ->header.LEN;
+
+	if( 0 == __cmm_mmead_communicate(buf, len) )
+	{
+		memcpy(rtl8306e, MMETS_ACK_DATA, sizeof(st_rtl8306eSettings));
+		return CMM_SUCCESS;
+	}
+	return CMM_FAILED;
+}
+
+int mmead_write_rtl8306e_mod(uint8_t ODA[], uint8_t *mod, uint32_t mod_len)
+{
+	assert( NULL != mod );
+	
+	int len = 0;
+	uint8_t buf[MAX_UDP_SIZE];
+	
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *MMETS_ACK = (T_MMETS_ACK_MSG *)buf;
+	
+	
+	MMETS_REQ->header.M_TYPE = 0xCC08;
+	MMETS_REQ->header.DEV_TYPE = WEC_3702I;	
+	MMETS_REQ->header.MM_TYPE = MMEAD_WRITE_MOD;
+	MMETS_REQ->header.fragment = 0;
+	MMETS_REQ->header.LEN = mod_len;
+	memcpy(MMETS_REQ->header.ODA, ODA, 6);
+
+	memcpy(MMETS_REQ->body, mod, mod_len);
+
+	len = sizeof(T_MMETS_REQ_MSG) + MMETS_REQ->header.LEN;
+
+	return __cmm_mmead_communicate(buf, len);
+}
+
+
+int mmead_get_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo)
+{
+	//uint32 rdata;
+	int ret = CMM_FAILED;
+	T_szMdioPhy mdioInfo;
+	pRegInfo->mdioInfo.value = 0x0000;
+
+	if ((pRegInfo->mdioInfo.phy >= 7) || (pRegInfo->mdioInfo.page >= 5))
+	{
+		printf("\n#ERROR[10]\n");
+		return CMM_FAILED;
+	}
+
+	/* Select PHY Register Page through configuring PHY 0 Register 16 [bit1 bit15] */
+	mdioInfo.phy = 0;
+	mdioInfo.reg = 16;
+	if( CMM_SUCCESS != mmead_get_ar8236_phy(ODA, &mdioInfo) )
+	{
+		printf("\n#ERROR[11]\n");
+		return CMM_FAILED;
+	}
+	
+	switch (pRegInfo->mdioInfo.page) 
+	{
+		case 0:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = (mdioInfo.value & 0x7FFF) | 0x0002;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[12]\n");
+			}
+			break;
+		}
+		case 1:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = mdioInfo.value | 0x8002;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[13]\n");
+			}
+			break;
+		}
+		case 2:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = mdioInfo.value & 0x7FFD;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[14]\n");
+			}
+			break;
+		}
+		case 3:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = (mdioInfo.value & 0xFFFD) | 0x8000;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[15]\n");
+			}
+			break;
+		}
+		case 4:
+		{
+			mdioInfo.phy = 5;
+			mdioInfo.reg = 16;
+			if( CMM_SUCCESS == mmead_get_ar8236_phy(ODA, &mdioInfo) )
+			{
+				mdioInfo.value |= 0x2;
+				ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+				if(ret)
+				{
+					printf("\n#ERROR[16]\n");
+				}
+			}
+			else
+			{
+				printf("\n#ERROR[17]\n");
+				ret = CMM_FAILED;
+			}
+			break;
+		}
+		default:
+		{
+			printf("\n#ERROR[18]\n");
+			return CMM_FAILED;
+		}
+	}
+
+	if( CMM_SUCCESS != ret )
+	{
+		return CMM_FAILED;
+	}
+	
+	//read register in selected page
+	mdioInfo.phy = pRegInfo->mdioInfo.phy;
+	mdioInfo.reg = pRegInfo->mdioInfo.reg;
+	if( CMM_SUCCESS == mmead_get_ar8236_phy(ODA, &mdioInfo) )
+	{
+		pRegInfo->mdioInfo.value = mdioInfo.value & 0xFFFF;
+	}
+	else
+	{
+		printf("\n#ERROR[19]\n");
+	}
+	if(4 == pRegInfo->mdioInfo.page)
+	{
+		/*exit page 4*/
+		mdioInfo.phy = 5;
+		mdioInfo.reg = 16;
+		if( CMM_SUCCESS == mmead_get_ar8236_phy(ODA, &mdioInfo) )
+		{
+			mdioInfo.value &= ~0x2;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[20]\n");
+			}
+		}
+	} 
+	if(ret)
+	{
+		printf("\n#ERROR[21]\n");
+	}
+	return ret;	
+}
+
+int mmead_set_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo)
+{
+	int ret = CMM_FAILED;
+	T_szMdioPhy mdioInfo;
+
+	if ((pRegInfo->mdioInfo.phy >= 7) || (pRegInfo->mdioInfo.page >= 5))
+	{
+		return CMM_FAILED;
+	}
+
+	/* Select PHY Register Page through configuring PHY 0 Register 16 [bit1 bit15] */
+	pRegInfo->mdioInfo.value  &= 0xFFFF;
+
+	mdioInfo.phy = 0;
+	mdioInfo.reg = 16;
+	if( CMM_SUCCESS != mmead_get_ar8236_phy(ODA, &mdioInfo) )
+	{
+		return CMM_FAILED;
+	}
+
+	switch (pRegInfo->mdioInfo.page) 
+	{
+		case 0:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = (mdioInfo.value & 0x7FFF) | 0x0002;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			break;
+		}
+		case 1:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = mdioInfo.value | 0x8002;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			break;
+		}
+		case 2:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = mdioInfo.value & 0x7FFD;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			break;
+		}
+		case 3:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = (mdioInfo.value & 0xFFFD) | 0x8000;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			break;
+		}
+		case 4:
+		{
+			mdioInfo.phy = 5;
+			mdioInfo.reg = 16;
+			if( CMM_SUCCESS == mmead_get_ar8236_phy(ODA, &mdioInfo) )
+			{
+				mdioInfo.value |= 0x2;
+				ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+			}
+			else
+			{
+				ret = CMM_FAILED;
+			}
+			break;
+		}
+		default:
+		{
+			return CMM_FAILED;
+		}
+	}
+
+	if( CMM_SUCCESS != ret )
+	{
+		return CMM_FAILED;
+	}
+	
+	//write register in selected page
+	mdioInfo.phy = pRegInfo->mdioInfo.phy;
+	mdioInfo.reg = pRegInfo->mdioInfo.reg;
+	mdioInfo.value = pRegInfo->mdioInfo.value;
+	ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+	
+	if(4 == pRegInfo->mdioInfo.page)
+	{
+		/*exit page 4*/
+		mdioInfo.phy = 5;
+		mdioInfo.reg = 16;
+		if( CMM_SUCCESS == mmead_get_ar8236_phy(ODA, &mdioInfo) )
+		{
+			mdioInfo.value &= ~0x2;
+			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
+		}
+	}        
+	return ret;	
+}
+
 int mmead_do_link_diag
 (
 	uint8_t ODA[], 
