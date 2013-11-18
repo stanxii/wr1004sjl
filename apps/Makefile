@@ -65,6 +65,7 @@ clean:
 nfs:
 	sudo rm -rf $(NFS_DIR)/*
 	sudo cp -a $(ROOTFSDIR)/* $(NFS_DIR)/
+	sudo cp -a $(USERFSDIR)/* $(NFS_DIR)/usr/mnt/
 
 distclean:	
 	rm -f $(TFTPROOT)/$(UBIFSIMG)
