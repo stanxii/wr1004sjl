@@ -288,11 +288,7 @@ int jsonSetCnuProfile(FILE * fs)
 	//printf("\n-->call jsonSetCnuProfile()\n");
 	
 	/* process json set request here */
-	/* 1. check input */
-	ret = jsonSetCnuCheckInput();
-	if( CMM_SUCCESS != ret ) goto json_ack;
-
-	/* 2. get cnu index by input mac address */
+	/* 1. get cnu index by input mac address */
 	ret = http2dbs_getCnuIndexByMacaddress(glbJsonVar.macAddr, &iNode);
 	if( CMM_SUCCESS != ret )
 	{	
@@ -305,6 +301,10 @@ int jsonSetCnuProfile(FILE * fs)
 		ret = CMM_FAILED;
 		goto json_ack;
 	}
+
+	/* 2. check input */
+	ret = jsonSetCnuCheckInput();
+	if( CMM_SUCCESS != ret ) goto json_ack;
 
 	ret = http2dbs_getCnu(iNode.cnu, &cnu);
 	if( CMM_SUCCESS != ret ) goto json_ack;
@@ -573,12 +573,8 @@ int jsonGetCnuProfile(FILE * fs)
 	/* for debug */
 	//printf("\n-->call jsonGetCnuProfile()\n");
 	
-	/* process json get request here */	
-	/* 1. check input */
-	ret = jsonGetCnuCheckInput();
-	if( CMM_SUCCESS != ret ) goto json_out;
-
-	/* 2. get cnu index by input mac address */
+	/* process json get request here */
+	/* 1. get cnu index by input mac address */
 	ret = http2dbs_getCnuIndexByMacaddress(glbJsonVar.macAddr, &iNode);
 	if( CMM_SUCCESS != ret )
 	{	
@@ -591,6 +587,10 @@ int jsonGetCnuProfile(FILE * fs)
 		ret = CMM_FAILED;
 		goto json_out;
 	}
+
+	/* 2. check input */
+	ret = jsonGetCnuCheckInput();
+	if( CMM_SUCCESS != ret ) goto json_out;
 
 	/* 3. get cnu permit status */
 	ret = http2dbs_getCnu(iNode.cnu, &cnu);
