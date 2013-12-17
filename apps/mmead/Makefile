@@ -14,7 +14,7 @@ DBS_LIB = -ldbs
 BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 
 OBJDIR = ./obj
-OBJ = mmeapi.o mmead.o support/atheros/tools/*.o support/atheros/ihpapi/ihpapi.o
+OBJ = mme_rtl8306e.o mmeapi.o mmead.o support/atheros/tools/*.o support/atheros/ihpapi/ihpapi.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
 #BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
@@ -29,6 +29,7 @@ all:build install
 build:
 	make -C support/atheros/tools
 	make -C support/atheros/ihpapi
+	$(CC) $(CFLAGS) $(IFLAGS) -c mme_rtl8306e.c
 	$(CC) $(CFLAGS) $(IFLAGS) -c mmeapi.c
 	$(CC) $(CFLAGS) $(IFLAGS) -c mmead.c
 	$(CC) $(OBJ) -o mmead $(LDFLAGS) $(DBS_LIB) $(BOARDAPI_LD_FLAGS)

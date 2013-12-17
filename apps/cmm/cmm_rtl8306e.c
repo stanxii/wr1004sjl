@@ -3,20 +3,6 @@
 #include <assert.h>
 #include "cmm_rtl8306e.h"
 
-typedef struct
-{
-	/* 标示该行数据是否有效 */
-	uint8_t	flag;	
-	/* PHY Address */
-	uint8_t	phy;	
-	/* Register Address */
-	uint8_t	reg;	
-	/* page Address */
-	uint8_t	page;	
-	/* Register value */
-	uint16_t	value;	
-}RTL_REGISTER_DESIGN;
-
 RTL_REGISTER_DESIGN rtl8306e_register_table[] = 
 {
 	/*flag*/		/*phy*/		/*register*/		/*page*/	/*value*/
@@ -43,6 +29,12 @@ RTL_REGISTER_DESIGN rtl8306e_register_table[] =
 	{1,		    	 4,			22,				0,			0x877F },
 
 	{1,		    	 0,			31,				0,			0x0000 },
+	/*SID*/
+	{1,		    	 3,			16,				0,			0x5452 },
+	{1,		    	 3,			17,				0,			0x834C },
+	{1,		    	 3,			18,				0,			0xC005 },
+	{1,		    	 4,			23,				0,			0x0000 },	
+	{1,		    	 6,			17,				1,			0x0000 },
 	
 	{1,		    	 0,			21,				2,			0x07FF },
 	{1,		    	 1,			21,				2,			0x07FF },
@@ -258,12 +250,54 @@ uint32_t rtl8306e_setPhyRegBit(const uint16_t phyad, const uint16_t regad, const
 	return CMM_SUCCESS;
 }
 
+uint32_t rtl8306e_set_sid(uint8_t sid[])
+{	
+	uint32_t ret = 0;
+	uint16_t *p = (uint16_t *)sid;
+
+	ret += rtl8306e_setPhyReg(3, 16, 0, p[0]);
+	ret += rtl8306e_setPhyReg(3, 17, 0, p[1]);
+	ret += rtl8306e_setPhyReg(3, 18, 0, p[2]);
+	
+	return ret;
+}
+
 uint32_t rtl8306e_loop_detet_enable(uint16_t enabled)
 {	
 	uint32_t ret = 0;
+	ret += rtl8306e_setPhyRegBit(0, 16, 2, 0, (enabled==0)?0:1);	
+	return ret;
+}
+
+uint32_t rtl8306e_set_loop_detet_ldmethod(uint16_t v)
+{	
+	uint32_t ret = 0;
+	ret += rtl8306e_setPhyRegBit(4, 23, 15, 0, (v==0)?0:1);	
+	return ret;
+}
+
+uint32_t rtl8306e_set_loop_detet_ldtime(uint16_t v)
+{	
+	uint32_t ret = 0;
+	uint16_t regValue = 0;
 	
-	ret += rtl8306e_setPhyRegBit(0, 16, 2, 0, enabled==0?0:1);
-	
+	ret += rtl8306e_getPhyReg(4, 23, 0, &regValue);
+	regValue = (regValue & 0x9FFF) | ((v&0x3)<<13);
+	ret += rtl8306e_setPhyReg(4, 23, 0, regValue);
+	return ret;
+}
+
+uint32_t rtl8306e_filter_loop_detet_frame(uint16_t enabled)
+{	
+	uint32_t ret = 0;
+	ret += rtl8306e_setPhyRegBit(6, 17, 4, 1, (enabled==0)?0:1);	
+	return ret;
+}
+
+uint32_t rtl8306e_loop_detet_ttl_enable(uint16_t enabled)
+{	
+	uint32_t ret = 0;
+	ret += rtl8306e_setPhyRegBit(6, 17, 3, 1, (enabled==0)?0:1);	
 	return ret;
 }
 
@@ -636,6 +670,11 @@ uint32_t rtl8306e_loop_detection_register_prepare(st_cnuSwitchLoopDetect *loopDe
 	assert( NULL != loopDetection );
 
 	ret += rtl8306e_loop_detet_enable(loopDetection->status);
+	ret += rtl8306e_set_loop_detet_ldmethod(loopDetection->ldmethod);
+	ret += rtl8306e_set_loop_detet_ldtime(loopDetection->ldtime);
+	ret += rtl8306e_filter_loop_detet_frame(loopDetection->disfltlf);
+	ret += rtl8306e_loop_detet_ttl_enable(loopDetection->enlpttl);
+	ret += rtl8306e_set_sid(loopDetection->sid);
 	return ret;
 }
 

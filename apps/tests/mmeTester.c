@@ -1035,6 +1035,7 @@ int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
 	T_REQ_Msg_MMEAD *r = NULL;
 	uint8_t buf[MAX_UDP_SIZE];
 	st_rtl8306eSettings *rtl8306e = NULL;
+	struct timeval start, end;
 	int i = 0;
 	
 	h.M_TYPE = 0xCC08;
@@ -1045,12 +1046,18 @@ int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
+
+	gettimeofday( &start, NULL );
 	
 	if( 0 == msg_communicate(sk, buf, sizeof(h)) )
 	{
+		gettimeofday( &end, NULL );
 		r = (T_REQ_Msg_MMEAD *)buf;
 		rtl8306e = (st_rtl8306eSettings *)(r->BUF);
-		printf("\nRead rtl8306e configs:\n");
+		printf("\nRead rtl8306e configs [Time Used: %d Seconds %ul Microseconds]:\n", 
+			(int)(end.tv_sec - start.tv_sec),
+			(uint32_t)(end.tv_usec - start.tv_usec)
+		);
 		printf("-vlan config\n");
 		printf("-vlan_enable: %d\n", rtl8306e->vlanConfig.vlan_enable);
 		printf("-vlan_tag_aware: %d\n", rtl8306e->vlanConfig.vlan_tag_aware);
@@ -1072,6 +1079,28 @@ int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
 			printf("-p%d rx_bandwidth_value: 0x%03x\n", i, rtl8306e->bandwidthConfig.rxPort[i].bandwidth_value);
 			printf("-p%d tx_bandwidth_control_enable: %d\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_control_enable);
 			printf("-p%d tx_bandwidth_value: 0x%03x\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_value);
+		}
+		printf("-port loop detect config and status:\n");
+		printf("-sid: %02X:%02X:%02X:%02X:%02X:%02X\n", 
+			rtl8306e->loopDetect.sid[0], rtl8306e->loopDetect.sid[1], 
+			rtl8306e->loopDetect.sid[2], rtl8306e->loopDetect.sid[3],
+			rtl8306e->loopDetect.sid[4], rtl8306e->loopDetect.sid[5]
+		);
+		printf("-loop detect enable: %d\n", rtl8306e->loopDetect.status);
+		printf("-ldmethod: %d\n", rtl8306e->loopDetect.ldmethod);
+		printf("-ldtime: %d\n", rtl8306e->loopDetect.ldtime);
+		printf("-ldbckfrq: %d\n", rtl8306e->loopDetect.ldbckfrq);
+		printf("-ldsclr: %d\n", rtl8306e->loopDetect.ldsclr);
+		printf("-pabuzzer: %d\n", rtl8306e->loopDetect.pabuzzer);
+		printf("-entaglf: %d\n", rtl8306e->loopDetect.entaglf);
+		printf("-lpttlinit: %d\n", rtl8306e->loopDetect.lpttlinit);
+		printf("-lpfpri: %d\n", rtl8306e->loopDetect.lpfpri);
+		printf("-enlpfpri: %d\n", rtl8306e->loopDetect.enlpfpri);
+		printf("-disfltlf: %d\n", rtl8306e->loopDetect.disfltlf);
+		printf("-enlpttl: %d\n", rtl8306e->loopDetect.enlpttl);
+		for(i=0;i<=4;i++)
+		{
+			printf("-p%d loop status: 0x%03x\n", i, rtl8306e->loopDetect.port_loop_status[i]);
 		}
 		
 		printf("\n\n");

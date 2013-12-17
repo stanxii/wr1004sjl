@@ -761,6 +761,22 @@ int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar)
 
 		//loopdetect
 		pWebVar->swLoopDetect = ack_data->loopDetect.status;
+		sprintf(pWebVar->swSwitchSid, "%02X:%02X:%02X:%02X:%02X:%02X", 
+			ack_data->loopDetect.sid[0], ack_data->loopDetect.sid[1], 
+			ack_data->loopDetect.sid[2], ack_data->loopDetect.sid[3],
+			ack_data->loopDetect.sid[4], ack_data->loopDetect.sid[5]
+		);
+		pWebVar->swldmethod = ack_data->loopDetect.ldmethod;
+		pWebVar->swldtime = ack_data->loopDetect.ldtime;
+		pWebVar->swldbckfrq = ack_data->loopDetect.ldbckfrq;
+		pWebVar->swldsclr = ack_data->loopDetect.ldsclr;
+		pWebVar->swpabuzzer = ack_data->loopDetect.pabuzzer;
+		pWebVar->swentaglf = ack_data->loopDetect.entaglf;
+		pWebVar->swlpttlinit = ack_data->loopDetect.lpttlinit;
+		pWebVar->swlpfpri = ack_data->loopDetect.lpfpri;
+		pWebVar->swenlpfpri = ack_data->loopDetect.enlpfpri;
+		pWebVar->swdisfltlf = ack_data->loopDetect.disfltlf;
+		pWebVar->swenlpttl = ack_data->loopDetect.enlpttl;
 		pWebVar->swEth1LoopStatus = ack_data->loopDetect.port_loop_status[0];
 		pWebVar->swEth2LoopStatus = ack_data->loopDetect.port_loop_status[1];
 		pWebVar->swEth3LoopStatus = ack_data->loopDetect.port_loop_status[2];
@@ -876,10 +892,95 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 
 	//loop deection
 	req_data->rtl8306eConfig.loopDetect.status = pWebVar->swLoopDetect;
+	if( 0 == req_data->rtl8306eConfig.loopDetect.status )
+	{
+		req_data->rtl8306eConfig.loopDetect.ldmethod = 0;
+		req_data->rtl8306eConfig.loopDetect.ldtime = 0;
+		req_data->rtl8306eConfig.loopDetect.disfltlf = 0;
+		req_data->rtl8306eConfig.loopDetect.enlpttl = 0;
+	}
+	else
+	{
+		req_data->rtl8306eConfig.loopDetect.ldmethod = 1;
+		req_data->rtl8306eConfig.loopDetect.ldtime = 3;
+		req_data->rtl8306eConfig.loopDetect.disfltlf = 1;
+		req_data->rtl8306eConfig.loopDetect.enlpttl = 1;
+	}
+	//set sid here
+	//printf("-sid: %s\n", pWebVar->swSwitchSid);
+	if( CMM_SUCCESS == boardapi_macs2b(pWebVar->swSwitchSid, req_data->rtl8306eConfig.loopDetect.sid) )
+	{
+		len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+		return __http2cmm_comm(buf, len);
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+	
+}
+
+int http2cmm_getSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	stTmUserInfo szNode;	
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+	
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	st_rtl8306eSettings *ack_data = (st_rtl8306eSettings *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_READ;
+	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->clt = 1;
+	req_data->cnu = node->cnu;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
 
+	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
+	{
+		memcpy(rtl8306e, ack_data, sizeof(st_rtl8306eSettings));
+		return CMM_SUCCESS;
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+}
+
+int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
+{	
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	int i = 0;
+	uint8_t tmp;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	
+	//T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->node.clt = 1;
+	req_data->node.cnu = node->cnu;
+	memcpy(&(req_data->rtl8306eConfig), rtl8306e, sizeof(st_rtl8306eSettings));
+	
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	
 	return __http2cmm_comm(buf, len);
+	
 }
 
 int http2cmm_doLinkDiag( PWEB_NTWK_VAR pWebVar )
@@ -930,8 +1031,8 @@ int http2cmm_doLinkDiag( PWEB_NTWK_VAR pWebVar )
 		pWebVar->diagResult = CMM_FAILED;
 		return CMM_FAILED;
 	}	
-	req_data->clt = pWebVar->cnuid/MAX_CNUS_PER_CLT + 1;
-	req_data->cnu = pWebVar->cnuid%MAX_CNUS_PER_CLT;
+	req_data->clt = (pWebVar->cnuid - 1)/MAX_CNUS_PER_CLT + 1;
+	req_data->cnu =  (pWebVar->cnuid - 1)%MAX_CNUS_PER_CLT + 1;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
 	

@@ -188,3 +188,61 @@ input.btn3Tbd {
     text-decoration: none;
     text-align: left;
 }
+
+td.thead{
+	background-color: #C5CBC7;
+	font-weight: bold;
+	font-size: x-small;
+	font-family: "tahoma", "sans-serif", "arial", "helvetica";
+	height:20px;
+	text-align:center;
+}
+
+td.cola {
+	background-color: #FFFFE0;
+	font-size: x-small;
+	font-family: "tahoma", "sans-serif", "arial", "helvetica";
+	height:20px;	
+	text-align:center;	
+}
+
+td.colb {
+	background-color: #F5FFFA;
+	font-size: x-small;
+	font-family: "tahoma", "sans-serif", "arial", "helvetica";
+	height:20px;	
+	text-align:center;	
+}
+
+ul
+{
+	margin-left:0px;
+	padding:0;
+	list-style: none;
+}
+
+div.dwall{
+	position:relative; 
+}
+
+div.dwcontent{
+	width:500px;
+	border:1px solid #c5dbec;
+	border-radius: 5px;
+}
+
+table.dwcontent
+{
+	border:0;
+	cellpadding:0;
+	cellspacing:0;
+	margin: 10 auto 10 10;
+}
+
+div.dwbtn{
+	position:absolute; 
+	text-align:right;
+	left:520px; 
+	bottom:0;
+}
+

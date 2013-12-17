@@ -1274,6 +1274,30 @@ int cli2cmm_DoPortMirroring(st_dsdtPortMirroring *pMirrorInfo)
 	return __cli2cmm_comm(buf, len);
 }
 
+int cli2cmm_DoDsdtMacBinding(stDsdtMacBinding *macBindingInfo)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_DSDT_MAC_BINDING;
+	req->HEADER.ulBodyLength = sizeof(stDsdtMacBinding);
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	memcpy(req->BUF, macBindingInfo, req->HEADER.ulBodyLength);
+
+	return __cli2cmm_comm(buf, len);
+}
+
 #if 0
 int cli2cmm_upgradeApp(void)
 {

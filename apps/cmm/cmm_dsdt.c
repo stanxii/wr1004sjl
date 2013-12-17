@@ -252,7 +252,7 @@ int __find_dbnum_by_vid(uint32_t vid)
 	if((status = gvtuGetEntryFirst(dev,&vtuEntry)) != GT_OK)
 	{
 		/* if can not find vid in the VTU, return DBNum = 0 */
-		printf("can not find vid in the vtu\n");
+		printf("#can not find vid in the vtu\n");
 		return 0;
 	}
 	else
@@ -268,7 +268,7 @@ int __find_dbnum_by_vid(uint32_t vid)
 		if((status = gvtuGetEntryNext(dev,&vtuEntry)) != GT_OK)
 		{
 			/* if can not find vid in the VTU, return DBNum = 0 */
-			printf("can not find vid in the vtu\n");
+			printf("$can not find vid in the vtu\n");
 			return 0;
 		}		
 		if( vtuEntry.vid == vid )
@@ -1037,6 +1037,51 @@ int cmm2dsdt_delAtherosMulticastAddressFromAtu(void)
 	return gfdbDelAtuEntry(dev, &macEntry);
 }
 
+int cmm2dsdt_bindingMacAddress(stDsdtMacBinding *macBindingInfo)
+{
+	st_dbsNetwork networkinfo;
+	int status;
+	GT_ATU_ENTRY macEntry;
+
+	memcpy(macEntry.macAddr.arEther, macBindingInfo->mac, 6);
+
+	macEntry.portVec = (1 << macBindingInfo->portid);
+	macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
+                                any other priority determined by the frame's data. This value is
+                                meaningful only if the device does not support extended priority
+                                information such as MAC Queue Priority and MAC Frame Priority */
+	macEntry.exPrio.macQPri = 0;    /* If device doesnot support MAC Queue Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.macFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.useMacFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.entryState.ucEntryState = GT_UC_STATIC;
+                                /* This address is locked and will not be aged out.
+                                Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
+	macEntry.trunkMember = GT_FALSE;
+								
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = __find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+
+	/* Add the MAC Address */
+	return gfdbAddMacEntry(dev,&macEntry);
+}
 
 int cmm2dsdt_init(void)
 {

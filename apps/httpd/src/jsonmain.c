@@ -279,7 +279,9 @@ int jsonSetCnuProfile(FILE * fs)
 	int ret = CMM_SUCCESS;
 	char strlog[128] = {0};
 	stCnuNode iNode;
+	st_dbsCnu cnu;
 	st_dbsProfile myProfile;
+	st_rtl8306eSettings rtl8306e;
 	json_object *my_object;
 
 	/* for debug */
@@ -304,40 +306,162 @@ int jsonSetCnuProfile(FILE * fs)
 		goto json_ack;
 	}
 
-	/* 3. get profile by id */
-	ret = http2dbs_getProfile(iNode.cnu, &myProfile);
+	ret = http2dbs_getCnu(iNode.cnu, &cnu);
 	if( CMM_SUCCESS != ret ) goto json_ack;
 
-	/* 4. set parameters from glbJsonVar to myProfile */
-	ret = jsonSetCnuPrepare(&myProfile);
-	if( CMM_SUCCESS != ret ) goto json_ack;
-
-	/* 5. set profile to databases */
-	ret = http2dbs_setProfile(iNode.cnu, &myProfile);
-	if( CMM_SUCCESS != ret ) goto json_ack;
-
-	/* 6. permit/undo-permit cnu */
-	if( 1 == glbJsonVar.cnuPermit )
+	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model ))
 	{
-		ret = http2cmm_permitCnu(iNode.cnu);
+		/* 3. get profile by id */
+		ret = http2dbs_getProfile(iNode.cnu, &myProfile);
+		if( CMM_SUCCESS != ret ) goto json_ack;
+
+		/* 4. set parameters from glbJsonVar to myProfile */
+		ret = jsonSetCnuPrepare(&myProfile);
+		if( CMM_SUCCESS != ret ) goto json_ack;
+
+		/* 5. set profile to databases */
+		ret = http2dbs_setProfile(iNode.cnu, &myProfile);
+		if( CMM_SUCCESS != ret ) goto json_ack;
+
+		/* 6. permit/undo-permit cnu */
+		if( 1 == glbJsonVar.cnuPermit )
+		{
+			ret = http2cmm_permitCnu(iNode.cnu);
+			if( CMM_SUCCESS != ret ) goto json_ack;
+		}
+		else
+		{
+			ret = http2cmm_undoPermitCnu(iNode.cnu);
+			if( CMM_SUCCESS != ret ) goto json_ack;
+		}
+
+		/* 7. reload profile for cnu */
+		ret = http2cmm_reloadCnu(iNode.cnu);
 		if( CMM_SUCCESS != ret ) goto json_ack;
 	}
 	else
 	{
-		ret = http2cmm_undoPermitCnu(iNode.cnu);
+		if( cnu.col_sts == 0 )
+		{
+			ret = CMM_FAILED;
+			goto json_ack;
+		}
+		/* get switch settings before write mod */
+		ret = http2cmm_getSwitchSettings(&iNode, &rtl8306e);
+		if( CMM_SUCCESS != ret ) goto json_ack;
+		/* modify settings */
+		rtl8306e.vlanConfig.vlan_enable = (1==glbJsonVar.cnuVlanSts)?1:0;
+		if(rtl8306e.vlanConfig.vlan_enable)
+		{
+			rtl8306e.vlanConfig.vlan_tag_aware = 1;
+			rtl8306e.vlanConfig.ingress_filter = 0;
+			rtl8306e.vlanConfig.g_admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[0].pvid = glbJsonVar.cnuEth1Vid;
+			rtl8306e.vlanConfig.vlan_port[1].pvid = glbJsonVar.cnuEth2Vid;
+			rtl8306e.vlanConfig.vlan_port[2].pvid = glbJsonVar.cnuEth3Vid;
+			rtl8306e.vlanConfig.vlan_port[3].pvid = glbJsonVar.cnuEth4Vid;
+			rtl8306e.vlanConfig.vlan_port[4].pvid = 1;
+			rtl8306e.vlanConfig.vlan_port[0].egress_mode = 1;
+			rtl8306e.vlanConfig.vlan_port[1].egress_mode = 1;
+			rtl8306e.vlanConfig.vlan_port[2].egress_mode = 1;
+			rtl8306e.vlanConfig.vlan_port[3].egress_mode = 1;
+			rtl8306e.vlanConfig.vlan_port[4].egress_mode = 2;
+			rtl8306e.vlanConfig.vlan_port[0].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[1].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[2].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[3].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[4].admit_control = 0;
+		}
+		else
+		{
+			rtl8306e.vlanConfig.vlan_tag_aware = 0;
+			rtl8306e.vlanConfig.ingress_filter = 0;
+			rtl8306e.vlanConfig.g_admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[0].pvid = 1;
+			rtl8306e.vlanConfig.vlan_port[1].pvid = 1;
+			rtl8306e.vlanConfig.vlan_port[2].pvid = 1;
+			rtl8306e.vlanConfig.vlan_port[3].pvid = 1;
+			rtl8306e.vlanConfig.vlan_port[4].pvid = 1;
+			rtl8306e.vlanConfig.vlan_port[0].egress_mode = 3;
+			rtl8306e.vlanConfig.vlan_port[1].egress_mode = 3;
+			rtl8306e.vlanConfig.vlan_port[2].egress_mode = 3;
+			rtl8306e.vlanConfig.vlan_port[3].egress_mode = 3;
+			rtl8306e.vlanConfig.vlan_port[4].egress_mode = 3;
+			rtl8306e.vlanConfig.vlan_port[0].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[1].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[2].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[3].admit_control = 0;
+			rtl8306e.vlanConfig.vlan_port[4].admit_control = 0;
+		}
+		
+		rtl8306e.bandwidthConfig.g_rx_bandwidth_control_enable = (1==glbJsonVar.cnuRxRateLimitSts)?1:0;
+		if(rtl8306e.bandwidthConfig.g_rx_bandwidth_control_enable)
+		{
+			rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value = (glbJsonVar.cnuCpuPortRxRate*32)/64;
+			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value = (glbJsonVar.cnuEth1RxRate*32)/64;
+			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value = (glbJsonVar.cnuEth2RxRate*32)/64;
+			rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value = (glbJsonVar.cnuEth3RxRate*32)/64;
+			rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value = (glbJsonVar.cnuEth4RxRate*32)/64;
+			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.rxPort[2].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.rxPort[3].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.rxPort[4].bandwidth_control_enable = 1;
+		}
+		else
+		{
+			rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.rxPort[2].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.rxPort[3].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.rxPort[4].bandwidth_control_enable = 0;
+		}
+		
+		rtl8306e.bandwidthConfig.g_tx_bandwidth_control_enable = (1==glbJsonVar.cnuTxRateLimitSts)?1:0;
+		if(rtl8306e.bandwidthConfig.g_tx_bandwidth_control_enable)
+		{
+			rtl8306e.bandwidthConfig.txPort[4].bandwidth_value = (glbJsonVar.cnuCpuPortTxRate*32)/64;
+			rtl8306e.bandwidthConfig.txPort[0].bandwidth_value = (glbJsonVar.cnuEth1TxRate*32)/64;
+			rtl8306e.bandwidthConfig.txPort[1].bandwidth_value = (glbJsonVar.cnuEth2TxRate*32)/64;
+			rtl8306e.bandwidthConfig.txPort[2].bandwidth_value = (glbJsonVar.cnuEth3TxRate*32)/64;
+			rtl8306e.bandwidthConfig.txPort[3].bandwidth_value = (glbJsonVar.cnuEth4TxRate*32)/64;
+			rtl8306e.bandwidthConfig.txPort[0].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.txPort[1].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.txPort[2].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.txPort[3].bandwidth_control_enable = 1;
+			rtl8306e.bandwidthConfig.txPort[4].bandwidth_control_enable = 1;
+		}
+		else
+		{
+			rtl8306e.bandwidthConfig.txPort[4].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.txPort[0].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.txPort[1].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.txPort[2].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.txPort[3].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.txPort[0].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.txPort[1].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.txPort[2].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.txPort[3].bandwidth_control_enable = 0;
+			rtl8306e.bandwidthConfig.txPort[4].bandwidth_control_enable = 0;
+		}		
+		cnu.col_auth = 1;
+		/* write to device */
+		ret = http2cmm_setSwitchSettings(&iNode, &rtl8306e);
 		if( CMM_SUCCESS != ret ) goto json_ack;
 	}
-
-	/* 7. reload profile for cnu */
-	ret = http2cmm_reloadCnu(iNode.cnu);
-	if( CMM_SUCCESS != ret ) goto json_ack;
-	
 
 json_ack:
 	/* send ack to nms */
 	my_object = json_object_new_object();
 	json_object_object_add(my_object, "status", json_object_new_int(ret?1:0));
-	jsonSendAck(fs, ret, json_object_to_json_string(my_object));
+	jsonSendAck(fs, CMM_SUCCESS, json_object_to_json_string(my_object));
 	/* free json object !!! */
 	json_object_put(my_object);
 
@@ -442,6 +566,7 @@ int jsonGetCnuProfile(FILE * fs)
 	char strlog[128] = {0};
 	stCnuNode iNode;
 	st_dbsProfile myProfile;
+	st_rtl8306eSettings rtl8306e;
 	st_dbsCnu cnu;
 	json_object *my_object;
 
@@ -467,13 +592,45 @@ int jsonGetCnuProfile(FILE * fs)
 		goto json_out;
 	}
 
-	/* 3. get profile by id */
-	ret = http2dbs_getProfile(iNode.cnu, &myProfile);
-	if( CMM_SUCCESS != ret ) goto json_out;
-
-	/* 4. get cnu permit status */
+	/* 3. get cnu permit status */
 	ret = http2dbs_getCnu(iNode.cnu, &cnu);
 	if( CMM_SUCCESS != ret ) goto json_out;
+
+	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model ))
+	{
+		/* 4. get profile by id */
+		ret = http2dbs_getProfile(iNode.cnu, &myProfile);
+		if( CMM_SUCCESS != ret ) goto json_out;
+	}
+	else
+	{
+		if( cnu.col_sts == 0 )
+		{
+			ret = CMM_FAILED;
+			goto json_out;
+		}
+		/* get switch settings */
+		ret = http2cmm_getSwitchSettings(&iNode, &rtl8306e);
+		if( CMM_SUCCESS != ret ) goto json_out;
+		myProfile.col_vlanSts = rtl8306e.vlanConfig.vlan_enable;
+		myProfile.col_eth1vid = rtl8306e.vlanConfig.vlan_port[0].pvid;
+		myProfile.col_eth2vid = rtl8306e.vlanConfig.vlan_port[1].pvid;
+		myProfile.col_eth3vid = rtl8306e.vlanConfig.vlan_port[2].pvid;
+		myProfile.col_eth4vid = rtl8306e.vlanConfig.vlan_port[3].pvid;
+		myProfile.col_rxLimitSts = rtl8306e.bandwidthConfig.g_rx_bandwidth_control_enable;
+		myProfile.col_cpuPortRxRate = rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value*64;
+		myProfile.col_eth1rx = rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value*64;
+		myProfile.col_eth2rx = rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value*64;
+		myProfile.col_eth3rx = rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value*64;
+		myProfile.col_eth4rx = rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value*64;
+		myProfile.col_txLimitSts = rtl8306e.bandwidthConfig.g_tx_bandwidth_control_enable;
+		myProfile.col_cpuPortTxRate= rtl8306e.bandwidthConfig.txPort[4].bandwidth_value*64;
+		myProfile.col_eth1tx = rtl8306e.bandwidthConfig.txPort[0].bandwidth_value*64;
+		myProfile.col_eth2tx = rtl8306e.bandwidthConfig.txPort[1].bandwidth_value*64;
+		myProfile.col_eth3tx = rtl8306e.bandwidthConfig.txPort[2].bandwidth_value*64;
+		myProfile.col_eth4tx = rtl8306e.bandwidthConfig.txPort[3].bandwidth_value*64;
+		cnu.col_auth = 1;
+	}
 	
 	/* 5. get parameters from myProfile and cnu to glbJsonVar */
 	ret = jsonGetCnuPrepare(&myProfile, &cnu);
@@ -502,7 +659,7 @@ json_out:
 			}
 		}		
 	}
-	jsonSendAck(fs, ret, json_object_to_json_string(my_object));
+	jsonSendAck(fs, CMM_SUCCESS, json_object_to_json_string(my_object));
 	json_object_put(my_object);
 
 	/* write opt-log here */

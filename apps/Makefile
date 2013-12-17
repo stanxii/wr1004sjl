@@ -27,6 +27,7 @@ UBIFSIMG = ubifs.bin
 apps = sqlite
 apps += busybox
 apps += mtd-utils
+apps += rtl8306e
 apps += boardapi
 apps += nvm
 apps += dbs

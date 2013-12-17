@@ -109,7 +109,7 @@ static int mme_tx(T_MME_SK_HANDLE *MME_SK, uint8_t *buffer, int buffersize)
 			(struct sockaddr *)&(MME_SK->sockaddr), sizeof(struct sockaddr_ll));
 		
 		/* 等待设备处理MME完成 */
-		usleep(5000);
+		//usleep(5000);
 	}	
 	return sendn;
 }
@@ -1554,7 +1554,7 @@ void MME_Atheros_MsgNeRefresh
 				RealStations--;
 				continue;
 			}
-			usleep(10000);
+			//usleep(5000);
 			if( MME_Atheros_MsgGetDeviceInfo(MME_SK, NEList.cnu[i].Mac, &stDevInfo) == CMM_SUCCESS )
 			{
 				NEList.cnu[i].DevType = stDevInfo.DevType;

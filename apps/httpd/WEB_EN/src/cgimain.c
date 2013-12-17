@@ -81,24 +81,30 @@ void do_cgi(char *path, FILE *fs) {
 		}
 	}
 	else if ( strstr(filename, "ntwkcfg.html") != NULL )
-	{
-		strcpy(logmsg, "do network settings");
+	{		
 		ret = http2dbs_setWecNetworkConfig(&glbWebVar);
-		/*opt-log*/			
-		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewNetwork.cgi");
+		/*opt-log*/
+		strcpy(logmsg, "do network settings");
+		http2dbs_writeOptlog(ret, logmsg);		
+		strcpy(glbWebVar.returnUrl, "showNetworkInfo.cmd");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");		
+		strcpy(filename, "/webs/wecOptResult2.html");
+	}
+	else if ( strstr(filename, "previewSnmp.html") != NULL )
+	{
+		//strcpy(glbWebVar.frmloadUrl, "wecSnmpCfg.html");
+		//strcpy(filename, "/webs/wecPreView.html");	
+		strcpy(filename, "/webs/wecSnmpCfg.html");
 	}
 	else if ( strstr(filename, "wecSnmpCfgInfo.html") != NULL )
 	{
-		strcpy(logmsg, "do snmp settings");				
 		ret = http2dbs_setSnmpConfig(&glbWebVar);
-		/*opt-log*/			
-		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewSnmp.cgi");
+		/*opt-log*/
+		strcpy(logmsg, "do snmp settings");
+		http2dbs_writeOptlog(ret, logmsg);			
+		strcpy(glbWebVar.returnUrl, "wecSnmpCfg.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "wecPortPropety.html") != NULL )
 	{
@@ -140,6 +146,16 @@ void do_cgi(char *path, FILE *fs) {
 			strcpy(filename, "/webs/wecOptResult2.html");
 		}
 	}
+	else if ( strstr(filename, "wecWebUsersInfo.html") != NULL )
+	{
+		ret = http2dbs_setWebAdminPwd(&glbWebVar);		
+		/*opt-log*/			
+		http2dbs_writeOptlog(ret, "set web admin password");
+
+		strcpy(glbWebVar.returnUrl, "wecWebUsers.html");
+		glbWebVar.wecOptCode = (ret?1:0);
+		strcpy(filename, "/webs/wecOptResult2.html");
+	}
 	else if ( strstr(filename, "wecCliAdmin.html") != NULL )
 	{
 		strcpy(logmsg, "modify cli admin password");
@@ -148,7 +164,7 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecCliUsers.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "wecCliOpt.html") != NULL )
 	{
@@ -158,7 +174,7 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecCliUsers.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "wecCliUser.html") != NULL )
 	{
@@ -168,7 +184,7 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecCliUsers.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cltReboot.html") != NULL )
 	{
@@ -176,7 +192,7 @@ void do_cgi(char *path, FILE *fs) {
 		ret = http2cmm_rebootClt(glbWebVar.cltid);
 		/*opt-log*/		
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "cltManagement.cmd");
+		sprintf(glbWebVar.returnUrl, "cltManagement.cmd?cltid=%d", glbWebVar.cltid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
@@ -191,79 +207,79 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuCreate.html") != NULL )
-	{
-		sprintf(logmsg, "create new cnu <%s>", glbWebVar.newCnuMac);
+	{		
 		ret = http2cmm_createCnu(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "create new cnu <%s>", glbWebVar.newCnuMac);
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		strcpy(glbWebVar.returnUrl, "previewTopology.cgi");
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuReboot.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "reboot cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_rebootCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuReload.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "reload profile for cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_reloadCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuDelete.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "delete cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_deleteCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		strcpy(glbWebVar.returnUrl, "previewTopology.cgi");
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuPermit.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "permit cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_permitCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuUndoPermit.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "undo permit cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_undoPermitCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "macLimit.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if( glbWebVar.col_macLimit )
 		{
 			sprintf(logmsg, "do mac address limiting for cnu/%d/%d",  cltid, cnuid);
@@ -285,8 +301,8 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setAgTime.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "do aging time settings for cnu/%d/%d", cltid, cnuid);	
 		ret = http2cmm_doAgTimeSettings(&glbWebVar);
 		/*opt-log*/			
@@ -301,8 +317,8 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setSFilter.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_sfbSts|glbWebVar.col_sfuSts|glbWebVar.col_sfmSts)
 		{
 			sprintf(logmsg, "do storm filter settings for cnu/%d/%d",  cltid, cnuid);	
@@ -324,8 +340,8 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setCnuVlan.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_vlanSts)
 		{
 			sprintf(logmsg, "do vlan settings for cnu/%d/%d",  cltid, cnuid);	
@@ -347,8 +363,8 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setPLinkSts.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_eth1sts && glbWebVar.col_eth2sts && glbWebVar.col_eth3sts && glbWebVar.col_eth4sts)
 		{
 			sprintf(logmsg, "undo port shut down settings for cnu/%d/%d", cltid, cnuid);	
@@ -370,8 +386,8 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "doRateLimit.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_rxLimitSts|glbWebVar.col_txLimitSts)
 		{
 			sprintf(logmsg, "do port speed limit settings for cnu/%d/%d", cltid, cnuid);	
@@ -393,8 +409,8 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "saveProfile.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "save profile for cnu/%d/%d", cltid, cnuid);
 		ret = http2dbs_saveConfig();
 		/*opt-log*/			
@@ -405,14 +421,18 @@ void do_cgi(char *path, FILE *fs) {
 			glbWebVar.wecOptCode = CMM_FAILED;
 			strcpy(filename, "/webs/wecOptResult2.html");
 		}
-		else sprintf(filename, "wecEocMgmt.cmd");
+		else
+		{
+			sprintf(filename, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
+		}
 	}
 	else if ( strstr(filename, "setCltAgTime.html") != NULL )
 	{
-		sprintf(logmsg, "do aging time settings for clt/%d", glbWebVar.cltid);	
 		ret = http2dbs_doCltAgTimeSettings(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "do aging time settings for clt/%d", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
+		
 		if( 0 != ret )
 		{
 			sprintf(glbWebVar.returnUrl, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
@@ -423,9 +443,23 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setCltDeCap.html") != NULL )
 	{
-		sprintf(logmsg, "do default cap settings for clt/%d", glbWebVar.cltid);	
 		ret = http2dbs_doCltDecapSettings(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "do default cap settings for clt/%d", glbWebVar.cltid);	
+		http2dbs_writeOptlog(ret, logmsg);
+		if( 0 != ret )
+		{
+			sprintf(glbWebVar.returnUrl, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
+			glbWebVar.wecOptCode = CMM_FAILED;
+			strcpy(filename, "/webs/wecOptResult2.html");
+		}
+		else sprintf(filename, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
+	}
+	else if ( strstr(filename, "enableCltQoS.html") != NULL )
+	{
+		ret = http2dbs_doCltQosEnable(&glbWebVar);
+		/*opt-log*/	
+		sprintf(logmsg, "%s qos for clt/%d", glbWebVar.col_tbaPriSts?"enable":"disable", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
 		if( 0 != ret )
 		{
@@ -437,9 +471,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setCltQoS.html") != NULL )
 	{
-		sprintf(logmsg, "do qos settings for clt/%d", glbWebVar.cltid);	
 		ret = http2dbs_doCltQosSettings(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/	
+		sprintf(logmsg, "do qos settings for clt/%d", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
 		if( 0 != ret )
 		{
@@ -450,10 +484,10 @@ void do_cgi(char *path, FILE *fs) {
 		else sprintf(filename, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
 	}
 	else if ( strstr(filename, "saveCltProfile.html") != NULL )
-	{
-		sprintf(logmsg, "save profile for clt/%d", glbWebVar.cltid);
+	{		
 		ret = http2dbs_saveConfig();
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "save profile for clt/%d", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
 		if( 0 != ret )
 		{
@@ -461,7 +495,7 @@ void do_cgi(char *path, FILE *fs) {
 			glbWebVar.wecOptCode = CMM_FAILED;
 			strcpy(filename, "/webs/wecOptResult2.html");
 		}
-		else sprintf(filename, "cltManagement.cmd");
+		else sprintf(filename, "cltManagement.cmd?cltid=%d", glbWebVar.cltid);
 	}
 	else if ( strstr(filename, "doWlistCtl.html") != NULL )
 	{
@@ -471,12 +505,12 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecWlistCtrl.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");	
+		strcpy(filename, "/webs/wecOptResult2.html");	
 	}
 	else if ( strstr(filename, "wecLinkDiag.html") != NULL )
 	{
-		cltid = glbWebVar.cnuid/MAX_CNUS_PER_CLT + 1;
-		cnuid = glbWebVar.cnuid%MAX_CNUS_PER_CLT;
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		sprintf(logmsg, "do physical link status diagnosis for cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_doLinkDiag(&glbWebVar);
 		/*opt-log*/			
@@ -515,51 +549,28 @@ void do_cgi(char *path, FILE *fs) {
 		/*opt-log*/			
 		http2dbs_writeOptlog(0, logmsg);
 		sprintf(filename, "portPropety.cmd?portid=%d", glbWebVar.portid);
-	}
-	else if ( strstr(filename, "wecWebUsersInfo.html") != NULL )
-	{
-		ret = http2dbs_setWebAdminPwd(&glbWebVar);		
-		/*opt-log*/			
-		http2dbs_writeOptlog(ret, "set web admin password");
-		strcpy(glbWebVar.returnUrl, "wecWebUsers.html");
-		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");	
-	}
+	}	
 	else if ( strstr(filename, "previewTopology.html") != NULL )
 	{
 		strcpy(glbWebVar.frmloadUrl, "wecTopology.cmd");
-		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "previewCnus.html") != NULL )
-	{
-		strcpy(glbWebVar.frmloadUrl, "wecEocMgmt.cmd");
 		strcpy(filename, "/webs/wecPreView.html");	
 	}
 	else if ( strstr(filename, "previewLinkDiag.html") != NULL )
 	{
 		strcpy(glbWebVar.frmloadUrl, "wecLinkDiag.cmd");
 		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "previewNetwork.html") != NULL )
-	{
-		strcpy(glbWebVar.frmloadUrl, "wecNetworkConfig.html");
-		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "previewSnmp.html") != NULL )
-	{
-		strcpy(glbWebVar.frmloadUrl, "wecSnmpCfg.html");
-		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "previewCnuSwConfig.html") != NULL )
+	}	
+	else if ( strstr(filename, "rtl8306eConfig.html") != NULL )
 	{
 		cgiInitRtl8306eSettings();
-		sprintf(glbWebVar.frmloadUrl, "rtl8306eConfig.cgi?cnuid=%d", glbWebVar.cnuid);
-		strcpy(filename, "/webs/wecPreView.html");
+		//sprintf(glbWebVar.frmloadUrl, "rtl8306eConfig.cgi?cnuid=%d", glbWebVar.cnuid);
+		strcpy(filename, "rtl8306eConfigView.cmd");
 	}	
 	else if ( strstr(filename, "rtl8306eConfigRead.html") != NULL )
 	{	
 		ret = http2cmm_readSwitchSettings(&glbWebVar);
-		strcpy(filename, "/webs/rtl8306eConfig.html");
+		//strcpy(filename, "/webs/rtl8306eConfig.html");
+		strcpy(filename, "rtl8306eConfigView.cmd");
 		/*opt-log*/
 		strcpy(logmsg, "read cnu switch settings");
 		http2dbs_writeOptlog(ret, logmsg);
@@ -567,9 +578,10 @@ void do_cgi(char *path, FILE *fs) {
 	else if ( strstr(filename, "rtl8306eConfigWrite.html") != NULL )
 	{
 		ret = http2cmm_writeSwitchSettings(&glbWebVar);
-		strcpy(filename, "/webs/rtl8306eConfig.html");
+		//strcpy(filename, "/webs/rtl8306eConfig.html");
+		strcpy(filename, "rtl8306eConfigView.cmd");		
+		/*opt-log*/
 		strcpy(logmsg, "write cnu switch settings");
-		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
 	}
 	
@@ -803,11 +815,12 @@ CGI_ITEM CgiGetTable[] = {
    { "swEth3TxRate", (void *)&glbWebVar.swEth3TxRate, CGI_TYPE_NUM },
    { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
 
-   { "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
-   { "swEth1LoopStatus", (void *)&glbWebVar.swEth1LoopStatus, CGI_TYPE_NUM },
-   { "swEth2LoopStatus", (void *)&glbWebVar.swEth2LoopStatus, CGI_TYPE_NUM },
-   { "swEth3LoopStatus", (void *)&glbWebVar.swEth3LoopStatus, CGI_TYPE_NUM },
-   { "swEth4LoopStatus", (void *)&glbWebVar.swEth4LoopStatus, CGI_TYPE_NUM },
+   //{ "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
+   //{ "swSwitchSid", (void *)glbWebVar.swSwitchSid, CGI_TYPE_STR },
+   //{ "swEth1LoopStatus", (void *)&glbWebVar.swEth1LoopStatus, CGI_TYPE_NUM },
+   //{ "swEth2LoopStatus", (void *)&glbWebVar.swEth2LoopStatus, CGI_TYPE_NUM },
+   //{ "swEth3LoopStatus", (void *)&glbWebVar.swEth3LoopStatus, CGI_TYPE_NUM },
+   //{ "swEth4LoopStatus", (void *)&glbWebVar.swEth4LoopStatus, CGI_TYPE_NUM },
    
    { NULL, NULL, CGI_TYPE_NONE }
 };
@@ -1137,6 +1150,7 @@ CGI_ITEM CgiSetTable[] = {
    { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
 
    { "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
+   { "swSwitchSid", (void *)glbWebVar.swSwitchSid, CGI_TYPE_STR },
    
    { NULL, NULL, CGI_TYPE_NONE }
 };

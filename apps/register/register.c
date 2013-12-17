@@ -848,14 +848,14 @@ void do_create_cnu(uint8_t macaddr[])
 		macaddr[3], macaddr[4], macaddr[5]
 	);
 	cnu.col_sts = 0;
-	cnu.col_auth = 0;
-	strcpy(cnu.col_ver, "V4.1.0.1");
+	cnu.col_auth = 1;
+	strcpy(cnu.col_ver, "Unknown");
 	cnu.col_rx = 0;
 	cnu.col_tx = 0;
 	strcpy(cnu.col_snr, "0%");
 	strcpy(cnu.col_bpc, "0%");
 	strcpy(cnu.col_att, "0dB");
-	cnu.col_synch = BOOL_FALSE;
+	cnu.col_synch = BOOL_TRUE;
 	cnu.col_row_sts = BOOL_TRUE;
 
 	/* 先判断MAC 地址是否冲突*/
@@ -883,7 +883,7 @@ void do_create_cnu(uint8_t macaddr[])
 		if( CMM_SUCCESS == db_new_cnu(cltid, idle, &cnu))
 		{
 			/* 同步数据*/
-			this->tb_cnu[inode].DevType = WEC_604;
+			this->tb_cnu[inode].DevType = WEC701_C4;
 			memcpy((char *)(this->tb_cnu[inode].Mac), (const char *)(macaddr), 6);			
 			this->tb_cnu[inode].online = 0;
 			this->tb_cnu[inode].RxRate = 0;
@@ -979,16 +979,23 @@ int try_to_add_cnu(int cltid, T_MMEAD_CNU_INFO activeCnu)
 			/* 2. 终端在局点B下已经是一个预开户的用户*/
 			cnu.col_synch = BOOL_TRUE;
 		}
-		switch(activeCnu.DevType)
+
+		if(boardapi_isCnuSupported(activeCnu.DevType))
 		{
-			case WEC701_C2:
-			case WEC701_C4:
-				strcpy(cnu.col_ver, "v7.1.1-FINAL");
-				break;
-			default:
-				strcpy(cnu.col_ver, "V4.1.0.1");
-				break;
-		}		
+			if(boardapi_isAr7400Device(activeCnu.DevType))
+			{
+				strcpy(cnu.col_ver, "AR7400-v7.1.1-1-X-FINAL");
+			}
+			else
+			{
+				strcpy(cnu.col_ver, "INT6000-v4.1.0-0-2-X-FINAL");
+			}
+		}
+		else
+		{
+			strcpy(cnu.col_ver, "unknown");
+		}
+				
 		cnu.col_rx = 0;
 		cnu.col_tx = 0;
 		strcpy(cnu.col_snr, "0%");
@@ -1529,7 +1536,7 @@ int init_nelib(void)
 		clt.col_sts = DEV_STS_OFFLINE;
 		clt.col_maxStas = MAX_CNUS_PER_CLT;
 		clt.col_numStas = 0;
-		strcpy(clt.col_swVersion, "v7.1.1-FINAL");
+		strcpy(clt.col_swVersion, "AR7400-v7.1.1-1-X-FINAL");
 		clt.col_synch = 0;		
 		
 		/* 每次启动时都重新搜索每个端口的clt */		

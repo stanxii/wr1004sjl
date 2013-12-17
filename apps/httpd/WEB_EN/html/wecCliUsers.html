@@ -1,184 +1,160 @@
 <html>
-	<head>
-		<link rel="stylesheet" href='stylemain.css' type='text/css'>
-		<link rel="stylesheet" href='colors.css' type='text/css'>
-		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
-		<title>EoC</title>
-		<base target="_self">		
-		<SCRIPT language=JavaScript>
-			function isNameUnsafe(compareChar) {
-			   var unsafeString = "\"<>%\\^[]`\+\$\,='#&@.: \t";
-				
-			   if ( unsafeString.indexOf(compareChar) == -1 && compareChar.charCodeAt(0) > 32
-			        && compareChar.charCodeAt(0) < 123 )
-			      return false; // found no unsafe chars, return false
-			   else
-			      return true;
-			} 
+<head>
+<title>EoC</title>
+<base target="_self">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache"/>
+<link rel="stylesheet" href="css/redmond/jquery-ui-1.10.3.custom.min.css"/>
+<link rel="stylesheet" href="css/redmond/demos.css"/>
+<link rel="stylesheet" href='stylemain.css' type='text/css'/>
+<link rel="stylesheet" href='colors.css' type='text/css'/>
+<script src="js/jquery-1.9.1.js"></script>
+<script src="js/jquery-ui-1.10.3.custom.min.js"></script>
+<script language="javascript" src="util.js"></script>
+<script language="javascript">
 			
-			function isValidName(name) {
-			   var i = 0;				   
-			   for ( i = 0; i < name.length; i++ ) {
-			      if ( isNameUnsafe(name.charAt(i)) == true )
-			         return false;
-			   }			
-			   return true;
-			}
-			
-			function isUnsafe(compareChar)
-			// this function checks to see if a char is URL unsafe.
-			// Returns bool result. True = unsafe, False = safe
+function btnApply()
+{
+	if ( $("#cliPwd").val() != $("#cliPwdConfirm").val() )
+	{
+		alert("The passwords do not match.");
+		return;
+	}
+	if ( $("#cliPwd").val().length == 0 )
+	{
+		alert('Password should not be null.');
+		return;
+	}
+	if ( $("#cliPwd").val().length >= 16 )
+	{
+		alert('Password should not be longer than 15 characters.');
+		return;
+	}
+	if ( isValidName($("#cliPwd").val()) == false )
+	{
+		alert('Password is invalid.');
+		return;
+	}
+
+	if( $("#userName").val() == '0' )
+	{
+		var loc = 'wecCliAdmin.cgi?';
+		loc += 'cliAdminPwd=' + encodeUrl($("#cliPwd").val());	
+	}
+	else if( $("#userName").val() == '1' )
+	{
+		loc = 'wecCliOpt.cgi?';
+		loc += 'cliOptPwd=' + encodeUrl($("#cliPwd").val());
+	}
+	else if( $("#userName").val() == '2' )
+	{
+		loc = 'wecCliUser.cgi?';
+		loc += 'cliUserPwd=' + encodeUrl($("#cliPwd").val());
+	}
+	else
+	{
+		alert("No username is selected.");
+		return;
+	}
+						
+	var code = 'location="' + loc + '"';
+	//alert(code);
+	eval(code);				
+}
+
+$(function()
+{
+	$("#accordion").accordion({
+		collapsible: true,
+		heightStyle: "content" 
+	});
+
+	$( "#dialog" ).dialog({
+		autoOpen: false,
+		width:350,
+		show:
+		{
+			effect: "blind",
+			duration: 1000
+		},
+		hide:
+		{
+			effect: "explode",
+			duration: 1000
+		}
+	});
+
+	$('#comBtn').button({
+		icons: {
+			primary: 'ui-icon-arrowthickstop-1-s'
+		},
+	});
+	$( "#comBtn" ).button().click(function(event){
+		event.preventDefault();
+		btnApply();
+	});
+
+	$( "#opener" ).button(
+		{
+			icons:
 			{
-				 var unsafeString = "\"<>%\\^[]`\+\$\,'#&";
-			   if ( unsafeString.indexOf(compareChar) == -1 && compareChar.charCodeAt(0) > 32
-			        && compareChar.charCodeAt(0) < 123 )
-			      return false; // found no unsafe chars, return false
-			   else
-			      return true;
-			}
-			
-			function encodeUrl(val)
-			{
-			   var len     = val.length;
-			   var i       = 0;
-			   var newStr  = "";
-			   var original = val;
-			
-			   for ( i = 0; i < len; i++ ) {
-			      if ( val.substring(i,i+1).charCodeAt(0) < 255 ) {
-			         // hack to eliminate the rest of unicode from this
-			         if (isUnsafe(val.substring(i,i+1)) == false)
-			            newStr = newStr + val.substring(i,i+1);
-			         else
-			            newStr = newStr + convert(val.substring(i,i+1));
-			      } else {
-			         // woopsie! restore.
-			         alert ("Found a non-ISO-8859-1 character at position: " + (i+1) + ",\nPlease eliminate before continuing.");
-			         newStr = original;
-			         // short-circuit the loop and exit
-			         i = len;
-			      }
-			   }
-			
-			   return newStr;
-			}
-			
-			function btnApply()
-			{				
-				with ( document.forms[0] )
-				{
-					if ( cliPwd.value != cliPwdConfirm.value )
-					{
-         		alert("The passwords do not match.");
-         		return;
-      		}
-      		if ( cliPwd.value.length == 0 )
-      		{
-         		alert('Password should not be null.');
-         		return;
-      		}
-      		if ( cliPwd.value.length >= 16 )
-      		{
-         		alert('Password should not be longer than 15 characters.');
-         		return;
-      		}
-      		if ( cliPwd.value.indexOf(' ') != -1 )
-      		{
-         		alert('Password cannot contain a space.');
-         		return;
-      		}
-      		if ( isValidName(cliPwd.value) == false )
-      		{
-      			alert('Password is invalid.');
-         		return;
-      		}
-      		if( userName.selectedIndex == '0' )
-      		{
-      			var loc = 'wecCliAdmin.cgi?';
-      			loc += 'cliAdminPwd=' + encodeUrl(cliPwd.value);	
-      		}
-      		else if( userName.selectedIndex == '1' )
-      		{
-      			loc = 'wecCliOpt.cgi?';
-      			loc += 'cliOptPwd=' + encodeUrl(cliPwd.value);
-      		}
-      		else if( userName.selectedIndex == '2' )
-      		{
-      			loc = 'wecCliUser.cgi?';
-      			loc += 'cliUserPwd=' + encodeUrl(cliPwd.value);
-      		}
-      		else
-      		{
-      			alert("No username is selected.");
-      			return;
-      		}
-									
-				}
-				var code = 'location="' + loc + '"';
-				//alert(code);
-   			eval(code);				
-			}
-		</SCRIPT>
-   </head>
-   <body>
-      <blockquote>
-         <form>
-            <br>
-            <table border="0" cellpadding="5" cellspacing="0">
-            	<tr>
-            		<td class='maintitle'><b>Passwords</b></td>            		
-            	</tr>                       
-		        </table>
-		        <table border="0" cellpadding="0" cellspacing="0">            	
-            	<tr>
-								<td class='mainline' width=800></td>
-							</tr>                           
-		        </table>
-          	<br>Through this page, you can modify the CLI user password.</br>
-            	 <br>            	
-               <br>
-               <table border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td class='diagret' width=300>CLI user password</td>
-									<td class='diagret' width=260>&nbsp;</td>
-								</tr>                           
-			        </table>
-			        <br>
-              <table border="0" cellpadding="0" cellspacing="0">
-               
-               <tr>
-                  <td class='diagdata' width=300>Username:</td>
-                  <td class='diagdata' width=260>
-                  	<select name='userName' size="1">
-                  		<option value="0">admin
-                      <option value="1">operator
-                      <option value="2">user
-                    </select>
-                  </td>
-               </tr> 
-               <tr>
-                  <td class='diagdata'>New password:</td>
-                  <td class='diagdata'><input type='password' name='cliPwd' size="20"></td>
-               </tr>
-               <tr>
-                  <td class='diagdata'>Confirm password:</td>
-                  <td class='diagdata'><input type='password' name='cliPwdConfirm' size="20"></td>
-               </tr>             
-        </table>
-        <br>
-        <table border="0" cellpadding="0" cellspacing="0">
-					<tr>
-						<td class='listend' width=560></td>
-					</tr>                           
-        </table>
-        <br><b>Note 1:</b> The length of password is 1~15 characters. Allow only numbers and letters.
-        <br><b>Note 2:</b> The password is care to case, please be careful.<br>
-        <br><br>
-        <p>            	
-        	<input type='button' class='btn2L' onClick='btnApply()' value='Commit'>
-        </p>
-			</form>
-		</blockquote>
-	</body>
+				primary: "ui-icon-help"
+			},
+			text: false
+		}
+	).click(function(){
+		$( "#dialog" ).dialog( "open" );
+	});
+});
+</script>
+</head>
+<body>
+<blockquote>
+<br>
+<table border="0" cellpadding="5" cellspacing="0">
+	<tr><td class='maintitle'><b>Password</b></td></tr>                       
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">            	
+	<tr><td class='mainline' width="100%"></td></tr>                           
+</table>
+<br>	
+<br>
+<div id="accordion">
+	<h3>Modify CLI User Password</h3>
+	<div>
+		Through this page, you can modify the CLI user password.</br>
+		<br>
+		<table border="0" cellpadding="0" cellspacing="0">               
+			<tr>
+				<td class='diagdata' width=300>Username:</td>
+				<td class='diagdata' width=260>
+					<select id='userName' size="1">
+						<option value="0">admin</option>
+						<option value="1">operator</option>
+						<option value="2">user</option>
+					</select>
+				</td>
+			</tr>               
+			<tr>
+				<td class='diagdata'>New Password:</td>
+				<td class='diagdata'><input type='password' id='cliPwd' size="20"></td>
+			</tr>
+			<tr>
+				<td class='diagdata'>Confirm Password:</td>
+				<td class='diagdata'><input type='password' id='cliPwdConfirm' size="20"></td>
+			</tr>       
+		</table>
+		<br>
+	</div>
+</div>
+<p>
+	<button id="comBtn">Commit</button>
+	<button id="opener">Help</button>
+</p>
+<div id="dialog" title="Help Information">
+	<br>1. The length of password is 1~15 characters. Allow only numbers and letters.</br>
+	<br>2. The password is care to case, please be careful.</br>
+</div>
+</blockquote>
+</body>
 </html>
 

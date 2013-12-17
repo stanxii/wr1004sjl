@@ -1686,6 +1686,21 @@ int CMM_ProcessDelAtherosMulticastAddr(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+int CMM_ProcessDsdtMacAddressBinding(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	
+	T_Msg_CMM *msg = (T_Msg_CMM *)(this->b);
+	stDsdtMacBinding *macBindingInfo = (stDsdtMacBinding *)(msg->BUF);
+	
+	/* del atu mac entry before add */
+	opt_sts = cmm2dsdt_bindingMacAddress(macBindingInfo);
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
+
 int CMM_ProcessGetCbatTemperature(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
@@ -2296,6 +2311,11 @@ void cmmProcessManager(void)
 			case CMM_DEL_ATHEROS_ADDR:
 			{
 				opt_sts=CMM_ProcessDelAtherosMulticastAddr(this);
+				break;
+			}
+			case CMM_DSDT_MAC_BINDING:
+			{
+				opt_sts=CMM_ProcessDsdtMacAddressBinding(this);
 				break;
 			}
 			case CMM_GET_CLT_PORT_LINK_STS:

@@ -522,6 +522,10 @@
 /* dsdt-port-mirror 的帮助信息 */
 #define CMDHELP_GLB_DSDT_PORT_MIRROR            HELP_FUN "Enable port mirroring on MV88E6171R." \
 						HELP_FMT "dsdt-port-mirror from p6 to p0"
+
+/* dsdt-mac-binding 的帮助信息 */
+#define CMDHELP_GLB_DSDT_MAC_BIND            HELP_FUN "Binding a mac address to switch port static." \
+						HELP_FMT "dsdt-binding mac-address 01-02-03-04-05-06 to p0~p6"
 /******************************************************************************
  *                                 END                                        *
  ******************************************************************************/

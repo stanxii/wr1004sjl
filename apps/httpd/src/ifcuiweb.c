@@ -105,9 +105,21 @@ void BcmWeb_initRtl8306eSettings(PWEB_NTWK_VAR pWebVar)
 	pWebVar->swEth4TxRate = 0x7ff;
 
 	pWebVar->swLoopDetect = 0;
+	pWebVar->swldmethod = 0;
+	pWebVar->swldtime = 0;
+	pWebVar->swldbckfrq = 0;
+	pWebVar->swldsclr = 0;
+	pWebVar->swpabuzzer = 0;
+	pWebVar->swentaglf = 0;
+	pWebVar->swlpttlinit = 0;
+	pWebVar->swlpfpri = 0;
+	pWebVar->swenlpfpri = 0;
+	pWebVar->swdisfltlf = 0;
+	pWebVar->swenlpttl = 0;
 	pWebVar->swEth1LoopStatus = 0;
 	pWebVar->swEth2LoopStatus = 0;
 	pWebVar->swEth3LoopStatus = 0;
 	pWebVar->swEth4LoopStatus = 0;
+	strcpy(pWebVar->swSwitchSid, "52:54:4C:83:05:C0");
 }
 

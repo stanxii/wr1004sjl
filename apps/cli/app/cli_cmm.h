@@ -3,6 +3,7 @@
 
 #include <public.h>
 
+int cli2cmm_DoDsdtMacBinding(stDsdtMacBinding *macBindingInfo);
 int cli2cmm_DoPortMirroring(st_dsdtPortMirroring *pMirrorInfo);
 int cli2cmm_getCbatTemperature(st_temperature *temp_data);
 int cli2cmm_setRgmiiTimingDelay(st_dsdtRgmiiTimingDelay *pdelay);

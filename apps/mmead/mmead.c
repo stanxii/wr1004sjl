@@ -15,6 +15,7 @@
 #include <signal.h>
 #include "mmead.h"
 #include "mmeapi.h"
+#include "mme_rtl8306e.h"
 #include "support/atheros/ihpapi/ihpapi.h"
 #include "support/atheros/ihpapi/ihp.h"
 #include "../dbs/include/dbsapi.h"
@@ -93,6 +94,7 @@ int __mapModCarrier(char value)
 	}
 }
 
+#if 0
 /********************************************************************************************
 *	函数名称:get_mac_addr
 *	函数功能:该函数通过系统调用获取本机的MAC地址
@@ -135,7 +137,7 @@ static int get_mac_addr(char * interface, uint8_t *pMacAddr)
 	close(fd);
 	return 0;
 }
-
+#endif
 void debug_dump_msg(const unsigned char memory [], size_t length, FILE *fp)
 {
 	if(MMEAD_MODULE_DEBUG_ENABLE)
@@ -1400,29 +1402,16 @@ void MME_ProcessGetRtl8306eConfig(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME
 	uint8_t buf[MAX_BODY_SIZE];		
 	st_rtl8306eSettings *rtl8306e = (st_rtl8306eSettings *)buf;
 	T_MMETS_REQ_MSG *req = (T_MMETS_REQ_MSG *)(this->b);
-	
-
-	// Get 802.1Q Vlan Settings
-	if( CMM_SUCCESS != MME_Atheros_MsgGetRtl8306eVlanConfig(MME_SK, req->header.ODA, &(rtl8306e->vlanConfig)))
-	{
-		MMEAD_ProcessAck(CMM_MME_ERROR, this, NULL, 0);
-	}
-	// Get port bandwidth control settings
-	if( CMM_SUCCESS != MME_Atheros_MsgGetRtl8306eBandwidthConfig(MME_SK, req->header.ODA, &(rtl8306e->bandwidthConfig)))
-	{
-		MMEAD_ProcessAck(CMM_MME_ERROR, this, NULL, 0);
-	}
-	// Get port loop detect
-	if( CMM_SUCCESS != MME_Atheros_MsgGetRtl8306eLoopDetect(MME_SK, req->header.ODA, &(rtl8306e->loopDetect)))
-	{
-		MMEAD_ProcessAck(CMM_MME_ERROR, this, NULL, 0);
-	}
-	
-	// Get Other settings here
-	/* add code here */
 
 	len = sizeof(st_rtl8306eSettings);
-	MMEAD_ProcessAck(CMM_SUCCESS, this, buf, len);	
+	if( CMM_SUCCESS != mme_rtl8306e_get_config_all(MME_SK, req->header.ODA, rtl8306e))
+	{
+		MMEAD_ProcessAck(CMM_MME_ERROR, this, NULL, 0);
+	}
+	else
+	{
+		MMEAD_ProcessAck(CMM_SUCCESS, this, buf, len);	
+	}
 }
 
 /********************************************************************************************
@@ -1840,8 +1829,8 @@ int main(void)
 	}
 
 	signal(SIGTERM, MMEAD_ProcForExit);
-	
-	if( get_mac_addr(LOCAL_INTERFACE0, OSA) != 0 )
+	if( CMM_SUCCESS != boardapi_macs2b(boardapi_getMacAddress(), OSA) )
+	//if( get_mac_addr(LOCAL_INTERFACE0, OSA) != 0 )
 	{
 		fprintf(stderr, "ERROR: mmead->get_mac_addr, exit !\n");
 		dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead get_mac_addr error, exited");

@@ -86,7 +86,9 @@ const char *boardapi_getCnuHfid(uint32_t devType);
 *	时间:2010-08-19
 *********************************************************************************************/
 int boardapi_isCnuSupported(uint32_t DevType);
+int boardapi_isAr6400Device(uint32_t DevType);
 int boardapi_isAr7400Device(uint32_t DevType);
+int boardapi_getCnuSwitchType(uint32_t DevType);
 
 /********************************************************************************************
 *	函数名称:boardapi_mapDevModel
@@ -119,6 +121,14 @@ char * boardapi_getAlarmTypeStr(uint16_t alarmType);
 *	时间:2010-08-19
 *********************************************************************************************/
 int boardapi_getAlarmLevelByCode(uint32_t alarmCode);
+
+/********************************************************************************************
+*	函数名称:boardapi_getAlarmLevelStr
+*	函数功能:获取字符串表示的告警等级
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+char * boardapi_getAlarmLevelStr(uint16_t alarmLevel);
 
 /********************************************************************************************
 *	函数名称:boardapi_getAlarmLevel

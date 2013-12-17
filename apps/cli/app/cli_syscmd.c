@@ -271,6 +271,10 @@ ST_CLI_CMD_REG m_CliCmdPool[] =
 	/* MV88E6171R port mirroring */
 	{CLI_CMD_FORMAT_DSDT_PORT_MIRROR,      CMDHELP_GLB_DSDT_PORT_MIRROR, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_Cmd_DoDsdtPortMirror,      CLI_AL_ADMIN,          CTM_GLOBAL },
+
+	/* MV88E6171R mac binding */
+	{CLI_CMD_FORMAT_DSDT_MAC_BINDING,      CMDHELP_GLB_DSDT_MAC_BIND, CLI_ML_NULL,    CLI_ML_NULL,
+	CLI_Cmd_DoDsdtMacBinding,      CLI_AL_ADMIN,          CTM_GLOBAL },
 	
 	/* dump *//* 该命令仅在CNU 模式下可执行*/
 	{CLI_CMD_FORMAT_DEBUG_DUMP,      CMDHELP_GLB_DEBUG_DUMP, CLI_ML_NULL,    CLI_ML_NULL,
@@ -5989,6 +5993,76 @@ ULONG CLI_Cmd_DoDsdtPortMirror()
 	return cli2cmm_DoPortMirroring(&stMirrorInfo);	
 }
 
+ULONG CLI_Cmd_DoDsdtMacBinding()
+{
+	stDsdtMacBinding macBindingInfo;
+	char  *szP=NULL;
+	char *pParam=NULL;
+	
+	/* 读取命令行参数*/
+	/* 读取端口信息*/
+	if((szP=CLI_GetParamByName("mac-address"))==NULL)
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	else if((szP=CLI_GetParamByName("mac"))==NULL)
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	else if( 0 != boardapi_macs2b(szP, macBindingInfo.mac) )
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	
+	if( (pParam = CLI_GetParamByName("deport")) == NULL )
+	{
+		MT_ERRLOG(0);
+		return CMM_FAILED;
+	}
+	else
+	{
+		if(!STB_StriCmp(pParam, "p0"))
+		{
+			macBindingInfo.portid = 0;
+		}
+		else if(!STB_StriCmp(pParam, "p1"))
+		{				
+			macBindingInfo.portid = 1;
+		}
+		else if(!STB_StriCmp(pParam, "p2"))
+		{				
+			macBindingInfo.portid = 2;
+		}
+		else if(!STB_StriCmp(pParam, "p3"))
+		{				
+			macBindingInfo.portid = 3;
+		}
+		else if(!STB_StriCmp(pParam, "p4"))
+		{				
+			macBindingInfo.portid = 4;
+		}
+		else if(!STB_StriCmp(pParam, "p5"))
+		{				
+			macBindingInfo.portid = 5;
+		}
+		else if(!STB_StriCmp(pParam, "p6"))
+		{				
+			macBindingInfo.portid = 6;
+		}
+		else
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}
+	}
+
+	macBindingInfo.dbNum = 0;
+	
+	return cli2cmm_DoDsdtMacBinding(&macBindingInfo);	
+}
 
 /*********************************************************************/
 /* 函数功能 :匿名用户接入控制的 命令实现                                 */

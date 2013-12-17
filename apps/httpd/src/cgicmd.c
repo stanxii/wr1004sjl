@@ -25,21 +25,23 @@
                              WEB_IPSEC_CMD_NUM + WEB_CERT_CMD_NUM + WEB_PORT_MIRROR_CMD_NUM )
 
 CGI_CMD WebCmdTable[WEB_CMD_NUM_MAX] = {
+   { "showNetworkInfo", cgiNtwkView },
    { "wecOptlog", cgiOptlogView },
    { "wecSyslog", cgiSyslogView },
    { "wecAlarmlog", cgiAlarmlogView },
    { "alarmlogDetail", cgiAlarmlogDetailView },
-   { "wecTopology", cgiTopologyView },
-   { "cnuProfile", cgiCnuProfileView },
-   { "cltProfile", cgiCltProfileView },
+   { "wecTopology", cgiTopologyView },   
+   //{ "cltProfile", cgiCltProfileView },
    { "editCltPro", cgiCltProfile },
    { "cltManagement", cgiCltMgmt },
-   { "wecEocMgmt", cgiCnuMgmt },
+   //{ "cnuProfile", cgiCnuProfileView },
    { "editCnuPro", cgiCnuProfile },
-   { "wecLinkDiag", cgiLinkDiag },
+   { "rtl8306eConfigView", cgiCnuProfileExt },
+   { "cnuManagement", cgiCnuMgmt },   
    { "portStatsDetail", cgiPortStatsView },
    { "portPropety", cgiPortPropety },
    { "linkDiagResult", cgiLinkDiagResult },
+   { "wecLinkDiag", cgiLinkDiag },   
 };
 
 void do_cmd_cgi(char *path, FILE *fs) {

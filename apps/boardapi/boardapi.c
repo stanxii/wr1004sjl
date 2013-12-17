@@ -249,6 +249,8 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 			{				
 				case CUSTOM_LOGO_PX:
 					return "PX 7402";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MO350-2G";
 				case CUSTOM_LOGO_DEMO:
 				case CUSTOM_LOGO_PREVAIL:
 				default:
@@ -265,7 +267,13 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC9720EK_S220:
 		{
-			return "WEC9720EK S220";
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MI350-2G";
+				default:
+					return "WEC9720EK S220";
+			}			
 		}
 		case WEC9720EK_SD220:
 		{
@@ -273,6 +281,8 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 			{				
 				case CUSTOM_LOGO_PX:
 					return "PX 7401";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MI350D-2G";
 				case CUSTOM_LOGO_DEMO:
 				case CUSTOM_LOGO_PREVAIL:
 				default:
@@ -289,6 +299,8 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 			{				
 				case CUSTOM_LOGO_PX:
 					return "PX 74";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-S100-4F";
 				case CUSTOM_LOGO_DEMO:
 				case CUSTOM_LOGO_PREVAIL:
 				default:
@@ -305,6 +317,8 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 			{				
 				case CUSTOM_LOGO_PX:
 					return "PX 7402";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MO350D-2G";
 				case CUSTOM_LOGO_DEMO:
 				case CUSTOM_LOGO_PREVAIL:
 				default:
@@ -455,6 +469,26 @@ int boardapi_isCnuSupported(uint32_t DevType)
 	}
 }
 
+int boardapi_getCnuSwitchType(uint32_t DevType)
+{
+	switch(DevType)
+	{
+		case WEC_3702I:		/* WEC-3702I L2 */
+		case WEC_3703I:		/* WEC-3702I L3 */
+		case WEC_602:		/* WEC-3702I C2 */
+		case WEC_604:		/* WEC-3702I C4 */
+		case WEC701_C2:		/* WEC701 C2 */
+		case WEC701_C4:		/* WEC701 C4 */
+		{
+			return CNU_SWITCH_TYPE_AR8236;
+		}		
+		default:
+		{
+			return CNU_SWITCH_TYPE_RTL8306E;
+		}
+	}
+}
+
 int boardapi_isAr7400Device(uint32_t DevType)
 {
 	switch(DevType)
@@ -463,6 +497,22 @@ int boardapi_isAr7400Device(uint32_t DevType)
 		case WEC701_C2:
 		case WEC701_C4:
 		case WEC701_E4:
+		{
+			return BOOL_TRUE;
+		}		
+		default:
+			return BOOL_FALSE;
+	}
+}
+
+int boardapi_isAr6400Device(uint32_t DevType)
+{
+	switch(DevType)
+	{
+		case WEC_3702I:		/* WEC-3702I L2 */
+		case WEC_3703I:		/* WEC-3702I L3 */
+		case WEC_602:		/* WEC-3702I C2 */
+		case WEC_604:		/* WEC-3702I C4 */
 		{
 			return BOOL_TRUE;
 		}		
@@ -926,6 +976,51 @@ int boardapi_getAlarmLevelByCode(uint32_t alarmCode)
 		default:
 		{
 			return DBS_LOG_DEBUG;
+		}
+	}
+}
+
+/********************************************************************************************
+*	函数名称:boardapi_getAlarmLevelStr
+*	函数功能:获取字符串表示的告警等级
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+char * boardapi_getAlarmLevelStr(uint16_t alarmLevel)
+{
+	switch(alarmLevel)
+	{
+		case DBS_LOG_EMERG:
+		{
+			return "Emergency";
+		}
+		case DBS_LOG_ALERT:
+		{
+			return "Alert";
+		}
+		case DBS_LOG_CRIT:
+		{
+			return "Cratical";
+		}
+		case DBS_LOG_ERR:
+		{
+			return "Error";
+		}
+		case DBS_LOG_WARNING:
+		{
+			return "Warnning";
+		}
+		case DBS_LOG_NOTICE:
+		{
+			return "Notice";
+		}
+		case DBS_LOG_INFO:
+		{
+			return "Informational";
+		}
+		default:
+		{
+			return "Debugging";
 		}
 	}
 }

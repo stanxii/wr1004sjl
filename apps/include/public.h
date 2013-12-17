@@ -46,7 +46,8 @@ enum
 {
 	CUSTOM_LOGO_DEMO = 0,
 	CUSTOM_LOGO_PREVAIL,
-	CUSTOM_LOGO_PX
+	CUSTOM_LOGO_PX,
+	CUSTOM_LOGO_ALCOTEL
 };
 #define CUSTOM_LOGO_ID CUSTOM_LOGO_DEMO
 /********************************************************/
@@ -63,7 +64,7 @@ enum
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.1-cr20"
+#define SYSINFO_APP_VERSION		"v1.3.6.2-cr1"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -196,6 +197,15 @@ enum
 
 	DEV_OTHER
 };
+
+enum
+{
+	CNU_SWITCH_TYPE_AR8236 = 0,
+	CNU_SWITCH_TYPE_RTL8306E = 1,
+
+	CNU_SWITCH_TYPE_OTHER
+};
+
 
 /*定义告警类型*/
 enum
@@ -384,6 +394,7 @@ enum
 	CMM_CNU_SWITCH_WRITE,		/* write cnu switch register*/
 	CMM_CNU_SWITCH_CONFIG_READ, /* read rtl8306e configs */
 	CMM_CNU_SWITCH_CONFIG_WRITE,/* write rtl8306e configs */
+	CMM_DSDT_MAC_BINDING,
 	
 	/* 请在中间增加其他枚举定义 */
 	
@@ -1508,7 +1519,99 @@ typedef struct
 
 typedef struct
 {
+	/********************************************************
+	* 1: Enable loop detection function
+	* 0: Disable loop detection function
+	*********************************************************/
 	uint8_t status;
+
+	/********************************************************
+	* This bit should be set to 1 when loop detection function is enabled.
+	*********************************************************/
+	uint8_t ldmethod;
+
+	/********************************************************
+	* Loop detection Timer. 
+	* The loop detection packets are transmitted in every LDTIMER.
+	* 00: original 3~5 min
+	* 01: 100s
+	* 10: 10s
+	* 11:1s
+	*********************************************************/
+	uint8_t ldtime;
+
+	/********************************************************
+	* Blink frequency of loop detection. 
+	* 1: 880 msec.
+	* 0: 440 msec
+	*********************************************************/
+	uint8_t ldbckfrq;
+
+	/********************************************************
+	* Loop detection status clearance. 
+	* 1: clear all loop status
+	* 0: do not effect
+	*********************************************************/
+	uint8_t ldsclr;
+
+	/********************************************************
+	* Select buzzer type. 
+	* 1: passive buzzer
+	* 0: active buzzer
+	*********************************************************/
+	uint8_t pabuzzer;
+
+	/************************************************************************
+	* Enable tagged loop frame. 
+	* 1: enable tagged loop frame, the tagged loop frame will be treated as loop frame
+	* 0: disable tagged loop frame, the tagged loop frame will not be treated as loop frame
+	************************************************************************/
+	uint8_t entaglf;
+	
+	/********************************************************
+	* The initial value of the loop frame TTL field. 
+	* The maximum value is 16(LPTTL_INIT[3:0]=4'b0000), 
+	* and the minimum value is 1(LPTTL_INIT[3:0]=4'b0001).
+	*********************************************************/
+	uint8_t lpttlinit;
+
+	/********************************************************
+	* Loop Frame Priority assignment. 
+	* The 2-bit value is the  priority assigned to the Loop Frame
+	*********************************************************/
+	uint8_t lpfpri;
+
+	/********************************************************
+	* Enable Loop Frame Priority
+	* 1: Enable Loop Frame Priority
+	* 0: Disable Loop Frame Priority
+	* When the loop frame priority is disabled, it will never effect. 
+	* The priority of the packet is determined by other rules.
+	*********************************************************/
+	uint8_t enlpfpri;
+
+	/******************************************************************************
+	* Disable filtering Loop Frame in storm filter. 
+	* 1: disable filtering loop frame. Loop frame will never be counted into any storm and be filtered
+	* 0: Enable filtering loop frame. Treat the loop frame as a normal broadcast
+	*******************************************************************************/
+	uint8_t disfltlf;
+
+	/********************************************************
+	* Enable TTL of loop frame
+	* 1: Enable TTL of loop frame
+	* 0: Disable TTL of loop frame
+	*********************************************************/
+	uint8_t enlpttl;
+
+	/* switch source mac address*/
+	uint8_t sid[6];
+	
+	/********************************************************
+	* port loop status
+	* 1: A loop has been detected on port x
+	* 0: No loop exists on port x
+	*********************************************************/
 	uint8_t port_loop_status[6];
 }st_cnuSwitchLoopDetect;
 
@@ -1518,6 +1621,20 @@ typedef struct
 	st_cnuSwitchBandwidthConfig bandwidthConfig;
 	st_cnuSwitchLoopDetect loopDetect;
 }st_rtl8306eSettings;
+
+typedef struct
+{
+	/* 标示该行数据是否有效 */
+	uint8_t	flag;	
+	/* PHY Address */
+	uint8_t	phy;	
+	/* Register Address */
+	uint8_t	reg;	
+	/* page Address */
+	uint8_t	page;	
+	/* Register value */
+	uint16_t	value;	
+}RTL_REGISTER_DESIGN;
 
 ////////////////////////////////////////////////////////
 
@@ -2663,6 +2780,14 @@ typedef struct
 	uint32_t event;
 }
 stRegEvent;
+
+typedef struct
+{
+	uint32_t portid;
+	uint32_t dbNum;
+	uint8_t mac[6];
+}
+stDsdtMacBinding;
 
 #if 0
 typedef struct

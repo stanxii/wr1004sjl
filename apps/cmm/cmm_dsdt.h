@@ -22,6 +22,7 @@ int cmm2dsdt_mgmtVlanInit(void);
 int cmm2dsdt_addAtherosMulticastAddress2Port(int portid);
 int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void);
 int cmm2dsdt_delAtherosMulticastAddressFromAtu(void);
+int cmm2dsdt_bindingMacAddress(stDsdtMacBinding *macBindingInfo);
 int cmm2dsdt_init(void);
 
 #endif 

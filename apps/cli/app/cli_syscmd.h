@@ -58,6 +58,7 @@
 #define CLI_CMD_FORMAT_DSDT_DBG_STAS "dsdt-stats: {print}|{clear}"
 #define CLI_CMD_FORMAT_DSDT_TIMING_DELAY "dsdt-rgmii-delay: {get}|{enable}|{disable} {port5}|{port6} {rx}|{tx}|{all}"
 #define CLI_CMD_FORMAT_DSDT_PORT_MIRROR "dsdt-port-mirror: {from <sport(p0|p1|p2|p3|p4|p5|p6)>} {to <deport(p0|p1|p2|p3|p4|p5|p6)>}"
+#define CLI_CMD_FORMAT_DSDT_MAC_BINDING "dsdt-binding: {mac-address <mac(c)>} {to <deport(p0|p1|p2|p3|p4|p5|p6)>}"
 
 #endif
 

@@ -264,10 +264,22 @@ typedef struct {
    int swEth4TxRate;
 
    int swLoopDetect;
+   int swldmethod;
+   int swldtime;
+   int swldbckfrq;
+   int swldsclr;
+   int swpabuzzer;
+   int swentaglf;
+   int swlpttlinit;
+   int swlpfpri;
+   int swenlpfpri;
+   int swdisfltlf;
+   int swenlpttl;
    int swEth1LoopStatus;
    int swEth2LoopStatus;
    int swEth3LoopStatus;
    int swEth4LoopStatus;
+   char swSwitchSid[IFC_SMALL_LEN];
 
    int wecSysupHours;
    int wecSysupMins;
