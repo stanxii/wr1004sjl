@@ -130,47 +130,136 @@ do_ej(char *path, FILE *stream)
 	int c;
 	char pattern[256], *func = NULL, *end = NULL;
 	int len = 0;
+	int icount = 0;
 
-	if (!(fp = fopen(path, "r")))
-		return;
-
-	while ((c = getc(fp)) != EOF) {
-
-		/* Add to pattern space */
-		pattern[len++] = c;
-		pattern[len] = '\0';
-		if (len == (sizeof(pattern) - 1))
-			goto release;
-
-		/* Look for <% ... */
-		if (!func && strncmp(pattern, "<%", strlen(pattern)) == 0) {
-			if (strlen(pattern) == 2)
-				func = pattern + 2;
-			continue;
-		}
-
-		/* Look for the function call */
-		if (func) {
-			if ((end = strstr(func, "%>"))) {
-				/* Skip whitespace on either end of function call */
-				for (; isspace(*func); func++);
-				for (*end-- = '\0'; isspace(*end); end--)
-					*end = '\0';
-
-				/* Call function */
-				call(func, stream);
-				func = NULL;
-				len = 0;
+	size_t length = 0;
+	char * p = NULL;
+	struct cgi_do_file_list *handler;
+	
+	for (handler = &cgi_do_file_table[0]; handler->path; handler++)
+	{
+		if( strcmp(handler->path, path) == 0 )
+		{
+			if(( 0 != handler->len ) && ( NULL != handler->data ) )
+			{
+				//find
+				length = handler->len;
+				p = (char *)handler->data;				
 			}
-			continue;
 		}
-
-	release:
-		/* Release pattern space */
-		fputs(pattern, stream);
-		func = NULL;
-		len = 0;
 	}
+	//fprintf(stderr, "length=%d\n", length);
+	if( NULL != p )
+	{
+		while (length--)
+		{
+			/* Add to pattern space */
+			pattern[len++] = *p++;
+			pattern[len] = '\0';
+			if (len == (sizeof(pattern) - 1))
+				goto release;
 
-	fclose(fp);
+			#if 0
+			/* Look for <% ... */
+			if (!func && strncmp(pattern, "<%", strlen(pattern)) == 0) {
+				if (strlen(pattern) == 2)
+					func = pattern + 2;
+				continue;
+			}
+			#else
+			/* Look for <% ... */
+			if (!func && strstr(pattern, "<%") != NULL) {				
+				pattern[len-2] = '\0';
+				//fprintf(stderr, "pattern=%s\n", pattern);
+				fputs(pattern, stream);
+				pattern[0] = '<';
+				pattern[1] = '%';
+				pattern[2] = '\0';
+				func = pattern + 2;
+				len = 2;
+				//continue;
+			}else if(!func)
+				continue;
+			#endif
+			/* Look for the function call */
+			if (func) {
+				
+				if ((end = strstr(func, "%>"))) {
+					/* Skip whitespace on either end of function call */
+					for (; isspace(*func); func++);
+					for (*end-- = '\0'; isspace(*end); end--)
+						*end = '\0';
+
+					/* Call function */
+					call(func, stream);
+					func = NULL;
+					len = 0;
+				}
+				continue;
+			}
+		release:
+			/* Release pattern space */
+			fputs(pattern, stream);
+			icount++;			
+			func = NULL;
+			len = 0;
+		}
+		if( 0 != len )
+		{
+			fputs(pattern, stream);
+			icount++;			
+			len = 0;
+		}
+		fflush(stream);
+		//fprintf(stderr, "icount=%d\n", icount);
+		return;
+		
+	}
+	else
+	{
+		fprintf(stderr, "do_ej(%s)\n", path);
+	
+		if (!(fp = fopen(path, "r")))
+			return;
+
+		while ((c = getc(fp)) != EOF)
+		{
+			/* Add to pattern space */
+			pattern[len++] = c;
+			pattern[len] = '\0';
+			if (len == (sizeof(pattern) - 1))
+				goto ej_out;
+
+			/* Look for <% ... */
+			if (!func && strncmp(pattern, "<%", strlen(pattern)) == 0) {
+				if (strlen(pattern) == 2)
+					func = pattern + 2;
+				continue;
+			}
+
+			/* Look for the function call */
+			if (func) {
+				if ((end = strstr(func, "%>"))) {
+					/* Skip whitespace on either end of function call */
+					for (; isspace(*func); func++);
+					for (*end-- = '\0'; isspace(*end); end--)
+						*end = '\0';
+
+					/* Call function */
+					call(func, stream);
+					func = NULL;
+					len = 0;
+				}
+				continue;
+			}			
+		ej_out:
+			/* Release pattern space */
+			fputs(pattern, stream);
+			func = NULL;
+			len = 0;
+		}
+		fflush(stream);
+		fclose(fp);
+	}
+	
 }

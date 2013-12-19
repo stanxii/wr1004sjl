@@ -355,8 +355,8 @@ typedef unsigned smalluint;
 #define HAVE_STRSIGNAL 1
 #define HAVE_STRVERSCMP 1
 #define HAVE_VASPRINTF 1
-#define HAVE_UNLOCKED_STDIO 1
-#define HAVE_UNLOCKED_LINE_OPS 1
+#define HAVE_UNLOCKED_STDIO 0
+#define HAVE_UNLOCKED_LINE_OPS 0
 #define HAVE_GETLINE 1
 #define HAVE_XTABS 1
 #define HAVE_MNTENT_H 1

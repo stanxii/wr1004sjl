@@ -13,6 +13,7 @@
 #include <boardapi.h>
 
 #define JSON_STRING_SIZE	1024
+#define JSON_DEBUG_ENABLE	0
 
 typedef struct
 {
@@ -68,6 +69,15 @@ CGI_ITEM jsonSetTable[] =
 
 	{ NULL, NULL, CGI_TYPE_NONE }
 };
+
+void json_debug(char *jsonString, size_t jstrLen)
+{
+	if(JSON_DEBUG_ENABLE)
+	{
+		printf("jstrLen	= %d\n", jstrLen);
+		printf("jsonString	= %s\n", jsonString);
+	}
+}
 
 void jsonSetVar(char *varName, char *varValue)
 {
@@ -150,8 +160,8 @@ static void jsonSendAck( FILE * fs, int status, const char* jsonString )
 	}
 }
 
-/* check input parameters , return 0: success; else failed */
-int jsonSetCnuCheckInput(void)
+/* change mac to up case, because database select is care of sting case */
+int jsonConvertMac2Uppercase(void)
 {
 	char bmac[6] = {0};
 	uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
@@ -167,8 +177,15 @@ int jsonSetCnuCheckInput(void)
 	else
 		sprintf(glbJsonVar.macAddr, "%02X:%02X:%02X:%02X:%02X:%02X", 
 			bmac[0], bmac[1], bmac[2], bmac[3], bmac[4], bmac[5]
-		);
+		);	
+	
+	return CMM_SUCCESS;
+}
 
+
+/* check input parameters , return 0: success; else failed */
+int jsonSetCnuCheckInput(void)
+{
 	/* check port vlan id if vlan enable */
 	if( 1 == glbJsonVar.cnuVlanSts )
 	{
@@ -288,67 +305,112 @@ int jsonSetCnuProfile(FILE * fs)
 	//printf("\n-->call jsonSetCnuProfile()\n");
 	
 	/* process json set request here */
+	ret = jsonConvertMac2Uppercase();
+	if( CMM_SUCCESS != ret )
+	{
+		printf("ERROR: jsonConvertMac2Uppercase\n");
+		goto json_ack;
+	}
 	/* 1. get cnu index by input mac address */
 	ret = http2dbs_getCnuIndexByMacaddress(glbJsonVar.macAddr, &iNode);
 	if( CMM_SUCCESS != ret )
 	{	
 		/* system error */
+		printf("ERROR: selectCnuIndex(%s)\n", glbJsonVar.macAddr);
 		goto json_ack;
 	}
 	else if( 0 == iNode.cnu )
 	{
 		/* can not select this cnu */
+		printf("ERROR: selectCnuIndex\n");
 		ret = CMM_FAILED;
 		goto json_ack;
 	}
 
 	/* 2. check input */
 	ret = jsonSetCnuCheckInput();
-	if( CMM_SUCCESS != ret ) goto json_ack;
+	if( CMM_SUCCESS != ret )
+	{
+		printf("ERROR: jsonSetCnuCheckInput\n");
+		goto json_ack;
+	}
 
 	ret = http2dbs_getCnu(iNode.cnu, &cnu);
-	if( CMM_SUCCESS != ret ) goto json_ack;
+	if( CMM_SUCCESS != ret )
+	{
+		printf("ERROR: http2dbs_getCnu\n");
+		goto json_ack;
+	}
 
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model ))
 	{
 		/* 3. get profile by id */
 		ret = http2dbs_getProfile(iNode.cnu, &myProfile);
-		if( CMM_SUCCESS != ret ) goto json_ack;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: http2dbs_getProfile\n");
+			goto json_ack;
+		}
 
 		/* 4. set parameters from glbJsonVar to myProfile */
 		ret = jsonSetCnuPrepare(&myProfile);
-		if( CMM_SUCCESS != ret ) goto json_ack;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: jsonSetCnuPrepare\n");
+			goto json_ack;
+		}
 
 		/* 5. set profile to databases */
 		ret = http2dbs_setProfile(iNode.cnu, &myProfile);
-		if( CMM_SUCCESS != ret ) goto json_ack;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: http2dbs_setProfile\n");
+			goto json_ack;
+		}
 
 		/* 6. permit/undo-permit cnu */
 		if( 1 == glbJsonVar.cnuPermit )
 		{
 			ret = http2cmm_permitCnu(iNode.cnu);
-			if( CMM_SUCCESS != ret ) goto json_ack;
+			if( CMM_SUCCESS != ret )
+			{
+				printf("ERROR: http2cmm_permitCnu\n");
+				goto json_ack;
+			}
 		}
 		else
 		{
 			ret = http2cmm_undoPermitCnu(iNode.cnu);
-			if( CMM_SUCCESS != ret ) goto json_ack;
+			if( CMM_SUCCESS != ret )
+			{
+				printf("ERROR: http2cmm_undoPermitCnu\n");
+				goto json_ack;
+			}
 		}
 
 		/* 7. reload profile for cnu */
 		ret = http2cmm_reloadCnu(iNode.cnu);
-		if( CMM_SUCCESS != ret ) goto json_ack;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: http2cmm_reloadCnu\n");
+			goto json_ack;
+		}
 	}
 	else
 	{
 		if( cnu.col_sts == 0 )
 		{
+			printf("INFO: cnu is off line\n");
 			ret = CMM_FAILED;
 			goto json_ack;
 		}
 		/* get switch settings before write mod */
 		ret = http2cmm_getSwitchSettings(&iNode, &rtl8306e);
-		if( CMM_SUCCESS != ret ) goto json_ack;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: http2cmm_getSwitchSettings\n");
+			goto json_ack;
+		}
 		/* modify settings */
 		rtl8306e.vlanConfig.vlan_enable = (1==glbJsonVar.cnuVlanSts)?1:0;
 		if(rtl8306e.vlanConfig.vlan_enable)
@@ -454,7 +516,11 @@ int jsonSetCnuProfile(FILE * fs)
 		cnu.col_auth = 1;
 		/* write to device */
 		ret = http2cmm_setSwitchSettings(&iNode, &rtl8306e);
-		if( CMM_SUCCESS != ret ) goto json_ack;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: http2cmm_setSwitchSettings\n");
+			goto json_ack;
+		}
 	}
 
 json_ack:
@@ -475,22 +541,6 @@ json_ack:
 /* check input parameters , return 0: success; else failed */
 int jsonGetCnuCheckInput(void)
 {
-	char bmac[6] = {0};
-	uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
-	uint8_t MB[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
-	
-	/* check if cnu mac address is valid*/
-	if( CMM_SUCCESS != boardapi_macs2b(glbJsonVar.macAddr, bmac) )
-		return CMM_FAILED;
-	else if( memcmp(bmac, MA, 6) == 0 )
-		return CMM_FAILED;
-	else if( memcmp(bmac, MB, 6) == 0 )
-		return CMM_FAILED;
-	else
-		sprintf(glbJsonVar.macAddr, "%02X:%02X:%02X:%02X:%02X:%02X", 
-			bmac[0], bmac[1], bmac[2], bmac[3], bmac[4], bmac[5]
-		);	
-	
 	return CMM_SUCCESS;
 }
 
@@ -574,44 +624,69 @@ int jsonGetCnuProfile(FILE * fs)
 	//printf("\n-->call jsonGetCnuProfile()\n");
 	
 	/* process json get request here */
+	ret = jsonConvertMac2Uppercase();
+	if( CMM_SUCCESS != ret )
+	{
+		printf("ERROR: jsonConvertMac2Uppercase\n");
+		goto json_out;
+	}
 	/* 1. get cnu index by input mac address */
 	ret = http2dbs_getCnuIndexByMacaddress(glbJsonVar.macAddr, &iNode);
 	if( CMM_SUCCESS != ret )
 	{	
 		/* system error */
+		printf("ERROR: selectCnuIndex(%s)\n", glbJsonVar.macAddr);
 		goto json_out;
 	}
 	else if( 0 == iNode.cnu )
 	{
 		/* can not select this cnu */
+		printf("ERROR: selectCnuIndex\n");
 		ret = CMM_FAILED;
 		goto json_out;
 	}
 
 	/* 2. check input */
 	ret = jsonGetCnuCheckInput();
-	if( CMM_SUCCESS != ret ) goto json_out;
+	if( CMM_SUCCESS != ret )
+	{
+		printf("ERROR: jsonGetCnuCheckInput\n");
+		goto json_out;
+	}
 
 	/* 3. get cnu permit status */
 	ret = http2dbs_getCnu(iNode.cnu, &cnu);
-	if( CMM_SUCCESS != ret ) goto json_out;
+	if( CMM_SUCCESS != ret )
+	{
+		printf("ERROR: http2dbs_getCnu\n");
+		goto json_out;
+	}
 
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model ))
 	{
 		/* 4. get profile by id */
 		ret = http2dbs_getProfile(iNode.cnu, &myProfile);
-		if( CMM_SUCCESS != ret ) goto json_out;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: http2dbs_getProfile\n");
+			goto json_out;
+		}
 	}
 	else
 	{
 		if( cnu.col_sts == 0 )
 		{
+			printf("INFO: cnu is off line\n");
 			ret = CMM_FAILED;
 			goto json_out;
 		}
 		/* get switch settings */
 		ret = http2cmm_getSwitchSettings(&iNode, &rtl8306e);
-		if( CMM_SUCCESS != ret ) goto json_out;
+		if( CMM_SUCCESS != ret )
+		{
+			printf("ERROR: http2cmm_getSwitchSettings\n");
+			goto json_out;
+		}
 		myProfile.col_vlanSts = rtl8306e.vlanConfig.vlan_enable;
 		myProfile.col_eth1vid = rtl8306e.vlanConfig.vlan_port[0].pvid;
 		myProfile.col_eth2vid = rtl8306e.vlanConfig.vlan_port[1].pvid;
@@ -634,7 +709,11 @@ int jsonGetCnuProfile(FILE * fs)
 	
 	/* 5. get parameters from myProfile and cnu to glbJsonVar */
 	ret = jsonGetCnuPrepare(&myProfile, &cnu);
-	if( CMM_SUCCESS != ret ) goto json_out;
+	if( CMM_SUCCESS != ret )
+	{
+		printf("ERROR: jsonGetCnuPrepare\n");
+		goto json_out;
+	}
 
 json_out:	
 	/* send ack to NMS */
@@ -669,21 +748,25 @@ json_out:
 	return CMM_SUCCESS;
 }
 
-
 /******************************************************************************************
 curl -X "POST"  -H "Application/json" http://192.168.1.150/getcnu.json -d "{'mac':'30:71:B2:00:02:1E'}"
 *******************************************************************************************/
 int do_json(char *path, FILE *fs, int jstrLen)
 {
-	char jsonString[JSON_STRING_SIZE] = {0};
+	char jsonString[JSON_STRING_SIZE] = {0};	
 
 	/* get post json string */
 	fgets(jsonString, JSON_STRING_SIZE, fs);
+
+	if( jstrLen>= JSON_STRING_SIZE )
+	{
+		printf("ERROR: json string length is out of range\n");
+		jsonSendAck(fs, -1, NULL );
+		return 0;
+	}
 	
 	/* for debug */
-	//printf("\n\n-->call do_json()\n");
-	//printf("jstrLen		= %d\n", jstrLen);
-	//printf("jsonString	= %s\n", jsonString);
+	json_debug(jsonString, jstrLen);
 	
 	/* parse jason string and save in glbJsonVar */	
 	jsonParseSet(jsonString);

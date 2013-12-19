@@ -226,11 +226,6 @@ char * __getSDevTypeByModel(uint32_t model)
 		}
 	}
 }
-#endif
-
-
-
-
 
 
 int bcmGetIntfNameSocket(int socketfd, char *intfname)
@@ -293,6 +288,7 @@ int bcmGetIntfNameSocket(int socketfd, char *intfname)
    free(all_ifr);
    return 0;
 }
+#endif
 
 int sysFlashSizeGet(void)
 {

@@ -13,13 +13,21 @@ td.hd {
 }
 
 td.maintitle {
-    background-color: #205A7F;
+    background-color: #2e6e9e;
     font-weight: bold;
     font-size: x-small;
     font-family: "tahoma", "sans-serif", "arial", "helvetica";
     height:25px;
     color:white;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: .2em 1em .1em 1em;
 }
+td.mainline {
+    background-color: #2e6e9e;
+    height:2px;
+}
+
 td.diagret {
     background-color: #C5CBC7;
     font-weight: bold;
@@ -27,10 +35,7 @@ td.diagret {
     font-family: "tahoma", "sans-serif", "arial", "helvetica";
     height:20px;
 }
-td.mainline {
-    background-color: #8E8E8E;    
-    height:2px;
-}
+
 td.listend {
     background-color: #C5CBC7;    
     height:2px;
