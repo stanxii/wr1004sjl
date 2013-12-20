@@ -88,7 +88,6 @@ extern          "C" {
      */
 #define	_SCAPI_NOT_CONFIGURED					\
 {								\
-        snmp_log(LOG_ERR, "Encryption support not enabled.\n"); \
         DEBUGMSGTL(("scapi", "SCAPI not configured"));		\
 	return SNMPERR_SC_NOT_CONFIGURED;			\
 }

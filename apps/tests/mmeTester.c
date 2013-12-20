@@ -20,7 +20,8 @@
 #include <boardapi.h>
 
 uint8_t cltMac[6] = {0};
-uint8_t oda_cnu[6] = {0x30, 0x71, 0xb2, 0x00, 0x00, 0x10};
+uint8_t oda_atheros[6] = {0x00, 0xb0, 0x52, 0x00, 0x00, 0x01};
+uint8_t oda[6] = {0x00, 0xb0, 0x52, 0x00, 0x00, 0x01};
 //uint8_t oda_clt[6] = {0x30, 0x71, 0xb2, 0x00, 0x00, 0x01};
 
 void print_usage(void)
@@ -47,6 +48,21 @@ void print_usage(void)
 	printf("	--14:	test mmead case [MMEAD_LINK_DIAG:TX] \n");
 	printf("	--15:	test mmead read pib from cnu \n");
 	printf("	--16:	test mmead case [MMEAD_GET_TOPOLOGY_STATS]\n");
+	printf("	--17:	test mmead case [MMEAD_GET_FREQUENCY_BAND_SELECTION]\n");
+	printf("	--18:	test mmead case [MMEAD_SET_FREQUENCY_BAND_SELECTION]\n");
+	printf("		set to sub-band mode\n");
+	printf("	--19:	test mmead case [MMEAD_SET_FREQUENCY_BAND_SELECTION]\n");
+	printf("		set to full-band mode\n");
+	printf("	--20:	test mmead case [MMEAD_SET_FREQUENCY_BAND_SELECTION]\n");
+	printf("		disable frequency band selection\n");
+	printf("	--21:	test mmead case [MMEAD_GET_TX_GAIN]\n");
+	printf("		get eoc tx gain value\n");
+	printf("	--22:	test mmead case [MMEAD_SET_TX_GAIN]\n");
+	printf("		increase tx gain value by 1db\n");
+	printf("	--23:	test mmead case [MMEAD_SET_TX_GAIN]\n");
+	printf("		decrease tx gain value by 1db\n");
+	printf("	--24:	test mmead case [MMEAD_GET_RTL8306E_CONFIG]\n");
+	
 	printf("\n\n");
 }
 
@@ -170,7 +186,7 @@ int TEST_MODULE_OPERATION_READ(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = MMEAD_READ_MODULE_OPERATION;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = sizeof(p_mod_date);
 
 	p_mod_date.MODULE_ID = 0x1000;
@@ -183,7 +199,7 @@ int TEST_MODULE_OPERATION_READ(T_UDP_SK_INFO *sk)
 	if( 0 == msg_communicate(sk, buf, sizeof(h)+sizeof(p_mod_date)) )
 	{
 		printf("Read Module Data Len : %x\n", comfirm->LENGTH);
-		gen_mod_file_path(MOD_PATH, oda_cnu);
+		gen_mod_file_path(MOD_PATH, oda);
 		if( (fp = fopen(MOD_PATH, "wb+")) < 0 )
 		{
 			perror("\r\n  create mod Error!");
@@ -215,7 +231,7 @@ int TEST_MMEAD_GET_MOD_CRC(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = MMEAD_READ_MODULE_OPERATION_CRC;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -239,7 +255,7 @@ int TEST_MMEAD_GET_PIB_CRC(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = MMEAD_READ_PIB_CRC;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -263,7 +279,7 @@ int TEST_MMEAD_READ_PIB(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = MMEAD_READ_PIB;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -302,7 +318,7 @@ int TEST_MODULE_OPERATION_WRITE(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = MMEAD_WRITE_MODULE_OPERATION;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	//h.LEN = sizeof(p_mod_date);
 	h.LEN = 0;
 	//printf("h.LEN = %d\n", h.LEN);
@@ -358,14 +374,12 @@ int TEST_MMEAD_GET_CLT_MAC(T_UDP_SK_INFO *sk)
 	T_Msg_Header_MMEAD h;
 	T_REQ_Msg_MMEAD *r = NULL;
 	uint8_t buf[MAX_UDP_SIZE];
-
-	uint8_t oda[6] = {0x00, 0xb0, 0x52, 0x00, 0x00, 0x01};
 	
 	h.M_TYPE = 0xCC08;
 	h.DEV_TYPE = WEC_3801I;
 	h.MM_TYPE = MMEAD_GET_CLT_MAC;
 	h.fragment = 0;
-	memcpy(h.ODA, oda, sizeof(oda));
+	memcpy(h.ODA, oda_atheros, sizeof(oda_atheros));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -379,6 +393,189 @@ int TEST_MMEAD_GET_CLT_MAC(T_UDP_SK_INFO *sk)
 		return 0;
 	}
 	return -1;
+}
+
+int TEST_MMEAD_GET_FBS(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;
+	T_MMEAD_FBS *p = (T_MMEAD_FBS *)(reply->body);
+	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_GET_FREQUENCY_BAND_SELECTION;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = 0;
+
+	
+	if( 0 == msg_communicate(sk, buf, sizeof(T_MMETS_REQ_MSG)) )
+	{
+		printf("	FBSTATUS = [%d]\n", p->FBSTATUS);
+		printf("	START_BAND = [%d]\n", p->START_BAND);
+		printf("	STOP_BAND = [%d]\n", p->STOP_BAND);
+		return 0;
+	}
+	return -1;
+}
+
+int TEST_MMEAD_SET_FBS_SUBBAND(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	T_MMEAD_FBS *p = (T_MMEAD_FBS *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_FREQUENCY_BAND_SELECTION;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = sizeof(T_MMEAD_FBS);
+
+	p->FBSTATUS = 1;
+	p->START_BAND = 0;
+	p->STOP_BAND = 1154;
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
+}
+
+int TEST_MMEAD_SET_FBS_FULLBAND(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	T_MMEAD_FBS *p = (T_MMEAD_FBS *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_FREQUENCY_BAND_SELECTION;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = sizeof(T_MMEAD_FBS);
+
+	p->FBSTATUS = 1;
+	p->START_BAND = 0;
+	p->STOP_BAND = 2689;
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
+}
+
+int TEST_MMEAD_SET_FBS_DISABLE(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	T_MMEAD_FBS *p = (T_MMEAD_FBS *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_FREQUENCY_BAND_SELECTION;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = sizeof(T_MMEAD_FBS);
+
+	p->FBSTATUS = 0;
+	p->START_BAND = 0;
+	p->STOP_BAND = 0;
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
+}
+
+int TEST_MMEAD_GET_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;
+	uint8_t *p = (uint8_t *)(reply->body);
+	uint8_t temp = 0;
+	int tx_gain = 0;
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_GET_TX_GAIN;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = 0;
+
+	
+	if( 0 == msg_communicate(sk, buf, sizeof(T_MMETS_REQ_MSG)) )
+	{
+		temp = *p;
+		tx_gain = ((temp>>7)==0)?temp:(temp|0xffffff00|temp);
+		if( tx_gain < 0 )
+		{
+			printf("	TX GAIN : [%ddB]\n", tx_gain);
+		}
+		else
+		{
+			printf("	TX GAIN : [+%ddB]\n", tx_gain);
+		}
+		
+		return 0;
+	}
+	
+	return -1;
+}
+
+int TEST_MMEAD_INCREASE_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	uint8_t *p = (uint8_t *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_TX_GAIN;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = sizeof(uint8_t);
+
+	*p = 0x01;
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
+}
+
+int TEST_MMEAD_DECREASE_TX_GAIN_VALUE(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	uint8_t *p = (uint8_t *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_TX_GAIN;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = sizeof(uint8_t);
+
+	*p = 0xff;
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
 }
 
 int TEST_MMEAD_GET_TOPOLOGY(T_UDP_SK_INFO *sk)
@@ -580,7 +777,7 @@ int TEST_MMEAD_GET_SOFTWARE_VERSION(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3801I;
 	h.MM_TYPE = MMEAD_GET_SOFTWARE_VERSION;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -604,7 +801,7 @@ int TEST_MMEAD_GET_MANUFACTURER_INFO(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3801I;
 	h.MM_TYPE = MMEAD_GET_MANUFACTURER_INFO;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -627,7 +824,7 @@ int TEST_MMEAD_RESET_DEV(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = MMEAD_RESET_DEV;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -649,7 +846,7 @@ int TEST_MMEAD_WRITE_PIB(T_UDP_SK_INFO *sk)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = MMEAD_WRITE_PIB;
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -678,7 +875,7 @@ int TEST_MMEAD_BOOTOUT_DEV(T_UDP_SK_INFO *sk)
 	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 6;
 	memcpy(buf, &h, sizeof(h));
-	memcpy(msg->BUF, oda_cnu, 6);
+	memcpy(msg->BUF, oda, 6);
 	
 	if( 0 == msg_communicate(sk, buf, sizeof(h)+6) )
 	{
@@ -703,7 +900,7 @@ int TEST_MMEAD_LINK_DIAG_RX(T_UDP_SK_INFO *sk)
 	req->HEADER.DEV_TYPE = WEC_3702I;
 	req->HEADER.MM_TYPE = MMEAD_LINK_DIAG;
 	req->HEADER.fragment = 0;	
-	memcpy(req->HEADER.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(req->HEADER.ODA, oda, sizeof(oda));
 	req->HEADER.LEN = sizeof(T_MMEAD_LINK_DIAG_INFO);
 
 	req_data->dir = 1;
@@ -779,7 +976,7 @@ int TEST_MMEAD_LINK_DIAG_TX(T_UDP_SK_INFO *sk)
 	req->HEADER.LEN = sizeof(T_MMEAD_LINK_DIAG_INFO);
 
 	req_data->dir = 0;
-	memcpy(req_data->peerNodeMac, oda_cnu, 6);
+	memcpy(req_data->peerNodeMac, oda, 6);
 	memcpy(req_data->ccoMac, cltMac, 6);
 
 	len = sizeof(req->HEADER) + req->HEADER.LEN;
@@ -832,6 +1029,87 @@ int TEST_MMEAD_LINK_DIAG_TX(T_UDP_SK_INFO *sk)
 	return -1;
 }
 
+int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
+{
+	T_Msg_Header_MMEAD h;
+	T_REQ_Msg_MMEAD *r = NULL;
+	uint8_t buf[MAX_UDP_SIZE];
+	st_rtl8306eSettings *rtl8306e = NULL;
+	struct timeval start, end;
+	int i = 0;
+	
+	h.M_TYPE = 0xCC08;
+	h.DEV_TYPE = WEC_3801I;
+	h.MM_TYPE = MMEAD_GET_RTL8306E_CONFIG;
+	h.fragment = 0;
+	memcpy(h.ODA, oda, sizeof(oda));
+	h.LEN = 0;
+
+	memcpy(buf, &h, sizeof(h));
+
+	gettimeofday( &start, NULL );
+	
+	if( 0 == msg_communicate(sk, buf, sizeof(h)) )
+	{
+		gettimeofday( &end, NULL );
+		r = (T_REQ_Msg_MMEAD *)buf;
+		rtl8306e = (st_rtl8306eSettings *)(r->BUF);
+		printf("\nRead rtl8306e configs [Time Used: %d Seconds %ul Microseconds]:\n", 
+			(int)(end.tv_sec - start.tv_sec),
+			(uint32_t)(end.tv_usec - start.tv_usec)
+		);
+		printf("-vlan config\n");
+		printf("-vlan_enable: %d\n", rtl8306e->vlanConfig.vlan_enable);
+		printf("-vlan_tag_aware: %d\n", rtl8306e->vlanConfig.vlan_tag_aware);
+		printf("-ingress_filter: %d\n", rtl8306e->vlanConfig.ingress_filter);
+		printf("-g_admit_control: %d\n", rtl8306e->vlanConfig.g_admit_control);
+		for(i=0;i<=4;i++)
+		{
+			printf("-p%d pvid: %d\n", i, rtl8306e->vlanConfig.vlan_port[i].pvid);
+			printf("-p%d egress_mode: %d\n", i, rtl8306e->vlanConfig.vlan_port[i].egress_mode);
+			printf("-p%d admit_control: %d\n", i, rtl8306e->vlanConfig.vlan_port[i].admit_control);
+		}
+		
+		printf("-bandwidth control config\n");
+		printf("-g_rx_bandwidth_control_enable: %d\n", rtl8306e->bandwidthConfig.g_rx_bandwidth_control_enable);
+		printf("-g_tx_bandwidth_control_enable: %d\n", rtl8306e->bandwidthConfig.g_tx_bandwidth_control_enable);
+		for(i=0;i<=4;i++)
+		{
+			printf("-p%d rx_bandwidth_control_enable: %d\n", i, rtl8306e->bandwidthConfig.rxPort[i].bandwidth_control_enable);
+			printf("-p%d rx_bandwidth_value: 0x%03x\n", i, rtl8306e->bandwidthConfig.rxPort[i].bandwidth_value);
+			printf("-p%d tx_bandwidth_control_enable: %d\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_control_enable);
+			printf("-p%d tx_bandwidth_value: 0x%03x\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_value);
+		}
+		printf("-port loop detect config and status:\n");
+		printf("-sid: %02X:%02X:%02X:%02X:%02X:%02X\n", 
+			rtl8306e->loopDetect.sid[0], rtl8306e->loopDetect.sid[1], 
+			rtl8306e->loopDetect.sid[2], rtl8306e->loopDetect.sid[3],
+			rtl8306e->loopDetect.sid[4], rtl8306e->loopDetect.sid[5]
+		);
+		printf("-loop detect enable: %d\n", rtl8306e->loopDetect.status);
+		printf("-ldmethod: %d\n", rtl8306e->loopDetect.ldmethod);
+		printf("-ldtime: %d\n", rtl8306e->loopDetect.ldtime);
+		printf("-ldbckfrq: %d\n", rtl8306e->loopDetect.ldbckfrq);
+		printf("-ldsclr: %d\n", rtl8306e->loopDetect.ldsclr);
+		printf("-pabuzzer: %d\n", rtl8306e->loopDetect.pabuzzer);
+		printf("-entaglf: %d\n", rtl8306e->loopDetect.entaglf);
+		printf("-lpttlinit: %d\n", rtl8306e->loopDetect.lpttlinit);
+		printf("-lpfpri: %d\n", rtl8306e->loopDetect.lpfpri);
+		printf("-enlpfpri: %d\n", rtl8306e->loopDetect.enlpfpri);
+		printf("-disfltlf: %d\n", rtl8306e->loopDetect.disfltlf);
+		printf("-enlpttl: %d\n", rtl8306e->loopDetect.enlpttl);
+		for(i=0;i<=4;i++)
+		{
+			printf("-p%d loop status: 0x%03x\n", i, rtl8306e->loopDetect.port_loop_status[i]);
+		}
+		
+		printf("\n\n");
+		return 0;
+	}
+	return -1;
+}
+
+
 int MMEAD_MSG_DEBUG_ENABLE(T_UDP_SK_INFO *sk, uint32_t enable)
 {
 	T_Msg_Header_MMEAD h;
@@ -842,7 +1120,7 @@ int MMEAD_MSG_DEBUG_ENABLE(T_UDP_SK_INFO *sk, uint32_t enable)
 	h.DEV_TYPE = WEC_3702I;
 	h.MM_TYPE = (enable?MMEAD_MODULE_MSG_DEBUG_ENABLE:MMEAD_MODULE_MSG_DEBUG_DISABLE);
 	h.fragment = 0;
-	memcpy(h.ODA, oda_cnu, sizeof(oda_cnu));
+	memcpy(h.ODA, oda, sizeof(oda));
 	h.LEN = 0;
 
 	memcpy(buf, &h, sizeof(h));
@@ -897,7 +1175,7 @@ int main(int argc, char *argv[])
 		{
 			if( CMM_SUCCESS == boardapi_macs2b(argv[3], bMac) )
 			{
-				memcpy(oda_cnu, bMac, sizeof(oda_cnu));
+				memcpy(oda, bMac, sizeof(oda));
 			}
 			else
 			{
@@ -984,6 +1262,46 @@ int main(int argc, char *argv[])
 			case 16:
 			{
 				TEST_MMEAD_GET_TOPOLOGY_STATS(&sk);
+				break;
+			}
+			case 17:
+			{
+				TEST_MMEAD_GET_FBS(&sk);
+				break;
+			}
+			case 18:
+			{
+				TEST_MMEAD_SET_FBS_SUBBAND(&sk);
+				break;
+			}
+			case 19:
+			{
+				TEST_MMEAD_SET_FBS_FULLBAND(&sk);
+				break;
+			}
+			case 20:
+			{
+				TEST_MMEAD_SET_FBS_DISABLE(&sk);
+				break;
+			}
+			case 21:
+			{
+				TEST_MMEAD_GET_TX_GAIN_VALUE(&sk);
+				break;
+			}
+			case 22:
+			{
+				TEST_MMEAD_INCREASE_TX_GAIN_VALUE(&sk);
+				break;
+			}
+			case 23:
+			{
+				TEST_MMEAD_DECREASE_TX_GAIN_VALUE(&sk);
+				break;
+			}
+			case 24:
+			{
+				TEST_MMEAD_GET_RTL8306E_CONFIGS(&sk);
 				break;
 			}
 			default:

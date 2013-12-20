@@ -69,7 +69,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 
-	if( (id < 1)||(id > MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT) )
+	if( (id < 1)||(id > MAX_CNU_AMOUNT_LIMIT) )
 	{
 		return 0;
 	}
@@ -587,6 +587,402 @@ int http2cmm_clearPortStas(PWEB_NTWK_VAR pWebVar)
 	return http2cmm_clearPortStats();
 }
 
+int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	stTmUserInfo szNode;	
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+	
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	st_rtl8306eSettings *ack_data = (st_rtl8306eSettings *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_READ;
+	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->clt = 1;
+	req_data->cnu = pWebVar->cnuid;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+
+	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
+	{
+		//802.1q Vlan Status
+		if( (1==ack_data->vlanConfig.vlan_enable)&&(1==ack_data->vlanConfig.vlan_tag_aware))
+		{
+			pWebVar->swVlanEnable = 1; //enable
+		}
+		else
+		{
+			pWebVar->swVlanEnable = 0; //disable
+		}
+		//port egress mode
+		switch(ack_data->vlanConfig.vlan_port[0].egress_mode)
+		{
+			case 0:	/* add new tag */
+			{
+				pWebVar->swEth1PortVMode = 0;	/* Transparent */
+				break;
+			}
+			case 1:
+			{
+				pWebVar->swEth1PortVMode = 1;	/* untag */
+				break;
+			}
+			case 2:
+			{
+				pWebVar->swEth1PortVMode = 2;	/* tag */
+				break;
+			}
+			default:
+			{
+				pWebVar->swEth1PortVMode = 0;	/* Transparent */
+				break;
+			}
+		}
+		switch(ack_data->vlanConfig.vlan_port[1].egress_mode)
+		{
+			case 0:
+			{
+				pWebVar->swEth2PortVMode = 0;
+				break;
+			}
+			case 1:
+			{
+				pWebVar->swEth2PortVMode = 1;
+				break;
+			}
+			case 2:
+			{
+				pWebVar->swEth2PortVMode = 2;
+				break;
+			}
+			default:
+			{
+				pWebVar->swEth2PortVMode = 0;
+				break;
+			}
+		}
+		switch(ack_data->vlanConfig.vlan_port[2].egress_mode)
+		{
+			case 0:
+			{
+				pWebVar->swEth3PortVMode = 0;
+				break;
+			}
+			case 1:
+			{
+				pWebVar->swEth3PortVMode = 1;
+				break;
+			}
+			case 2:
+			{
+				pWebVar->swEth3PortVMode = 2;
+				break;
+			}
+			default:
+			{
+				pWebVar->swEth3PortVMode = 0;
+				break;
+			}
+		}
+		switch(ack_data->vlanConfig.vlan_port[3].egress_mode)
+		{
+			case 0:
+			{
+				pWebVar->swEth4PortVMode = 0;
+				break;
+			}
+			case 1:
+			{
+				pWebVar->swEth4PortVMode = 1;
+				break;
+			}
+			case 2:
+			{
+				pWebVar->swEth4PortVMode = 2;
+				break;
+			}
+			default:
+			{
+				pWebVar->swEth4PortVMode = 0;
+				break;
+			}
+		}
+		switch(ack_data->vlanConfig.vlan_port[4].egress_mode)
+		{
+			case 0:
+			{
+				pWebVar->swUplinkPortVMode = 0;
+				break;
+			}
+			case 1:
+			{
+				pWebVar->swUplinkPortVMode = 1;
+				break;
+			}
+			case 2:
+			{
+				pWebVar->swUplinkPortVMode = 2;
+				break;
+			}
+			default:
+			{
+				pWebVar->swUplinkPortVMode = 0;
+				break;
+			}
+		}
+		//pvid
+		pWebVar->swEth1PortVid = ack_data->vlanConfig.vlan_port[0].pvid;
+		pWebVar->swEth2PortVid = ack_data->vlanConfig.vlan_port[1].pvid;
+		pWebVar->swEth3PortVid = ack_data->vlanConfig.vlan_port[2].pvid;
+		pWebVar->swEth4PortVid = ack_data->vlanConfig.vlan_port[3].pvid;
+		pWebVar->swUplinkPortVid = ack_data->vlanConfig.vlan_port[4].pvid;
+
+		//bandwidth config
+		pWebVar->swRxRateLimitEnable = ack_data->bandwidthConfig.g_rx_bandwidth_control_enable;
+		pWebVar->swTxRateLimitEnable = ack_data->bandwidthConfig.g_tx_bandwidth_control_enable;
+		pWebVar->swEth1RxRate = ack_data->bandwidthConfig.rxPort[0].bandwidth_value;
+		pWebVar->swEth2RxRate = ack_data->bandwidthConfig.rxPort[1].bandwidth_value;
+		pWebVar->swEth3RxRate = ack_data->bandwidthConfig.rxPort[2].bandwidth_value;
+		pWebVar->swEth4RxRate = ack_data->bandwidthConfig.rxPort[3].bandwidth_value;
+		pWebVar->swUplinkRxRate = ack_data->bandwidthConfig.rxPort[4].bandwidth_value;
+		pWebVar->swEth1TxRate = ack_data->bandwidthConfig.txPort[0].bandwidth_value;
+		pWebVar->swEth2TxRate = ack_data->bandwidthConfig.txPort[1].bandwidth_value;
+		pWebVar->swEth3TxRate = ack_data->bandwidthConfig.txPort[2].bandwidth_value;
+		pWebVar->swEth4TxRate = ack_data->bandwidthConfig.txPort[3].bandwidth_value;
+		pWebVar->swUplinkTxRate = ack_data->bandwidthConfig.txPort[4].bandwidth_value;
+
+		//loopdetect
+		pWebVar->swLoopDetect = ack_data->loopDetect.status;
+		sprintf(pWebVar->swSwitchSid, "%02X:%02X:%02X:%02X:%02X:%02X", 
+			ack_data->loopDetect.sid[0], ack_data->loopDetect.sid[1], 
+			ack_data->loopDetect.sid[2], ack_data->loopDetect.sid[3],
+			ack_data->loopDetect.sid[4], ack_data->loopDetect.sid[5]
+		);
+		pWebVar->swldmethod = ack_data->loopDetect.ldmethod;
+		pWebVar->swldtime = ack_data->loopDetect.ldtime;
+		pWebVar->swldbckfrq = ack_data->loopDetect.ldbckfrq;
+		pWebVar->swldsclr = ack_data->loopDetect.ldsclr;
+		pWebVar->swpabuzzer = ack_data->loopDetect.pabuzzer;
+		pWebVar->swentaglf = ack_data->loopDetect.entaglf;
+		pWebVar->swlpttlinit = ack_data->loopDetect.lpttlinit;
+		pWebVar->swlpfpri = ack_data->loopDetect.lpfpri;
+		pWebVar->swenlpfpri = ack_data->loopDetect.enlpfpri;
+		pWebVar->swdisfltlf = ack_data->loopDetect.disfltlf;
+		pWebVar->swenlpttl = ack_data->loopDetect.enlpttl;
+		pWebVar->swEth1LoopStatus = ack_data->loopDetect.port_loop_status[0];
+		pWebVar->swEth2LoopStatus = ack_data->loopDetect.port_loop_status[1];
+		pWebVar->swEth3LoopStatus = ack_data->loopDetect.port_loop_status[2];
+		pWebVar->swEth4LoopStatus = ack_data->loopDetect.port_loop_status[3];
+
+		return CMM_SUCCESS;
+	}	
+	return CMM_FAILED;
+}
+
+int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
+{	
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	int i = 0;
+	uint8_t tmp;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	
+	//T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->node.clt = 1;
+	req_data->node.cnu = pWebVar->cnuid;
+
+	//vlan enable
+	req_data->rtl8306eConfig.vlanConfig.vlan_enable = pWebVar->swVlanEnable;
+	//vlan tag aware enable
+	req_data->rtl8306eConfig.vlanConfig.vlan_tag_aware = pWebVar->swVlanEnable;
+	//VLAN member set ingress filtering
+	//The switch will not drop the received frame if the ingress port of this packet is not included in the matched VLAN
+	//member set. It will still forward the packet to the VLAN members specified in the matched member set
+	req_data->rtl8306eConfig.vlanConfig.ingress_filter = 0;
+	//The switch accepts all frames it receives whether tagged or untagged
+	req_data->rtl8306eConfig.vlanConfig.g_admit_control = 0;
+	//PVID
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid = pWebVar->swEth1PortVid;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid = pWebVar->swEth2PortVid;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid = pWebVar->swEth3PortVid;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid = pWebVar->swEth4PortVid;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[4].pvid = pWebVar->swUplinkPortVid;
+	//port egress mode	
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = pWebVar->swEth1PortVMode;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = pWebVar->swEth2PortVMode;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = pWebVar->swEth3PortVMode;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = pWebVar->swEth4PortVMode;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = pWebVar->swUplinkPortVMode;
+	//change
+	for(i=0;i<=4;i++)
+	{
+		switch(req_data->rtl8306eConfig.vlanConfig.vlan_port[i].egress_mode)
+		{
+			case 0:		/* transparent */
+			{
+				tmp = 3;	/* transparent*/
+				break;
+			}
+			case 1:		/* remove tag */
+			{
+				tmp = 1;	/* remove tag */
+				break;
+			}
+			case 2:		/* tag */
+			{
+				tmp = 2;	/* tag */
+				break;
+			}
+			default:
+			{
+				tmp = 3;	/* transparent */
+				break;
+			}
+		}
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[i].egress_mode = tmp;
+	}
+	//port ingress filtering, Accept all frames whatever the frames is untagged or tagged
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
+	req_data->rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
+
+	//bandwidth control settings
+	req_data->rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = pWebVar->swRxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = pWebVar->swRxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = pWebVar->swRxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = pWebVar->swRxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = pWebVar->swRxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = pWebVar->swRxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = pWebVar->swEth1RxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = pWebVar->swEth2RxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = pWebVar->swEth3RxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = pWebVar->swEth4RxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = pWebVar->swUplinkRxRate;
+
+	req_data->rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = pWebVar->swTxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = pWebVar->swTxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = pWebVar->swTxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = pWebVar->swTxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = pWebVar->swTxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = pWebVar->swTxRateLimitEnable;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = pWebVar->swEth1TxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = pWebVar->swEth2TxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = pWebVar->swEth3TxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = pWebVar->swEth4TxRate;
+	req_data->rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = pWebVar->swUplinkTxRate;
+
+	//loop deection
+	req_data->rtl8306eConfig.loopDetect.status = pWebVar->swLoopDetect;
+	if( 0 == req_data->rtl8306eConfig.loopDetect.status )
+	{
+		req_data->rtl8306eConfig.loopDetect.ldmethod = 0;
+		req_data->rtl8306eConfig.loopDetect.ldtime = 0;
+		req_data->rtl8306eConfig.loopDetect.disfltlf = 0;
+		req_data->rtl8306eConfig.loopDetect.enlpttl = 0;
+	}
+	else
+	{
+		req_data->rtl8306eConfig.loopDetect.ldmethod = 1;
+		req_data->rtl8306eConfig.loopDetect.ldtime = 3;
+		req_data->rtl8306eConfig.loopDetect.disfltlf = 1;
+		req_data->rtl8306eConfig.loopDetect.enlpttl = 1;
+	}
+	//set sid here
+	//printf("-sid: %s\n", pWebVar->swSwitchSid);
+	if( CMM_SUCCESS == boardapi_macs2b(pWebVar->swSwitchSid, req_data->rtl8306eConfig.loopDetect.sid) )
+	{
+		len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+		return __http2cmm_comm(buf, len);
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+	
+}
+
+int http2cmm_getSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	stTmUserInfo szNode;	
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+	
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	st_rtl8306eSettings *ack_data = (st_rtl8306eSettings *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_READ;
+	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->clt = 1;
+	req_data->cnu = node->cnu;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+
+	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
+	{
+		memcpy(rtl8306e, ack_data, sizeof(st_rtl8306eSettings));
+		return CMM_SUCCESS;
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+}
+
+int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
+{	
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	int i = 0;
+	uint8_t tmp;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	
+	//T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->node.clt = 1;
+	req_data->node.cnu = node->cnu;
+	memcpy(&(req_data->rtl8306eConfig), rtl8306e, sizeof(st_rtl8306eSettings));
+	
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	
+	return __http2cmm_comm(buf, len);
+	
+}
+
 int http2cmm_doLinkDiag( PWEB_NTWK_VAR pWebVar )
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
@@ -635,8 +1031,8 @@ int http2cmm_doLinkDiag( PWEB_NTWK_VAR pWebVar )
 		pWebVar->diagResult = CMM_FAILED;
 		return CMM_FAILED;
 	}	
-	req_data->clt = 1;
-	req_data->cnu = pWebVar->cnuid;	
+	req_data->clt = (pWebVar->cnuid - 1)/MAX_CNUS_PER_CLT + 1;
+	req_data->cnu =  (pWebVar->cnuid - 1)%MAX_CNUS_PER_CLT + 1;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
 	

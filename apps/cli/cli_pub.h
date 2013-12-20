@@ -175,7 +175,7 @@ typedef ULONG  (*PFUN_CLI_CALLBACK_EXEC)();
 /*-------------------------------------------------------------------*/
 ULONG  CLI_CmdRegist
               (const char  *szCmd,              //命令格式化串
-               UCHAR  ucMode,                   //命令所属模式
+               USHORT  ucMode,                   //命令所属模式
                CLI_OPERAT_LEVEL_T   ucLevel,    //命令使用等级
                PFUN_CLI_CALLBACK_EXEC pFunc,    //命令执行函数
                PCSTR  strHelp1,                 //第一个对象的帮助信息

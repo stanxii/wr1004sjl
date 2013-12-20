@@ -216,6 +216,10 @@ ST_CLI_CMD_REG m_CliCmdPool[] =
 	{CLI_CMD_FORMAT_AR8236_SMI_PHY,      CMDHELP_GLB_AR8236_SMI_PHY, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_CmdAr8236SmiPhy,      CLI_AL_ADMIN,          CTM_GLOBAL },
 
+	/* cnu switch debug *//* 该命令仅在CNU 模式下可执行*/
+	{CLI_CMD_FORMAT_CNU_SWITCH,      CMDHELP_GLB_CNU_SWITCH, CLI_ML_NULL,    CLI_ML_NULL,
+	CLI_CmdCnuSwitch,      CLI_AL_ADMIN,          CTM_GLOBAL },
+
 	/* MME mdio phy debug *//* 该命令仅在CLT或者CNU 模式下可执行*/
 	{CLI_CMD_FORMAT_MME_MDIO,      CMDHELP_GLB_MME_MDIO, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_CmdMmeMdio,      CLI_AL_ADMIN,          CTM_GLOBAL },
@@ -267,6 +271,10 @@ ST_CLI_CMD_REG m_CliCmdPool[] =
 	/* MV88E6171R port mirroring */
 	{CLI_CMD_FORMAT_DSDT_PORT_MIRROR,      CMDHELP_GLB_DSDT_PORT_MIRROR, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_Cmd_DoDsdtPortMirror,      CLI_AL_ADMIN,          CTM_GLOBAL },
+
+	/* MV88E6171R mac binding */
+	{CLI_CMD_FORMAT_DSDT_MAC_BINDING,      CMDHELP_GLB_DSDT_MAC_BIND, CLI_ML_NULL,    CLI_ML_NULL,
+	CLI_Cmd_DoDsdtMacBinding,      CLI_AL_ADMIN,          CTM_GLOBAL },
 	
 	/* dump *//* 该命令仅在CNU 模式下可执行*/
 	{CLI_CMD_FORMAT_DEBUG_DUMP,      CMDHELP_GLB_DEBUG_DUMP, CLI_ML_NULL,    CLI_ML_NULL,
@@ -1066,52 +1074,55 @@ ULONG  CLI_CmdHelp()
 ULONG CLI_Cmd_ShowTopology()
 {
 	int i = 0;
+	int j = 0;
+	int cnuid = 0;
 	st_dbsClt clt;
 	st_dbsCnu cnu;
 
-	/* 获取CLT */
-	if( CMM_SUCCESS != dbsGetClt(dbsdev, 1, &clt) )
-	{
-		/* 写日志*/
-		__clt_opt_log(CMM_TOPOLOGY_SHOW, CMM_FAILED);
-		return CMM_FAILED;
-	}
+	IO_Print("\r\n\r\n-------------------------------------------------------------------------------");
+	IO_Print("\r\n    Index        DevType         MAC Address             RX/TX    Status"); 
+	IO_Print("\r\n-------------------------------------------------------------------------------");
 
-	/* 没有发现线卡*/
-	if( clt.col_row_sts == 0 )
+	for( j=1; j<=MAX_CLT_AMOUNT_LIMIT; j++ )
 	{
-		IO_Print("\r\n  No EoC device discovered !");
-		/* 写日志*/
-		__clt_opt_log(CMM_TOPOLOGY_SHOW, CMM_SUCCESS);
-		return CMM_SUCCESS;
-	}
-	else
-	{
-		IO_Print("\r\n\r\n-------------------------------------------------------------------------------");
-		IO_Print("\r\n          Index   DevType            MAC Address        RX/TX   Status"); 
-		IO_Print("\r\n-------------------------------------------------------------------------------");
-		IO_Print("\r\n-+--CLT     %d	*		[ %s ]	-/-	%d", clt.id, clt.col_mac, clt.col_sts);
-	}
-
-	/* CNU */
-	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
-	{
-		if( CMM_SUCCESS == dbsGetCnu(dbsdev, i+1, &cnu) )
+		/* 获取CLT */
+		if( CMM_SUCCESS != dbsGetClt(dbsdev, j, &clt) )
 		{
-			if( 0 == cnu.col_row_sts )
+			IO_Print("\r\n-+--CLT/%d        *               [ Not detected ]", j);
+			continue;
+		}
+		/* 没有发现线卡*/
+		else if( clt.col_row_sts == 0 )
+		{
+			IO_Print("\r\n-+--CLT/%d        *               [ Not detected ]", j);
+			continue;
+		}
+		/* clt is detected */
+		else
+		{		
+			IO_Print("\r\n-+--CLT/%d        *               [ %s ]    -/-       %d", clt.id, clt.col_mac, clt.col_sts);
+			/* CNU */
+			for( i=1; i<=MAX_CNUS_PER_CLT; i++ )
 			{
-				continue;
-			}
-			else
-			{
-				IO_Print("\r\n    --CNU   %d	%s	[ %s ]	%d/%d	%d",
-					cnu.id,
-					boardapi_getDeviceModelStr(cnu.col_model),
-					cnu.col_mac,
-					cnu.col_rx,
-					cnu.col_tx,
-					cnu.col_sts
-				);
+				cnuid = (j-1)*MAX_CNUS_PER_CLT + i;
+				if( CMM_SUCCESS == dbsGetCnu(dbsdev, cnuid, &cnu) )
+				{
+					if( 0 == cnu.col_row_sts )
+					{
+						continue;
+					}
+					else
+					{
+						IO_Print("\r\n    --CNU/%d/%-2d   %-16s[ %s ]  %3d/%-3d     %d",
+							j, i, 
+							boardapi_getDeviceModelStr(cnu.col_model),
+							cnu.col_mac,
+							cnu.col_rx,
+							cnu.col_tx,
+							cnu.col_sts
+						);
+					}
+				}
 			}
 		}
 	}
@@ -1126,6 +1137,8 @@ ULONG CLI_Cmd_ShowTopology()
 ULONG CLI_Cmd_ShowWlistUsers()
 {
 	int i = 0;
+	int cltid = 0;
+	int cnuid = 0;
 	int num = 0;
 	st_dbsSysinfo rowSysinfo;
 	st_dbsCnu cnu;
@@ -1144,7 +1157,7 @@ ULONG CLI_Cmd_ShowWlistUsers()
 	}
 
 	IO_Print("\r\n\r\n--------------------------------------------------------------------");
-	IO_Print("\r\n%-4s  %-16s  %-20s  %-6s", "ID", "DevType", "MAC", "Status"); 
+	IO_Print("\r\n%-10s  %-16s  %-20s  %-6s", "ID", "DevType", "MAC", "Status"); 
 	IO_Print("\r\n--------------------------------------------------------------------");
 
 	/* CNU */
@@ -1162,7 +1175,9 @@ ULONG CLI_Cmd_ShowWlistUsers()
 			}
 			else
 			{
-				IO_Print("\r\n%-4d  %-16s  %-20s  %-6d", cnu.id, 
+				cltid = cnu.id/MAX_CNUS_PER_CLT + 1;
+				cnuid = cnu.id%MAX_CNUS_PER_CLT;
+				IO_Print("\r\nCNU/%d/%-4d  %-16s  %-20s  %-6d", cltid, cnuid, 
 					boardapi_getDeviceModelStr(cnu.col_model), cnu.col_mac,	cnu.col_sts);
 				num++;
 			}
@@ -1372,7 +1387,7 @@ ULONG CLI_Cmd_ShowSysInfo()
 	//IO_Print("\r\n\r\n  Description:		WEC9720EK series EoC CBAT");
 	IO_Print("\r\n\r\n  Device Model:		%s", boardapi_getDeviceModelStr(szSysinfo.col_model));
 	IO_Print("\r\n  Maximum CLTs:		%d", MAX_CLT_AMOUNT_LIMIT);
-	IO_Print("\r\n  Maximum CNUs:		%d*%d", MAX_CLT_AMOUNT_LIMIT, MAX_CNU_AMOUNT_LIMIT);
+	IO_Print("\r\n  Maximum CNUs:		%d*%d", MAX_CLT_AMOUNT_LIMIT, MAX_CNUS_PER_CLT);
 	IO_Print("\r\n  White List Control:	%s", szSysinfo.col_wlctl?"Enable":"Disable");
 	IO_Print("\r\n  Watch dog:		%s", szSysinfo.col_wdt?"Enable":"Disable");	
 	IO_Print("\r\n  Hardware Version:	%s", szSysinfo.col_hwver);	
@@ -1382,8 +1397,8 @@ ULONG CLI_Cmd_ShowSysInfo()
 	IO_Print("\r\n  Flash Size:		%dMB", szSysinfo.col_flashsize);
 	IO_Print("\r\n  Sdram Size:		%dMB", szSysinfo.col_ramsize);
 	/* demo version info */
-	IO_Print("\r\n  Manufacturer:		");
-	//IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
+	//IO_Print("\r\n  Manufacturer:		");
+	IO_Print("\r\n  Manufacturer:		%s", szSysinfo.col_mfinfo);
 
 #ifdef __AT30TK175STK__
 	if( CMM_SUCCESS == ret )
@@ -1552,7 +1567,7 @@ ULONG __CLI_Cmd_ShowCnuProfile(uint16_t id)
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 	
-	if( (id<1)||(id>MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT) )
+	if( (id<1)||(id>MAX_CLT_AMOUNT_LIMIT*MAX_CNUS_PER_CLT) )
 	{
 		return CMM_FAILED;
 	}
@@ -3448,7 +3463,7 @@ int __getCnuPortStatus(uint16_t id, uint16_t port)
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 
-	if( (id < 1)||(id > MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT) )
+	if( (id < 1)||(id > MAX_CLT_AMOUNT_LIMIT*MAX_CNUS_PER_CLT) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return 0;
@@ -4070,7 +4085,7 @@ int __cmd_set_cnu_qos_mode(uint16_t cltid, uint16_t cnuid, uint16_t mode)
 {
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
@@ -4293,7 +4308,7 @@ int __cmd_clt_cos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 int __cmd_cnu_cos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 {
 	DB_INTEGER_V iValue;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
@@ -4495,7 +4510,7 @@ int __cmd_clt_tos_map(uint16_t cltid, uint8_t pri, uint8_t cap)
 int __cmd_cnu_tos_map(uint16_t cltid, uint16_t cnuid, uint8_t pri, uint8_t cap)
 {
 	DB_INTEGER_V iValue;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
@@ -4757,7 +4772,7 @@ int __cmd_undo_cnu_qos(uint16_t cltid, uint16_t cnuid)
 {
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	uint16_t id = (cltid-1)*MAX_CNU_AMOUNT_LIMIT+cnuid;
+	uint16_t id = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
@@ -5080,6 +5095,148 @@ ULONG CLI_CmdAr8236SmiPhy()
 	return TBS_SUCCESS;
 }
 
+
+/*********************************************************************/
+/* 函数功能 :CLI_CmdCnuSwitch 命令实现                                 */
+/*********************************************************************/
+ULONG CLI_CmdCnuSwitch()
+{
+	char  *szP=NULL;
+	char *pParam;
+	T_szSwRtl8306eConfig rtl8306eSettings;
+
+	uint32_t iMode = 0;
+	uint32_t prevailMode = 0;
+	uint16_t id = 0;
+	st_dbsCnu cnu;
+	st_dbsProfile profile;
+
+	iMode = CLI_GetCurrentMode();
+	prevailMode = CLI_GetPrevailMode(iMode);
+
+	/* 判断模式并显示打印信息*/
+	/* 该命令只能在CNU模式下执行*/
+	if( 2 != prevailMode )
+	{
+		/* 其他模式下禁止执行该命令*/
+		IO_Print("\r\n\r\n  Incorrect command");
+		return CMM_FAILED;
+	}
+	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
+	id = CLI_GetCnuTidByMode(iMode);
+
+	/* 如果该CNU 槽位无效则禁止配置*/
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	{
+		IO_Print("\r\n\r\n  System Error !");
+		return CMM_FAILED;
+	}	
+	else if( 0 == cnu.col_row_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Interface Unreachable !");
+		return CMM_SUCCESS;
+	}
+	else if( 0 == cnu.col_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Status Unreachable !");
+		return CMM_SUCCESS;
+	}
+
+	/* 如果该PROFILE 槽位无效则禁止配置*/
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	{
+		IO_Print("\r\n\r\n  System Error !");
+		return CMM_FAILED;
+	}	
+	else if( 0 == profile.col_row_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Profile Unreachable !");
+		return CMM_SUCCESS;
+	}
+
+	rtl8306eSettings.clt=1;
+	rtl8306eSettings.cnu=id;
+	if((pParam=CLI_GetParamByName("read |write"))==NULL)
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	if (!STB_StriCmp(pParam, "read"))
+	{
+		if((szP=CLI_GetParamByName("phyad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.phy);
+
+		if((szP=CLI_GetParamByName("regad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.reg);
+
+		if((szP=CLI_GetParamByName("pageid"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.page);
+
+		if( cli2cmm_readCnuSwitchRegister(&rtl8306eSettings) != TBS_SUCCESS )
+		{
+			IO_Print("\r\n\r\n  Read phy %d register %d page %d",rtl8306eSettings.mdioInfo.phy, rtl8306eSettings.mdioInfo.reg, rtl8306eSettings.mdioInfo.page);
+			return TBS_FAILED;
+		}
+		IO_Print("\r\n\r\n  Value:	0x%04X",rtl8306eSettings.mdioInfo.value);
+	}
+	else if (!STB_StriCmp(pParam, "write"))
+	{
+		if((szP=CLI_GetParamByName("regvalue"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%x",&rtl8306eSettings.mdioInfo.value);
+		
+		if((szP=CLI_GetParamByName("phyad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.phy);
+
+		if((szP=CLI_GetParamByName("regad"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.reg);
+
+		if((szP=CLI_GetParamByName("pageid"))==NULL)
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}	
+		sscanf(szP,"%d",&rtl8306eSettings.mdioInfo.page);
+		
+		if( cli2cmm_writeCnuSwitchRegister(&rtl8306eSettings) != TBS_SUCCESS )
+		{
+			return TBS_FAILED;
+		}
+		
+	}
+	else
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	
+	return TBS_SUCCESS;
+}
+
+
 /*********************************************************************/
 /* 函数功能 :CLI_CmdMmeMdio 命令实现                                 */
 /*********************************************************************/
@@ -5387,7 +5544,7 @@ ULONG CLI_Cmd_DoCnuPermit()
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
 		return CMM_SUCCESS;
 	}
-	else if( (b < 1)||( b > MAX_CNU_AMOUNT_LIMIT))
+	else if( (b < 1)||( b > MAX_CNUS_PER_CLT))
 	{
 		IO_Print("\r\n Invalid keyword value.");
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
@@ -5397,7 +5554,7 @@ ULONG CLI_Cmd_DoCnuPermit()
 	{
 		cltid = a;
 		cnuid = b;
-		id = (a-1)*MAX_CNU_AMOUNT_LIMIT+b;
+		id = (a-1)*MAX_CNUS_PER_CLT+b;
 	}	
 
 	/* 如果该CNU 槽位无效则禁止配置*/
@@ -5478,7 +5635,7 @@ ULONG CLI_Cmd_UndoCnuPermit()
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
 		return CMM_SUCCESS;
 	}
-	else if( (b < 1)||( b > MAX_CNU_AMOUNT_LIMIT))
+	else if( (b < 1)||( b > MAX_CNUS_PER_CLT))
 	{
 		IO_Print("\r\n Invalid keyword value.");
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
@@ -5488,7 +5645,7 @@ ULONG CLI_Cmd_UndoCnuPermit()
 	{
 		cltid = a;
 		cnuid = b;
-		id = (a-1)*MAX_CNU_AMOUNT_LIMIT+b;
+		id = (a-1)*MAX_CNUS_PER_CLT+b;
 	}
 
 	/* 如果该CNU 槽位无效则禁止配置*/
@@ -5568,7 +5725,7 @@ ULONG CLI_Cmd_DeleteCnu()
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
 		return CMM_SUCCESS;
 	}
-	else if( (b < 1)||( b > MAX_CNU_AMOUNT_LIMIT))
+	else if( (b < 1)||( b > MAX_CNUS_PER_CLT))
 	{
 		IO_Print("\r\n Invalid keyword value.");
 		IO_Print("\r\n Invalid parameter value:%s(index).", szP);
@@ -5578,7 +5735,7 @@ ULONG CLI_Cmd_DeleteCnu()
 	{
 		cltid = a;
 		cnuid = b;
-		id = (a-1)*MAX_CNU_AMOUNT_LIMIT+b;
+		id = (a-1)*MAX_CNUS_PER_CLT+b;
 	}
 
 	/* 如果该CNU 槽位无效则禁止配置*/
@@ -5836,6 +5993,76 @@ ULONG CLI_Cmd_DoDsdtPortMirror()
 	return cli2cmm_DoPortMirroring(&stMirrorInfo);	
 }
 
+ULONG CLI_Cmd_DoDsdtMacBinding()
+{
+	stDsdtMacBinding macBindingInfo;
+	char  *szP=NULL;
+	char *pParam=NULL;
+	
+	/* 读取命令行参数*/
+	/* 读取端口信息*/
+	if((szP=CLI_GetParamByName("mac-address"))==NULL)
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	else if((szP=CLI_GetParamByName("mac"))==NULL)
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	else if( 0 != boardapi_macs2b(szP, macBindingInfo.mac) )
+	{
+		MT_ERRLOG(0);
+		return TBS_FAILED;
+	}
+	
+	if( (pParam = CLI_GetParamByName("deport")) == NULL )
+	{
+		MT_ERRLOG(0);
+		return CMM_FAILED;
+	}
+	else
+	{
+		if(!STB_StriCmp(pParam, "p0"))
+		{
+			macBindingInfo.portid = 0;
+		}
+		else if(!STB_StriCmp(pParam, "p1"))
+		{				
+			macBindingInfo.portid = 1;
+		}
+		else if(!STB_StriCmp(pParam, "p2"))
+		{				
+			macBindingInfo.portid = 2;
+		}
+		else if(!STB_StriCmp(pParam, "p3"))
+		{				
+			macBindingInfo.portid = 3;
+		}
+		else if(!STB_StriCmp(pParam, "p4"))
+		{				
+			macBindingInfo.portid = 4;
+		}
+		else if(!STB_StriCmp(pParam, "p5"))
+		{				
+			macBindingInfo.portid = 5;
+		}
+		else if(!STB_StriCmp(pParam, "p6"))
+		{				
+			macBindingInfo.portid = 6;
+		}
+		else
+		{
+			MT_ERRLOG(0);
+			return TBS_FAILED;
+		}
+	}
+
+	macBindingInfo.dbNum = 0;
+	
+	return cli2cmm_DoDsdtMacBinding(&macBindingInfo);	
+}
 
 /*********************************************************************/
 /* 函数功能 :匿名用户接入控制的 命令实现                                 */

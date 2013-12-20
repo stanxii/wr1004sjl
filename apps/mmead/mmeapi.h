@@ -167,5 +167,55 @@ int MME_Atheros_MsgGetNetInfo
 	ihpapi_getNetworkInfoData_t *outputNetInfo
 );
 
+int MME_Atheros_MsgGetFrequencyBandSelection
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	T_MMEAD_FBS *pdata
+);
+
+int MME_Atheros_MsgSetFrequencyBandSelection
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	T_MMEAD_FBS *pdata
+);
+
+int MME_Atheros_MsgGetRtl8306eVlanConfig
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	st_cnuSwitchVlanConfig *vlanInfo
+);
+
+int MME_Atheros_MsgGetRtl8306eBandwidthConfig
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	st_cnuSwitchBandwidthConfig *bandwidthInfo
+);
+
+int MME_Atheros_MsgGetRtl8306eLoopDetect
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	st_cnuSwitchLoopDetect *loopDetect
+);
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgDirectWriteModule
+*	函数功能:*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgDirectWriteModule
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	uint8_t *mod, 
+	uint32_t len
+);
+
 #endif
 

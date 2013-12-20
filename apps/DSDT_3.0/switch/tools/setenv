@@ -1,4 +1,4 @@
-declare -x DSDT_USER_BASE=/home/frank/work/project/wr1004sjl/apps/DSDT_3.0/switch
+declare -x DSDT_USER_BASE=/home/frank/work/project/wr1004sjl_master/wr1004sjl/apps/DSDT_3.0/switch
 declare -x DSDT_PROJ_NAME=qdDrv
 declare -x DSDT_TOOL_DIR=$DSDT_USER_BASE/tools
 declare -x RELEASE=YES

@@ -157,8 +157,9 @@ char * __getSDevTypeByModel(uint32_t model);
 char * __getSModByMid(uint16_t mid);
 char * __getAlarmType(uint16_t mid);
 int __getAlarmLevel(uint32_t alarmCode);
-#endif
 int bcmGetIntfNameSocket(int socketfd, char *intfname);
+#endif
+
 int sysFlashSizeGet(void);
 void bcmKillAllApps(void);
 void bcmSystemReboot(void);

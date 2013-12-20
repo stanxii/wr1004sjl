@@ -100,7 +100,7 @@ clean :
 #		cd $$i..; $(MAKE) clean;	
 	@cd $(LIB_DIR); $(RM) *.o
 	@cd $(LIB_DIR); $(RM) *.map
-	$(MAKE) -C $(MAD_ROOT)/src clean
+#	$(MAKE) -C $(MAD_ROOT)/src clean
 endif
 
 #end of file

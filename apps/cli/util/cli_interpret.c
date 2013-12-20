@@ -3341,7 +3341,7 @@ ULONG  CLI_ShowObjectHelp( PST_CLI_CMDKEY pCmdKey, PST_CLI_POINTER pPointer, ULO
     ULONG            dwObjectNumber = 0;
     ULONG            dwLoop, dwResult = TBS_FAILED;
     char             szObjName[200], szObjectName[21]; /* 名称长度为:18(对象名) + 2(对齐空格) + 1(结束符)*/
-    UCHAR            ucCount = 0;
+    USHORT            ucCount = 0;
 
     if (pCmdKey == NULL)
     {
@@ -3929,6 +3929,201 @@ ULONG CLI_GetPrevailMode(ULONG mode)
 		case CTM_IF_1_62_CNU:
 		case CTM_IF_1_63_CNU:
 		case CTM_IF_1_64_CNU:
+
+		case CTM_IF_2_1_CNU:
+		case CTM_IF_2_2_CNU:
+		case CTM_IF_2_3_CNU:
+		case CTM_IF_2_4_CNU:
+		case CTM_IF_2_5_CNU:
+		case CTM_IF_2_6_CNU:
+		case CTM_IF_2_7_CNU:
+		case CTM_IF_2_8_CNU:
+		case CTM_IF_2_9_CNU:
+		case CTM_IF_2_10_CNU:
+		case CTM_IF_2_11_CNU:
+		case CTM_IF_2_12_CNU:
+		case CTM_IF_2_13_CNU:
+		case CTM_IF_2_14_CNU:
+		case CTM_IF_2_15_CNU:
+		case CTM_IF_2_16_CNU:
+		case CTM_IF_2_17_CNU:
+		case CTM_IF_2_18_CNU:
+		case CTM_IF_2_19_CNU:
+		case CTM_IF_2_20_CNU:
+		case CTM_IF_2_21_CNU:
+		case CTM_IF_2_22_CNU:
+		case CTM_IF_2_23_CNU:
+		case CTM_IF_2_24_CNU:
+		case CTM_IF_2_25_CNU:
+		case CTM_IF_2_26_CNU:
+		case CTM_IF_2_27_CNU:
+		case CTM_IF_2_28_CNU:
+		case CTM_IF_2_29_CNU:
+		case CTM_IF_2_30_CNU:
+		case CTM_IF_2_31_CNU:
+		case CTM_IF_2_32_CNU:
+		case CTM_IF_2_33_CNU:
+		case CTM_IF_2_34_CNU:
+		case CTM_IF_2_35_CNU:
+		case CTM_IF_2_36_CNU:
+		case CTM_IF_2_37_CNU:
+		case CTM_IF_2_38_CNU:
+		case CTM_IF_2_39_CNU:
+		case CTM_IF_2_40_CNU:
+		case CTM_IF_2_41_CNU:
+		case CTM_IF_2_42_CNU:
+		case CTM_IF_2_43_CNU:
+		case CTM_IF_2_44_CNU:
+		case CTM_IF_2_45_CNU:
+		case CTM_IF_2_46_CNU:
+		case CTM_IF_2_47_CNU:
+		case CTM_IF_2_48_CNU:
+		case CTM_IF_2_49_CNU:
+		case CTM_IF_2_50_CNU:
+		case CTM_IF_2_51_CNU:
+		case CTM_IF_2_52_CNU:
+		case CTM_IF_2_53_CNU:
+		case CTM_IF_2_54_CNU:
+		case CTM_IF_2_55_CNU:
+		case CTM_IF_2_56_CNU:
+		case CTM_IF_2_57_CNU:
+		case CTM_IF_2_58_CNU:
+		case CTM_IF_2_59_CNU:
+		case CTM_IF_2_60_CNU:
+		case CTM_IF_2_61_CNU:
+		case CTM_IF_2_62_CNU:
+		case CTM_IF_2_63_CNU:
+		case CTM_IF_2_64_CNU:
+
+		case CTM_IF_3_1_CNU:
+		case CTM_IF_3_2_CNU:
+		case CTM_IF_3_3_CNU:
+		case CTM_IF_3_4_CNU:
+		case CTM_IF_3_5_CNU:
+		case CTM_IF_3_6_CNU:
+		case CTM_IF_3_7_CNU:
+		case CTM_IF_3_8_CNU:
+		case CTM_IF_3_9_CNU:
+		case CTM_IF_3_10_CNU:
+		case CTM_IF_3_11_CNU:
+		case CTM_IF_3_12_CNU:
+		case CTM_IF_3_13_CNU:
+		case CTM_IF_3_14_CNU:
+		case CTM_IF_3_15_CNU:
+		case CTM_IF_3_16_CNU:
+		case CTM_IF_3_17_CNU:
+		case CTM_IF_3_18_CNU:
+		case CTM_IF_3_19_CNU:
+		case CTM_IF_3_20_CNU:
+		case CTM_IF_3_21_CNU:
+		case CTM_IF_3_22_CNU:
+		case CTM_IF_3_23_CNU:
+		case CTM_IF_3_24_CNU:
+		case CTM_IF_3_25_CNU:
+		case CTM_IF_3_26_CNU:
+		case CTM_IF_3_27_CNU:
+		case CTM_IF_3_28_CNU:
+		case CTM_IF_3_29_CNU:
+		case CTM_IF_3_30_CNU:
+		case CTM_IF_3_31_CNU:
+		case CTM_IF_3_32_CNU:
+		case CTM_IF_3_33_CNU:
+		case CTM_IF_3_34_CNU:
+		case CTM_IF_3_35_CNU:
+		case CTM_IF_3_36_CNU:
+		case CTM_IF_3_37_CNU:
+		case CTM_IF_3_38_CNU:
+		case CTM_IF_3_39_CNU:
+		case CTM_IF_3_40_CNU:
+		case CTM_IF_3_41_CNU:
+		case CTM_IF_3_42_CNU:
+		case CTM_IF_3_43_CNU:
+		case CTM_IF_3_44_CNU:
+		case CTM_IF_3_45_CNU:
+		case CTM_IF_3_46_CNU:
+		case CTM_IF_3_47_CNU:
+		case CTM_IF_3_48_CNU:
+		case CTM_IF_3_49_CNU:
+		case CTM_IF_3_50_CNU:
+		case CTM_IF_3_51_CNU:
+		case CTM_IF_3_52_CNU:
+		case CTM_IF_3_53_CNU:
+		case CTM_IF_3_54_CNU:
+		case CTM_IF_3_55_CNU:
+		case CTM_IF_3_56_CNU:
+		case CTM_IF_3_57_CNU:
+		case CTM_IF_3_58_CNU:
+		case CTM_IF_3_59_CNU:
+		case CTM_IF_3_60_CNU:
+		case CTM_IF_3_61_CNU:
+		case CTM_IF_3_62_CNU:
+		case CTM_IF_3_63_CNU:
+		case CTM_IF_3_64_CNU:
+
+		case CTM_IF_4_1_CNU:
+		case CTM_IF_4_2_CNU:
+		case CTM_IF_4_3_CNU:
+		case CTM_IF_4_4_CNU:
+		case CTM_IF_4_5_CNU:
+		case CTM_IF_4_6_CNU:
+		case CTM_IF_4_7_CNU:
+		case CTM_IF_4_8_CNU:
+		case CTM_IF_4_9_CNU:
+		case CTM_IF_4_10_CNU:
+		case CTM_IF_4_11_CNU:
+		case CTM_IF_4_12_CNU:
+		case CTM_IF_4_13_CNU:
+		case CTM_IF_4_14_CNU:
+		case CTM_IF_4_15_CNU:
+		case CTM_IF_4_16_CNU:
+		case CTM_IF_4_17_CNU:
+		case CTM_IF_4_18_CNU:
+		case CTM_IF_4_19_CNU:
+		case CTM_IF_4_20_CNU:
+		case CTM_IF_4_21_CNU:
+		case CTM_IF_4_22_CNU:
+		case CTM_IF_4_23_CNU:
+		case CTM_IF_4_24_CNU:
+		case CTM_IF_4_25_CNU:
+		case CTM_IF_4_26_CNU:
+		case CTM_IF_4_27_CNU:
+		case CTM_IF_4_28_CNU:
+		case CTM_IF_4_29_CNU:
+		case CTM_IF_4_30_CNU:
+		case CTM_IF_4_31_CNU:
+		case CTM_IF_4_32_CNU:
+		case CTM_IF_4_33_CNU:
+		case CTM_IF_4_34_CNU:
+		case CTM_IF_4_35_CNU:
+		case CTM_IF_4_36_CNU:
+		case CTM_IF_4_37_CNU:
+		case CTM_IF_4_38_CNU:
+		case CTM_IF_4_39_CNU:
+		case CTM_IF_4_40_CNU:
+		case CTM_IF_4_41_CNU:
+		case CTM_IF_4_42_CNU:
+		case CTM_IF_4_43_CNU:
+		case CTM_IF_4_44_CNU:
+		case CTM_IF_4_45_CNU:
+		case CTM_IF_4_46_CNU:
+		case CTM_IF_4_47_CNU:
+		case CTM_IF_4_48_CNU:
+		case CTM_IF_4_49_CNU:
+		case CTM_IF_4_50_CNU:
+		case CTM_IF_4_51_CNU:
+		case CTM_IF_4_52_CNU:
+		case CTM_IF_4_53_CNU:
+		case CTM_IF_4_54_CNU:
+		case CTM_IF_4_55_CNU:
+		case CTM_IF_4_56_CNU:
+		case CTM_IF_4_57_CNU:
+		case CTM_IF_4_58_CNU:
+		case CTM_IF_4_59_CNU:
+		case CTM_IF_4_60_CNU:
+		case CTM_IF_4_61_CNU:
+		case CTM_IF_4_62_CNU:
+		case CTM_IF_4_63_CNU:
+		case CTM_IF_4_64_CNU:	
 		{
 			return 2;
 		}
@@ -3968,268 +4163,18 @@ ULONG CLI_GetCltTidByMode( ULONG mode)
 
 ULONG CLI_GetCnuTidByMode( ULONG mode)
 {
-	switch(mode)
+	if( mode < CTM_IF_1_1_CNU )
 	{
-		case CTM_IF_1_1_CNU:
-		{
-			return 1;
-		}
-		case CTM_IF_1_2_CNU:
-		{
-			return 2;
-		}
-		case CTM_IF_1_3_CNU:
-		{
-			return 3;
-		}
-		case CTM_IF_1_4_CNU:
-		{
-			return 4;
-		}
-		case CTM_IF_1_5_CNU:
-		{
-			return 5;
-		}
-		case CTM_IF_1_6_CNU:
-		{
-			return 6;
-		}
-		case CTM_IF_1_7_CNU:
-		{
-			return 7;
-		}
-		case CTM_IF_1_8_CNU:
-		{
-			return 8;
-		}
-		case CTM_IF_1_9_CNU:
-		{
-			return 9;
-		}
-		case CTM_IF_1_10_CNU:
-		{
-			return 10;
-		}
-		case CTM_IF_1_11_CNU:
-		{
-			return 11;
-		}
-		case CTM_IF_1_12_CNU:
-		{
-			return 12;
-		}
-		case CTM_IF_1_13_CNU:
-		{
-			return 13;
-		}
-		case CTM_IF_1_14_CNU:
-		{
-			return 14;
-		}
-		case CTM_IF_1_15_CNU:
-		{
-			return 15;
-		}
-		case CTM_IF_1_16_CNU:
-		{
-			return 16;
-		}
-		case CTM_IF_1_17_CNU:
-		{
-			return 17;
-		}
-		case CTM_IF_1_18_CNU:
-		{
-			return 18;
-		}
-		case CTM_IF_1_19_CNU:
-		{
-			return 19;
-		}
-		case CTM_IF_1_20_CNU:
-		{
-			return 20;
-		}
-		case CTM_IF_1_21_CNU:
-		{
-			return 21;
-		}
-		case CTM_IF_1_22_CNU:
-		{
-			return 22;
-		}
-		case CTM_IF_1_23_CNU:
-		{
-			return 23;
-		}
-		case CTM_IF_1_24_CNU:
-		{
-			return 24;
-		}
-		case CTM_IF_1_25_CNU:
-		{
-			return 25;
-		}
-		case CTM_IF_1_26_CNU:
-		{
-			return 26;
-		}
-		case CTM_IF_1_27_CNU:
-		{
-			return 27;
-		}
-		case CTM_IF_1_28_CNU:
-		{
-			return 28;
-		}
-		case CTM_IF_1_29_CNU:
-		{
-			return 29;
-		}
-		case CTM_IF_1_30_CNU:
-		{
-			return 30;
-		}
-		case CTM_IF_1_31_CNU:
-		{
-			return 31;
-		}
-		case CTM_IF_1_32_CNU:
-		{
-			return 32;
-		}
-		case CTM_IF_1_33_CNU:
-		{
-			return 33;
-		}
-		case CTM_IF_1_34_CNU:
-		{
-			return 34;
-		}
-		case CTM_IF_1_35_CNU:
-		{
-			return 35;
-		}
-		case CTM_IF_1_36_CNU:
-		{
-			return 36;
-		}
-		case CTM_IF_1_37_CNU:
-		{
-			return 37;
-		}
-		case CTM_IF_1_38_CNU:
-		{
-			return 38;
-		}
-		case CTM_IF_1_39_CNU:
-		{
-			return 39;
-		}
-		case CTM_IF_1_40_CNU:
-		{
-			return 40;
-		}
-		case CTM_IF_1_41_CNU:
-		{
-			return 41;
-		}
-		case CTM_IF_1_42_CNU:
-		{
-			return 42;
-		}
-		case CTM_IF_1_43_CNU:
-		{
-			return 43;
-		}
-		case CTM_IF_1_44_CNU:
-		{
-			return 44;
-		}
-		case CTM_IF_1_45_CNU:
-		{
-			return 45;
-		}
-		case CTM_IF_1_46_CNU:
-		{
-			return 46;
-		}
-		case CTM_IF_1_47_CNU:
-		{
-			return 47;
-		}
-		case CTM_IF_1_48_CNU:
-		{
-			return 48;
-		}
-		case CTM_IF_1_49_CNU:
-		{
-			return 49;
-		}
-		case CTM_IF_1_50_CNU:
-		{
-			return 50;
-		}
-		case CTM_IF_1_51_CNU:
-		{
-			return 51;
-		}
-		case CTM_IF_1_52_CNU:
-		{
-			return 52;
-		}
-		case CTM_IF_1_53_CNU:
-		{
-			return 53;
-		}
-		case CTM_IF_1_54_CNU:
-		{
-			return 54;
-		}
-		case CTM_IF_1_55_CNU:
-		{
-			return 55;
-		}
-		case CTM_IF_1_56_CNU:
-		{
-			return 56;
-		}
-		case CTM_IF_1_57_CNU:
-		{
-			return 57;
-		}
-		case CTM_IF_1_58_CNU:
-		{
-			return 58;
-		}
-		case CTM_IF_1_59_CNU:
-		{
-			return 59;
-		}
-		case CTM_IF_1_60_CNU:
-		{
-			return 60;
-		}
-		case CTM_IF_1_61_CNU:
-		{
-			return 61;
-		}
-		case CTM_IF_1_62_CNU:
-		{
-			return 62;
-		}
-		case CTM_IF_1_63_CNU:
-		{
-			return 63;
-		}
-		case CTM_IF_1_64_CNU:
-		{
-			return 64;
-		}
-		default:
-		{
-			return 0;
-		}
+		return 0;
+	}
+	else if( mode > CTM_IF_4_64_CNU )
+	//else if( mode > CTM_IF_4_32_CNU )
+	{
+		return 0;
+	}
+	else
+	{
+		return (mode - CTM_IF_1_1_CNU + 1);
 	}
 }
 

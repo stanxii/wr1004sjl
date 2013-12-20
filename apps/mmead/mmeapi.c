@@ -38,7 +38,7 @@ static int readpacket
 (T_MME_SK_HANDLE *MME_SK, uint16_t MMtype, uint8_t *buffer, int buffersize, int *msg_len)
 {
 	int status;
-	int wait_time = 3000;
+	int wait_time = 800;
 	socklen_t socklen = sizeof(struct sockaddr_ll);
 
 	struct pollfd pollfd = 
@@ -109,7 +109,7 @@ static int mme_tx(T_MME_SK_HANDLE *MME_SK, uint8_t *buffer, int buffersize)
 			(struct sockaddr *)&(MME_SK->sockaddr), sizeof(struct sockaddr_ll));
 		
 		/* 等待设备处理MME完成 */
-		usleep(5000);
+		//usleep(5000);
 	}	
 	return sendn;
 }
@@ -360,6 +360,482 @@ int smiWrite(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_szMdioPhy *v)
 	return CMM_SUCCESS; 
 #endif
 }
+
+int rtl8306e_read(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_szMdioRtl8306e *v)
+{
+	int ret = CMM_FAILED;
+	T_szMdioPhy mdioInfo;
+	v->value = 0x0000;
+
+	if ((v->phy >= 7) || (v->page >= 5))
+	{
+		printf("\n#ERROR[10]\n");
+		return CMM_FAILED;
+	}
+
+	/* Select PHY Register Page through configuring PHY 0 Register 16 [bit1 bit15] */
+	mdioInfo.phy = 0;
+	mdioInfo.reg = 16;
+	if( CMM_SUCCESS != smiRead(MME_SK, ODA, &mdioInfo) )
+	{
+		printf("\n#ERROR[11]\n");
+		return CMM_FAILED;
+	}
+	
+	switch (v->page) 
+	{
+		case 0:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = (mdioInfo.value & 0x7FFF) | 0x0002;
+			ret = smiWrite(MME_SK, ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[12]\n");
+			}
+			break;
+		}
+		case 1:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = mdioInfo.value | 0x8002;
+			ret = smiWrite(MME_SK, ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[13]\n");
+			}
+			break;
+		}
+		case 2:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = mdioInfo.value & 0x7FFD;
+			ret = smiWrite(MME_SK, ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[14]\n");
+			}
+			break;
+		}
+		case 3:
+		{
+			mdioInfo.phy = 0;
+			mdioInfo.reg = 16;
+			mdioInfo.value = (mdioInfo.value & 0xFFFD) | 0x8000;
+			ret = smiWrite(MME_SK, ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[15]\n");
+			}
+			break;
+		}
+		case 4:
+		{
+			mdioInfo.phy = 5;
+			mdioInfo.reg = 16;
+			if( CMM_SUCCESS == smiRead(MME_SK, ODA, &mdioInfo) )
+			{
+				mdioInfo.value |= 0x2;
+				ret = smiWrite(MME_SK, ODA, &mdioInfo);
+				if(ret)
+				{
+					printf("\n#ERROR[16]\n");
+				}
+			}
+			else
+			{
+				printf("\n#ERROR[17]\n");
+				ret = CMM_FAILED;
+			}
+			break;
+		}
+		default:
+		{
+			printf("\n#ERROR[18]\n");
+			return CMM_FAILED;
+		}
+	}
+
+	if( CMM_SUCCESS != ret )
+	{
+		return CMM_FAILED;
+	}
+	
+	//read register in selected page
+	mdioInfo.phy = v->phy;
+	mdioInfo.reg = v->reg;
+	if( CMM_SUCCESS == smiRead(MME_SK, ODA, &mdioInfo) )
+	{
+		v->value = mdioInfo.value & 0xFFFF;
+	}
+	else
+	{
+		printf("\n#ERROR[19]\n");
+	}
+	if(4 == v->page)
+	{
+		/*exit page 4*/
+		mdioInfo.phy = 5;
+		mdioInfo.reg = 16;
+		if( CMM_SUCCESS == smiRead(MME_SK, ODA, &mdioInfo) )
+		{
+			mdioInfo.value &= ~0x2;
+			ret = smiWrite(MME_SK, ODA, &mdioInfo);
+			if(ret)
+			{
+				printf("\n#ERROR[20]\n");
+			}
+		}
+	} 
+	if(ret)
+	{
+		printf("\n#ERROR[21]\n");
+	}
+	return ret;	
+}
+
+int rtl8306_getAsicVlan(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint32_t vlanIndex, uint32_t *vid)
+{
+	T_szMdioRtl8306e rtl8306e_mdio_info;
+	
+	if( vid == NULL )
+	{
+		return CMM_FAILED;
+	}
+		
+	switch(vlanIndex)
+	{
+		case 0: /*VLAN[A]*/
+		{
+			rtl8306e_mdio_info.phy = 0;
+			rtl8306e_mdio_info.reg = 25;
+			rtl8306e_mdio_info.page = 0;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}			
+		case 1: /*VLAN[B]*/
+		{
+			rtl8306e_mdio_info.phy = 1;
+			rtl8306e_mdio_info.reg = 25;
+			rtl8306e_mdio_info.page = 0;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 2: /*VLAN[C]*/
+		{
+			rtl8306e_mdio_info.phy = 2;
+			rtl8306e_mdio_info.reg = 25;
+			rtl8306e_mdio_info.page = 0;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 3: /*VLAN[D]*/
+		{
+			rtl8306e_mdio_info.phy = 3;
+			rtl8306e_mdio_info.reg = 25;
+			rtl8306e_mdio_info.page = 0;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 4: /*VLAN[E]*/
+		{
+			rtl8306e_mdio_info.phy = 4;
+			rtl8306e_mdio_info.reg = 25;
+			rtl8306e_mdio_info.page = 0;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 5: /*VLAN[F]*/
+		{
+			rtl8306e_mdio_info.phy = 0;
+			rtl8306e_mdio_info.reg = 27;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 6: /*VLAN[G]*/
+		{
+			rtl8306e_mdio_info.phy = 1;
+			rtl8306e_mdio_info.reg = 27;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 7: /*VLAN[H]*/
+		{
+			rtl8306e_mdio_info.phy = 2;
+			rtl8306e_mdio_info.reg = 27;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 8: /*VLAN[I]*/
+		{
+			rtl8306e_mdio_info.phy = 3;
+			rtl8306e_mdio_info.reg = 27;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 9: /*VLAN[J]*/
+		{
+			rtl8306e_mdio_info.phy = 4;
+			rtl8306e_mdio_info.reg = 27;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 10: /*VLAN[K]*/
+		{
+			rtl8306e_mdio_info.phy = 0;
+			rtl8306e_mdio_info.reg = 29;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 11: /*VLAN[L]*/
+		{
+			rtl8306e_mdio_info.phy = 1;
+			rtl8306e_mdio_info.reg = 29;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 12: /*VLAN[M]*/
+		{
+			rtl8306e_mdio_info.phy = 2;
+			rtl8306e_mdio_info.reg = 29;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+ 		case 13: /*VLAN[N]*/
+		{
+			rtl8306e_mdio_info.phy = 3;
+			rtl8306e_mdio_info.reg = 29;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+ 		case 14: /*VLAN[O]*/
+		{
+			rtl8306e_mdio_info.phy = 4;
+			rtl8306e_mdio_info.reg = 29;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		case 15: /*VLAN[P]*/
+		{
+			rtl8306e_mdio_info.phy = 0;
+			rtl8306e_mdio_info.reg = 31;
+			rtl8306e_mdio_info.page = 1;
+			if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+			{
+				return CMM_FAILED;
+			}
+			break;
+		}
+		default:
+			return CMM_FAILED;
+	}	
+	*vid = (rtl8306e_mdio_info.value) & 0xFFF;
+	return	CMM_SUCCESS;
+		
+}	
+
+int rtl8306_getAsicPortVlanIndex(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint32_t port, uint32_t *vlanIndex)
+{
+	uint32_t tmp;
+	T_szMdioRtl8306e rtl8306e_mdio_info;	
+	
+	if((port > 5) || vlanIndex == NULL)
+	{
+		return CMM_FAILED;
+	}
+		
+	if (port < 5)
+	{
+		rtl8306e_mdio_info.phy = port;
+		rtl8306e_mdio_info.reg = 24;
+		rtl8306e_mdio_info.page = 0;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}
+	}		
+	else
+	{
+		rtl8306e_mdio_info.phy = 0;
+		rtl8306e_mdio_info.reg = 26;
+		rtl8306e_mdio_info.page = 1;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}
+	}
+	
+	*vlanIndex = (rtl8306e_mdio_info.value>>12) & 0xF;
+	
+	return CMM_SUCCESS;
+}
+
+int rtl8306_getPvid(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint32_t port, uint32_t *vid)
+{
+	uint32_t index;
+
+	/*check port number*/
+	if (port > 5)
+		return CMM_FAILED;
+
+	/*check vid*/
+	if (vid == NULL)
+		return CMM_FAILED;
+		
+	/*get the pvid*/
+	if( CMM_SUCCESS != rtl8306_getAsicPortVlanIndex(MME_SK, ODA, port, &index) )
+	{
+		return CMM_FAILED;
+	}
+	if( CMM_SUCCESS != rtl8306_getAsicVlan(MME_SK, ODA, index, vid) )
+	{
+		return CMM_FAILED;
+	}
+
+	return CMM_SUCCESS;
+}
+
+int rtl8306_getPortVlanMode(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint32_t port, uint32_t *mode)
+{
+	T_szMdioRtl8306e rtl8306e_mdio_info;	
+	uint32_t regValue;
+	
+	if (port > 5 || (mode == NULL))
+	{
+		return CMM_FAILED;
+	}
+		
+	/*Port 5 corresponding PHY6*/	
+	if (port == 5 )
+	{
+		port ++ ;
+	}
+
+	rtl8306e_mdio_info.phy = port;
+	rtl8306e_mdio_info.reg = 22;
+	rtl8306e_mdio_info.page = 0;
+
+	if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+	{
+		return CMM_FAILED;
+	}
+	*mode = rtl8306e_mdio_info.value & 0x3;
+	
+       /*
+	//When enable inserting CPU tag, VLAN tag could not be added 
+	rtl8306_getAsicPhyReg(2, 21, 3, &regValue);
+	if ((*option == RTL8306_VLAN_ITAG) && ((regValue & 0x9000) == 0x1000))
+		*option = RTL8306_VLAN_UNDOTAG; 	
+	*/
+	return CMM_SUCCESS;
+}
+
+int rtl8306e_vlan_portAcceptFrameType_get(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint32_t port, uint8_t *pAccept_frame_type)
+{
+	uint32_t regval;
+	T_szMdioRtl8306e rtl8306e_mdio_info;	
+    
+	if((port > 5) || (pAccept_frame_type == NULL))
+	{
+		return CMM_FAILED;
+	}
+        
+
+	if(0 == port)
+	{
+		rtl8306e_mdio_info.phy = 0;
+		rtl8306e_mdio_info.reg = 31;
+		rtl8306e_mdio_info.page = 0;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}		
+		*pAccept_frame_type = (rtl8306e_mdio_info.value >> 7) & 0x3;
+	}
+	else if (5 == port)
+	{
+		rtl8306e_mdio_info.phy = 6;
+		rtl8306e_mdio_info.reg = 30;
+		rtl8306e_mdio_info.page = 1;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}		
+		*pAccept_frame_type = (rtl8306e_mdio_info.value >> 6) & 0x3;
+	}
+    	else
+	{
+		rtl8306e_mdio_info.phy = port;
+		rtl8306e_mdio_info.reg = 21;
+		rtl8306e_mdio_info.page = 2;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}		
+		*pAccept_frame_type = (rtl8306e_mdio_info.value >> 11) & 0x3;
+	}
+
+	return CMM_SUCCESS;
+}
+
 
 int CalcXorChecksum(void *apBuffer, uint32_t aBufferSize, uint32_t *apCheckSum)
 {
@@ -1078,7 +1554,7 @@ void MME_Atheros_MsgNeRefresh
 				RealStations--;
 				continue;
 			}
-			usleep(10000);
+			//usleep(5000);
 			if( MME_Atheros_MsgGetDeviceInfo(MME_SK, NEList.cnu[i].Mac, &stDevInfo) == CMM_SUCCESS )
 			{
 				NEList.cnu[i].DevType = stDevInfo.DevType;
@@ -1366,6 +1842,162 @@ int MME_Atheros_MsgGetSwVer
 	return CMM_MME_ERROR;
 }
 
+int MME_Atheros_MsgGetFrequencyBandSelection
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_FBS *pdata)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGetFrequencyBandSelection\n");
+	memset(buffer, 0, sizeof(buffer));
+	packetsize = ihpapi_GetFrequencyBandSelection(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_rx(MME_SK, VS_GET_PROPERTY, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		pdata->FBSTATUS = xresult.data.FrequencyBandSelectionInfo.FBSTATUS;
+		pdata->START_BAND = xresult.data.FrequencyBandSelectionInfo.START_BAND;
+		pdata->STOP_BAND = xresult.data.FrequencyBandSelectionInfo.STOP_BAND;
+		return CMM_SUCCESS;
+	}	
+	return CMM_MME_ERROR;
+}
+
+int MME_Atheros_MsgSetFrequencyBandSelection
+(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_FBS *pdata)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+	ihpapi_getFrequencyBandSelection_t FrequencyBandSelectionInfo;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgSetFrequencyBandSelection\n");
+	memset(buffer, 0, sizeof(buffer));
+	FrequencyBandSelectionInfo.FBSTATUS = pdata->FBSTATUS;
+	FrequencyBandSelectionInfo.START_BAND = pdata->START_BAND;
+	FrequencyBandSelectionInfo.STOP_BAND = pdata->STOP_BAND;
+	
+	packetsize = ihpapi_SetFrequencyBandSelection(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer, &FrequencyBandSelectionInfo);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_rx(MME_SK, VS_SET_PROPERTY, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		return xresult.opStatus.status;
+	}	
+	return CMM_MME_ERROR;
+}
+
+int MME_Atheros_MsgGetTxGain(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint8_t *pdata)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGetTxGain\n");
+	memset(buffer, 0, sizeof(buffer));
+	packetsize = ihpapi_GetTxGain(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_rx(MME_SK, VS_GET_PROPERTY, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		*pdata = xresult.data.txGainInfo.TX_GAIN;
+		return CMM_SUCCESS;
+	}	
+	return CMM_MME_ERROR;
+}
+
+int MME_Atheros_MsgSetTxGain(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint8_t tx_gain)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgSetTxGain\n");
+	memset(buffer, 0, sizeof(buffer));
+	
+	packetsize = ihpapi_SetTxGain(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer, tx_gain);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_rx(MME_SK, VS_SET_PROPERTY, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		return xresult.opStatus.status;
+	}	
+	return CMM_MME_ERROR;
+}
+
 
 /********************************************************************************************
 *	函数名称:MME_Atheros_MsgGetCltMac
@@ -1522,6 +2154,218 @@ int MME_Atheros_MsgGetTopologyStats
 	/* 排除已经下线的CNU设备*/
 	MME_Atheros_MsgNeRefresh(MME_SK, ODA, pNEList);
 
+	return CMM_SUCCESS;
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGetRtl8306eBandwidthConfig
+*	函数功能:
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2013-10-18
+*********************************************************************************************/
+int MME_Atheros_MsgGetRtl8306eBandwidthConfig
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	st_cnuSwitchBandwidthConfig *bandwidthInfo
+)
+{
+	int i = 0;
+	uint32_t tmp;
+	uint32_t tmp2 = 0;
+	T_szMdioRtl8306e rtl8306e_mdio_info;
+
+	rtl8306e_mdio_info.phy = 0;
+	rtl8306e_mdio_info.reg = 21;
+	rtl8306e_mdio_info.page = 3;
+	if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+	{
+		return CMM_FAILED;
+	}
+	else
+	{
+		tmp = (rtl8306e_mdio_info.value >> 15) & 0x1;
+		bandwidthInfo->g_rx_bandwidth_control_enable = (tmp == 0)?1:0;
+	}
+
+	for(i=0;i<=4;i++)
+	{
+		rtl8306e_mdio_info.phy = i;
+		rtl8306e_mdio_info.reg = 21;
+		rtl8306e_mdio_info.page = 2;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}
+		else
+		{
+			bandwidthInfo->rxPort[i].bandwidth_value = (rtl8306e_mdio_info.value) & 0x7ff;
+			bandwidthInfo->rxPort[i].bandwidth_control_enable = bandwidthInfo->g_rx_bandwidth_control_enable;
+		}		
+	}
+
+	for(i=0;i<=4;i++)
+	{
+		rtl8306e_mdio_info.phy = i;
+		rtl8306e_mdio_info.reg = 18;
+		rtl8306e_mdio_info.page = 2;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}
+		else
+		{
+			tmp = (rtl8306e_mdio_info.value >> 15) & 0x1;
+			bandwidthInfo->txPort[i].bandwidth_control_enable = (tmp == 0)?0:1;			
+			bandwidthInfo->txPort[i].bandwidth_value = (rtl8306e_mdio_info.value) & 0x7ff;
+			tmp2 |= bandwidthInfo->txPort[i].bandwidth_control_enable;
+		}		
+	}
+
+	bandwidthInfo->g_tx_bandwidth_control_enable = (tmp2 == 0)?0:1;
+	return CMM_SUCCESS;
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGetRtl8306eVlanConfig
+*	函数功能:
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2013-10-18
+*********************************************************************************************/
+int MME_Atheros_MsgGetRtl8306eVlanConfig
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	st_cnuSwitchVlanConfig *vlanInfo
+)
+{
+	int i = 0;
+	uint32_t tmp;
+	T_szMdioRtl8306e rtl8306e_mdio_info;
+	
+	//get vlan_enable [phy 0 reg 18 page 0][bit:8]
+	rtl8306e_mdio_info.phy = 0;
+	rtl8306e_mdio_info.reg = 18;
+	rtl8306e_mdio_info.page = 0;
+	if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+	{
+		return CMM_FAILED;
+	}
+	else
+	{
+		/* 1 = Disable VLAN; 0 = Enable VLAN */
+		tmp = (rtl8306e_mdio_info.value >> 8) & 0x1;
+		vlanInfo->vlan_enable = (tmp == 0)?1:0;
+	}
+
+	//get 802.1q vlan status [phy 0 reg 16 page 0][bit:10]
+	rtl8306e_mdio_info.phy = 0;
+	rtl8306e_mdio_info.reg = 16;
+	rtl8306e_mdio_info.page = 0;
+	if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+	{
+		return CMM_FAILED;
+	}
+	else
+	{
+		/* 1 = Disable 802.1Q tagged-VID Aware function */
+		tmp = (rtl8306e_mdio_info.value >> 10) & 0x1;
+		vlanInfo->vlan_tag_aware = (tmp == 0)?1:0;
+
+		tmp = (rtl8306e_mdio_info.value >> 9) & 0x1;
+		vlanInfo->ingress_filter = (tmp == 0)?1:0;
+		/* 1 = The switch accepts all frames it receives whether tagged or untagged */
+		/* 0 = The switch will only accept tagged frames and will drop untagged frames */
+		tmp = (rtl8306e_mdio_info.value >> 8) & 0x1;
+		vlanInfo->g_admit_control = (tmp == 0)?1:0;
+	}
+
+	/* get vlan info for each port */
+	for( i=0; i<=5; i++ )
+	{
+		/* pvid */
+		if( CMM_SUCCESS != rtl8306_getPvid(MME_SK, ODA, i, &tmp) )
+		{
+			return CMM_FAILED;
+		}
+		vlanInfo->vlan_port[i].pvid = tmp;
+		/* port egress tag mode */
+		/* 11 = Do not insert or remove VLAN tags to/from packet which is output on this port*/
+		/* 10 = The switch will add VLAN tags to packets, if they are not tagged*/
+		/* 01 = The switch will remove VLAN tags from packets, if they are tagged*/
+		/* 00 = The switch will remove VLAN tags from packets then add new tags to them*/
+		if( CMM_SUCCESS != rtl8306_getPortVlanMode(MME_SK, ODA, i, &tmp) )
+		{
+			return CMM_FAILED;
+		}
+		vlanInfo->vlan_port[i].egress_mode = tmp;
+		/* port admit frame type */
+		if( CMM_SUCCESS != rtl8306e_vlan_portAcceptFrameType_get(MME_SK, ODA, i, &(vlanInfo->vlan_port[i].admit_control)) )
+		{
+			return CMM_FAILED;
+		}
+	}
+	
+	return CMM_SUCCESS;
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGetRtl8306eLoopDetect
+*	函数功能:
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2013-10-18
+*********************************************************************************************/
+int MME_Atheros_MsgGetRtl8306eLoopDetect
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	st_cnuSwitchLoopDetect *loopDetect
+)
+{
+	int i = 0;
+	uint32_t tmp;
+	T_szMdioRtl8306e rtl8306e_mdio_info;
+	
+	//get loop detect status [phy 0 reg 16 page 0][bit:2]
+	rtl8306e_mdio_info.phy = 0;
+	rtl8306e_mdio_info.reg = 16;
+	rtl8306e_mdio_info.page = 0;
+	if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+	{
+		return CMM_FAILED;
+	}
+	else
+	{
+		/* 0 = Disable VLAN; 1 = Enable loop detect */
+		tmp = (rtl8306e_mdio_info.value >> 2) & 0x1;
+		loopDetect->status = (tmp == 0)?0:1;
+	}
+	
+	/* get port loop status */
+	for( i=0; i<=4; i++ )
+	{
+		//get port x loop status [phy 0~4 reg 24 page 0][bit:8]
+		rtl8306e_mdio_info.phy = i;
+		rtl8306e_mdio_info.reg = 24;
+		rtl8306e_mdio_info.page = 0;
+		if( CMM_SUCCESS != rtl8306e_read(MME_SK, ODA, &rtl8306e_mdio_info) )
+		{
+			return CMM_FAILED;
+		}
+		else
+		{
+			/* 0 = No loop exists on port x; 1 = A loop has been detected on port x */
+			tmp = (rtl8306e_mdio_info.value >> 8) & 0x1;
+			loopDetect->port_loop_status[i] = (tmp == 0)?0:1;
+		}
+	}
+	
 	return CMM_SUCCESS;
 }
 
@@ -1942,6 +2786,53 @@ int MME_Atheros_MsgWriteModule(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[])
 		/* 失败*/
 		return CMM_MME_ERROR;
 	}
+	return CMM_SUCCESS;
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgDirectWriteModule
+*	函数功能:*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgDirectWriteModule(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint8_t *mod, uint32_t len)
+{
+	uint32_t SessionID = 0x78563412;
+	T_MMEAD_WR_MOD_REQ_INFO wr_mod_req = {0};
+
+	if (len > 1400) 
+	{
+		printf("WriteModule error : buffer is not enough\n");
+		return CMM_MME_ERROR;
+	}
+	else if (len % sizeof (uint32_t)) 
+	{
+		printf("WriteModule error : mod length invalid\n");
+		return CMM_MME_ERROR;
+	}
+
+	wr_mod_req.MODULE_ID = 0x1000;
+	wr_mod_req.MODULE_SUB_ID = 0;
+	wr_mod_req.MODULE_LENGTH = len;	
+	memcpy(wr_mod_req.MODULE_DATA, mod, len);			
+	
+	if( ModuleSession(MME_SK, ODA, SessionID, &wr_mod_req) )
+	{
+		/* 失败*/
+		return CMM_MME_ERROR;
+	}
+	if( ModuleWrite(MME_SK, ODA, SessionID, &wr_mod_req) )
+	{
+		/* 失败*/
+		return CMM_MME_ERROR;
+	}
+	if( ModuleCommit(MME_SK, ODA, SessionID, &wr_mod_req) )
+	{
+		/* 失败*/
+		return CMM_MME_ERROR;
+	}
+	
 	return CMM_SUCCESS;
 }
 
@@ -2419,6 +3310,11 @@ int MME_Atheros_MsgGetPibSpec
 			{
 				pDevInfo->DevType = WEC_3801I;
 			}
+			else if( strcmp(HFID_USER, "WEC701-M0") == 0 )
+			{
+				pDevInfo->DevType = WEC701_M0;
+			}
+#if 0
 			else if( strcmp(HFID_USER, "WEC-3601I") == 0 )
 			{
 				pDevInfo->DevType = WEC_3601I;
@@ -2431,14 +3327,15 @@ int MME_Atheros_MsgGetPibSpec
 			{
 				pDevInfo->DevType = WEC_3604I;
 			}
-			else if( strcmp(HFID_USER, "WEC-3702I") == 0 )
-			{
-				pDevInfo->DevType = WEC_3702I;
-			}
 			else if( strcmp(HFID_USER, "WEC-3703I") == 0 )
 			{
 				pDevInfo->DevType = WEC_3703I;
 			}
+#endif
+			else if( strcmp(HFID_USER, "WEC-3702I") == 0 )
+			{
+				pDevInfo->DevType = WEC_3702I;
+			}			
 			else if( strcmp(HFID_USER, "WEC-602") == 0 )
 			{
 				pDevInfo->DevType = WEC_602;
@@ -2446,11 +3343,7 @@ int MME_Atheros_MsgGetPibSpec
 			else if( strcmp(HFID_USER, "WEC-604") == 0 )
 			{
 				pDevInfo->DevType = WEC_604;
-			}
-			else if( strcmp(HFID_USER, "WEC701-M0") == 0 )
-			{
-				pDevInfo->DevType = WEC701_M0;
-			}
+			}			
 			else if( strcmp(HFID_USER, "WEC701-C2") == 0 )
 			{
 				pDevInfo->DevType = WEC701_C2;
@@ -2458,6 +3351,14 @@ int MME_Atheros_MsgGetPibSpec
 			else if( strcmp(HFID_USER, "WEC701-C4") == 0 )
 			{
 				pDevInfo->DevType = WEC701_C4;
+			}
+			else if( strcmp(HFID_USER, "WEC701-E4") == 0 )
+			{
+				pDevInfo->DevType = WEC701_E4;
+			}
+			else if( strcmp(HFID_USER, "WEC-3702I-E4") == 0 )
+			{
+				pDevInfo->DevType = WEC_3702I_E4;
 			}
 			else
 			{

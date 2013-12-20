@@ -15,9 +15,11 @@
 #include <signal.h>
 #include "mmead.h"
 #include "mmeapi.h"
+#include "mme_rtl8306e.h"
 #include "support/atheros/ihpapi/ihpapi.h"
 #include "support/atheros/ihpapi/ihp.h"
 #include "../dbs/include/dbsapi.h"
+#include <boardapi.h>
 
 uint8_t OSA [6] = 
 {
@@ -92,6 +94,7 @@ int __mapModCarrier(char value)
 	}
 }
 
+#if 0
 /********************************************************************************************
 *	函数名称:get_mac_addr
 *	函数功能:该函数通过系统调用获取本机的MAC地址
@@ -134,7 +137,7 @@ static int get_mac_addr(char * interface, uint8_t *pMacAddr)
 	close(fd);
 	return 0;
 }
-
+#endif
 void debug_dump_msg(const unsigned char memory [], size_t length, FILE *fp)
 {
 	if(MMEAD_MODULE_DEBUG_ENABLE)
@@ -291,6 +294,46 @@ void MME_Atheros_ProcessGetSwVer(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_
 	MMEAD_ProcessAck(MME_Atheros_MsgGetSwVer(MME_SK, h->ODA, VerStr), this, VerStr, 2*STRNG_MAX_LEN);
 }
 
+void MME_Atheros_ProcessGetFrequencyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	T_MMEAD_FBS fbs;
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgGetFrequencyBandSelection(MME_SK, h->ODA, &fbs), this, (uint8_t *)&fbs, sizeof(T_MMEAD_FBS));
+}
+
+void MME_Atheros_ProcessSetFrequencyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_MMETS_REQ_MSG *req= (T_MMETS_REQ_MSG *)(this->b);	
+	T_MMEAD_FBS fbs;
+
+	memcpy(&fbs, req->body, sizeof(T_MMEAD_FBS));
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgSetFrequencyBandSelection(MME_SK, req->header.ODA, &fbs), this, NULL, 0);
+}
+
+void MME_Atheros_ProcessGetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	uint8_t tx_gain;
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgGetTxGain(MME_SK, h->ODA, &tx_gain), this, (uint8_t *)&tx_gain, sizeof(uint8_t));
+}
+
+void MME_Atheros_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_MMETS_REQ_MSG *req= (T_MMETS_REQ_MSG *)(this->b);	
+	uint8_t tx_gain;
+
+	memcpy(&tx_gain, req->body, sizeof(uint8_t));
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgSetTxGain(MME_SK, req->header.ODA, tx_gain), this, NULL, 0);
+}
+
 /********************************************************************************************
 *	函数名称:MME_Atheros_ProcessGetManufacturerInfo
 *	函数功能:该函数为MME_ProcessGetManufacturerInfo函数完成硬件屏蔽之后
@@ -411,19 +454,11 @@ void MME_ProcessResetDevice(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		default:
 		{
 			MME_Atheros_ProcessResetDevice(this, MME_SK);
 			break;
-		}
-		case WEC_3501S:
-		case WEC_3502S:
-		case WEC_3504S:
-		default:
-		{
-			/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
-			MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
-			break;
-		}
+		}		
 	}
 }
 
@@ -466,6 +501,66 @@ void MME_ProcessGetSwVer(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 			break;
 		}
 	}
+}
+
+void MME_ProcessGetFrequecyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessGetFrequencyBandSelection(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
+}
+
+void MME_ProcessSetFrequecyBandSelection(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessSetFrequencyBandSelection(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
+}
+
+void MME_ProcessGetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessGetTxGain(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
+}
+
+void MME_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	if( boardapi_isAr7400Device(h->DEV_TYPE) )
+	{
+		MME_Atheros_ProcessSetTxGain(this, MME_SK);
+	}
+	else
+	{
+		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+	}	
 }
 
 /********************************************************************************************
@@ -560,6 +655,84 @@ void MME_ProcessGetTopologyStats(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_
 		case WEC_3801I:
 		{
 			MME_Atheros_ProcessGetTopologyStats(this, MME_SK);
+			break;
+		}
+		default:
+		{
+			/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+			MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+			break;
+		}
+	}
+}
+
+/********************************************************************************************
+*	函数名称:MME_ProcessMdioRead
+*	函数功能:通过发送MDIO MME来读取CNU上的switch寄存器，
+*				  并将操作结果通过消息接口发送给请求模块
+*	作者:frank
+*	时间:2010-07-22
+*********************************************************************************************/
+void MME_ProcessMdioRead(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	T_Msg_MMEAD *msg = (T_Msg_MMEAD *)(this->b);
+	T_szMdioPhy v;
+
+	memcpy(&v, msg->BUF, sizeof(T_szMdioPhy));
+
+	switch(h->DEV_TYPE)
+	{
+		case WEC_3702I:
+		case WEC_3703I:
+		case WEC_3704I:
+		case WEC_602:
+		case WEC_604:
+		case WEC701_C2:
+		case WEC701_C4:
+		{
+			/* 将错误信息返回给请求者 */
+			MMEAD_ProcessAck(MME_Atheros_MsgGetPhyReg(MME_SK, h->ODA, &v), 
+				this, (uint8_t *)&v, sizeof(T_szMdioPhy));
+			break;
+		}
+		default:
+		{
+			/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
+			MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
+			break;
+		}
+	}
+}
+
+/********************************************************************************************
+*	函数名称:MME_ProcessMdioWrite
+*	函数功能:通过发送MDIO MME来设置CNU上的switch寄存器，
+*				  并将操作结果通过消息接口发送给请求模块
+*	作者:frank
+*	时间:2010-07-22
+*********************************************************************************************/
+void MME_ProcessMdioWrite(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	T_Msg_MMEAD *msg = (T_Msg_MMEAD *)(this->b);
+	T_szMdioPhy v;
+
+	memcpy(&v, msg->BUF, sizeof(T_szMdioPhy));
+	
+	switch(h->DEV_TYPE)
+	{
+		case WEC_3702I:
+		case WEC_3703I:
+		case WEC_3704I:
+		case WEC_602:
+		case WEC_604:
+		case WEC701_C2:
+		case WEC701_C4:
+		{
+			/* 将错误信息返回给请求者 */
+			MMEAD_ProcessAck(MME_Atheros_MsgSetPhyReg(MME_SK, h->ODA, &v), 
+				this, (uint8_t *)&v, sizeof(T_szMdioPhy));
 			break;
 		}
 		default:
@@ -798,6 +971,27 @@ void MME_ProcessWriteModuleOperation(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *
 			break;
 		}
 	}
+}
+
+/********************************************************************************************
+*	函数名称:MME_ProcessDirectWriteMod
+*	函数功能:写参数块
+*	作者:frank
+*	时间:2013-10-27
+*********************************************************************************************/
+void MME_ProcessDirectWriteMod(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)(this->b);
+	uint8_t *mod = MMETS_REQ->body;
+	uint32_t len = MMETS_REQ->header.LEN;
+	
+	MMEAD_ProcessAck
+	(
+		MME_Atheros_MsgDirectWriteModule(MME_SK, MMETS_REQ->header.ODA, mod, len), 
+		this,
+		NULL, 
+		0
+	);
 }
 
 /********************************************************************************************
@@ -1196,6 +1390,31 @@ void MME_ProcessLinkDiag(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 }
 
 /********************************************************************************************
+*	函数名称:MME_ProcessGetRtl8306eConfig
+*	函数功能:通过发送MDIO MME来读取CNU上的RTL8306E的内部寄存器配置，
+*				  并将操作结果通过消息接口发送给请求模块
+*	作者:frank
+*	时间:2013-10-18
+*********************************************************************************************/
+void MME_ProcessGetRtl8306eConfig(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	uint32_t len = 0;
+	uint8_t buf[MAX_BODY_SIZE];		
+	st_rtl8306eSettings *rtl8306e = (st_rtl8306eSettings *)buf;
+	T_MMETS_REQ_MSG *req = (T_MMETS_REQ_MSG *)(this->b);
+
+	len = sizeof(st_rtl8306eSettings);
+	if( CMM_SUCCESS != mme_rtl8306e_get_config_all(MME_SK, req->header.ODA, rtl8306e))
+	{
+		MMEAD_ProcessAck(CMM_MME_ERROR, this, NULL, 0);
+	}
+	else
+	{
+		MMEAD_ProcessAck(CMM_SUCCESS, this, buf, len);	
+	}
+}
+
+/********************************************************************************************
 *	函数名称:MME_InitSocket
 *	函数功能:创建跟CLT/CNU通讯的2层SOCKET
 *	限制:假设同一个CBAT下的CLT模块不能混插，这里只创建
@@ -1418,6 +1637,30 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 		case MMEAD_LINK_DIAG:
 			MME_ProcessLinkDiag(this, MME_SK);
 			break;
+		case MMEAD_GET_FREQUENCY_BAND_SELECTION:
+			MME_ProcessGetFrequecyBandSelection(this, MME_SK);
+			break;
+		case MMEAD_SET_FREQUENCY_BAND_SELECTION:
+			MME_ProcessSetFrequecyBandSelection(this, MME_SK);
+			break;
+		case MMEAD_GET_TX_GAIN:
+			MME_ProcessGetTxGain(this, MME_SK);
+			break;
+		case MMEAD_SET_TX_GAIN:
+			MME_ProcessSetTxGain(this, MME_SK);
+			break;
+		case MMEAD_MDIO_READ:
+			MME_ProcessMdioRead(this, MME_SK);
+			break;
+		case MMEAD_MDIO_WRITE:
+			MME_ProcessMdioWrite(this, MME_SK);
+			break;
+		case MMEAD_GET_RTL8306E_CONFIG:
+			MME_ProcessGetRtl8306eConfig(this, MME_SK);
+			break;
+		case MMEAD_WRITE_MOD:
+			MME_ProcessDirectWriteMod(this, MME_SK);
+			break;
 		default:
 			/* 对于不支持的消息类型应该给予应答以便让请求者知道 */
 			dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead ComReqManager->MMEAD_ProcessAck[CMM_UNKNOWN_MMTYPE]");
@@ -1586,8 +1829,8 @@ int main(void)
 	}
 
 	signal(SIGTERM, MMEAD_ProcForExit);
-	
-	if( get_mac_addr(LOCAL_INTERFACE0, OSA) != 0 )
+	if( CMM_SUCCESS != boardapi_macs2b(boardapi_getMacAddress(), OSA) )
+	//if( get_mac_addr(LOCAL_INTERFACE0, OSA) != 0 )
 	{
 		fprintf(stderr, "ERROR: mmead->get_mac_addr, exit !\n");
 		dbs_sys_log(dbsdev, DBS_LOG_ERR, "mmead get_mac_addr error, exited");

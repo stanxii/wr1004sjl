@@ -32,6 +32,11 @@ int http2cmm_sysReboot(void);
 int http2cmm_restoreDefault(void);
 int http2cmm_upgrade(void);
 
+int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar);
+int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar);
+int http2cmm_getSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e);
+int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e);
+
 int http2cmm_destroy(void);
 int http2cmm_init(void);
 

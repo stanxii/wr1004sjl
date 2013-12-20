@@ -138,11 +138,11 @@ ULONG   CLI_InitCmdTree(ST_CMD_MODE_INFO *pModeInfo)
             char szCmd[CLI_MAX_CMD_FORMAT];
             sprintf(szCmd, "%s%s", CMD_CM, pModeInfo[i].szModeName);
             if (CLI_FAILED(CLI_CmdAutoRegist(szCmd,
-                                   (UCHAR)pModeInfo[i].ulParent,
+                                   (USHORT)pModeInfo[i].ulParent,
                                    pModeInfo[i].rightLevel,
                                    pModeInfo[i].pFunction,
                                    CLI_MC_NEW,
-                                   (UCHAR)pModeInfo[i].ulMode,
+                                   (USHORT)pModeInfo[i].ulMode,
                                    CMDHELP_GLB_CM,
                                    pModeInfo[i].strObjHelp,
                                    CLI_ML_NULL)))
@@ -155,7 +155,7 @@ ULONG   CLI_InitCmdTree(ST_CMD_MODE_INFO *pModeInfo)
         {
             ULONG  ulRet = 0;
             ulRet += CLI_CmdAutoRegist(CMD_CM "..",
-                                       (UCHAR)pModeInfo[i].ulMode,
+                                       (USHORT)pModeInfo[i].ulMode,
                                        CLI_AL_QUERY,
                                        NULL,
                                        CLI_MC_EXIT,
@@ -1228,7 +1228,7 @@ ULONG  CLI_RegModeObjectExt( ULONG  ulMode, PST_CLI_CMDKEY pCmdKey,
     if ((ulRet == TBS_SUCCESS) && (ulMode != CTM_GENL) && (ulMode != CTM_GLOBAL))
     {
         ulRet += CLI_CmdAutoRegist(CMD_CM "..",
-                                   (UCHAR)ulMode,
+                                   (USHORT)ulMode,
                                    CLI_AL_QUERY,
                                    pFunc,
                                    CLI_MC_EXIT,
@@ -1237,7 +1237,7 @@ ULONG  CLI_RegModeObjectExt( ULONG  ulMode, PST_CLI_CMDKEY pCmdKey,
                                    CMDHELP_GLB_CM_PARENT,
                                    CLI_ML_NULL);
         ulRet += CLI_CmdAutoRegist(CMD_CM "root",
-                                   (UCHAR)ulMode,
+                                   (USHORT)ulMode,
                                    CLI_AL_QUERY,
                                    pFunc,
                                    CLI_MC_END,

@@ -33,7 +33,7 @@ case "$1" in
             echo "NOT deconfiguring network interfaces: network shares still mounted."
         else
             echo -n "Deconfiguring network interfaces... "
-            ifdown -a
+            ifdown eth0
 	    echo "done."
         fi
 	;;

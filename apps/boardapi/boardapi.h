@@ -24,6 +24,14 @@ int boardapi_checkCpuEndian(void);
 char * boardapi_getMacAddress(void);
 
 /********************************************************************************************
+*	函数名称:boardapi_isValidUnicastMacb
+*	函数功能:判断是否为有效的单播MAC
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+int boardapi_isValidUnicastMacb(uint8_t *bin);
+
+/********************************************************************************************
 *	函数名称:boardapi_macs2b
 *	函数功能:将字符串形式的MAC地址转换为6位二进制格式
 *	作者:frank
@@ -38,6 +46,22 @@ int boardapi_macs2b(const char *str, uint8_t *bin);
 *	时间:2010-08-19
 *********************************************************************************************/
 char * boardapi_getDeviceModelStr(uint32_t model);
+
+/********************************************************************************************
+*	函数名称:boardapi_getCltStandardStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getCltStandardStr(void);
+
+/********************************************************************************************
+*	函数名称:boardapi_getMenufactoryStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getMenufactoryStr(void);
 
 /********************************************************************************************
 *	函数名称:boardapi_getModNameStr
@@ -62,6 +86,9 @@ const char *boardapi_getCnuHfid(uint32_t devType);
 *	时间:2010-08-19
 *********************************************************************************************/
 int boardapi_isCnuSupported(uint32_t DevType);
+int boardapi_isAr6400Device(uint32_t DevType);
+int boardapi_isAr7400Device(uint32_t DevType);
+int boardapi_getCnuSwitchType(uint32_t DevType);
 
 /********************************************************************************************
 *	函数名称:boardapi_mapDevModel
@@ -96,6 +123,14 @@ char * boardapi_getAlarmTypeStr(uint16_t alarmType);
 int boardapi_getAlarmLevelByCode(uint32_t alarmCode);
 
 /********************************************************************************************
+*	函数名称:boardapi_getAlarmLevelStr
+*	函数功能:获取字符串表示的告警等级
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+char * boardapi_getAlarmLevelStr(uint16_t alarmLevel);
+
+/********************************************************************************************
 *	函数名称:boardapi_getAlarmLevel
 *	函数功能:根据告警码获取该告警的等级
 *	作者:frank
@@ -110,5 +145,13 @@ int boardapi_getAlarmLevel(st_dbsAlarmlog *alarm);
 *	时间:2010-08-19
 *********************************************************************************************/
 int boardapi_setMTParameters(stMTmsgInfo *para);
+
+/********************************************************************************************
+*	函数名称:boardapi_getCltDsdtPortid
+*	函数功能:根据CLT索引号找到其对应的交换端口
+*	作者:frank
+*	时间:2013-08-19
+*********************************************************************************************/
+uint32_t boardapi_getCltDsdtPortid(uint32_t cltid);
 
 #endif 

@@ -12,8 +12,8 @@ CFLAGS +=-g -O2
 
 
 # Web language select [ZH|EN]
-HTTPD_GUI_LANGUAGE = ZH
-# HTTPD_GUI_LANGUAGE = EN
+# HTTPD_GUI_LANGUAGE = ZH
+HTTPD_GUI_LANGUAGE = EN
 
 ROOTFSDIR	=	${ROOTDIR}/apps/rootfs
 SRCDIR 		=	${ROOTDIR}/apps/httpd/src
@@ -63,7 +63,7 @@ install:
 	mkdir -p $(BIN_PATH)
 	cp $(SRCDIR)/httpd $(BIN_PATH)/
 	mkdir -p $(WEB_PATH)
-	cp -Pf $(HTML_SRC_DIR)/html/* $(WEB_PATH)/
+	cp -r $(HTML_SRC_DIR)/html/* $(WEB_PATH)/
 	
 clean:
 	make clean -C $(SRCDIR)

@@ -20,13 +20,15 @@
 #include "reg_dbs.h"
 #include "reg_alarm.h"
 #include "reg_tm.h"
+#include "reg_cmm.h"
 #include "reg_mmead.h"
 
 T_UDP_SK_INFO SK_REGI;
+T_UDP_SK_INFO SK_REG2CMM;
 static BBLOCK_QUEUE bblock;
 T_TOPOLOGY_INFO topEntry;
 uint8_t cltFlags[MAX_CLT_AMOUNT_LIMIT] = {0};
-uint8_t cnuFlags[MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT] = {0};
+uint8_t cnuFlags[MAX_CNU_AMOUNT_LIMIT] = {0};
 int REGISTER_DEBUG_ENABLE = 0;
 
 /********************************************************************************************
@@ -89,6 +91,7 @@ void RegSignalProcessHandle(int n)
 	cbat_system_sts_notification(0);
 	/* 关闭socket接口 */
 	dbs_sys_log(dbsdev, DBS_LOG_INFO, "SignalProcessHandle : module register exit");
+	reg2cmm_destroy(&SK_REG2CMM);
 	msg_mmead_destroy();
 	msg_alarm_destroy();
 	msg_tm_destroy();
@@ -100,12 +103,13 @@ void RegSignalProcessHandle(int n)
 BOOLEAN isCnuIndexOnUsed(uint32_t clt_index, uint32_t cnu_index)
 {
 	uint32_t onUsed;
+	int inode = (clt_index-1)*MAX_CNUS_PER_CLT+(cnu_index-1);
 	
-	if( BOOL_FALSE == topEntry.tb_cnu[cnu_index-1].OnUsed )
+	if( BOOL_FALSE == topEntry.tb_cnu[inode].OnUsed )
 	{
 		return BOOL_FALSE;
 	}
-	else if( CMM_SUCCESS == db_get_user_onused(1, cnu_index, &onUsed))
+	else if( CMM_SUCCESS == db_get_user_onused(clt_index, cnu_index, &onUsed))
 	{
 		if( 0 == onUsed )
 		{
@@ -118,7 +122,7 @@ BOOLEAN isCnuIndexOnUsed(uint32_t clt_index, uint32_t cnu_index)
 	}
 	else
 	{
-		fprintf(stderr, "ERROR: isCnuIndexOnUsed->db_get_user_onused !\n");
+		fprintf(stderr, "ERROR: isCnuIndexOnUsed->db_get_user_onused(%d, %d) !\n", clt_index, cnu_index);
 		return BOOL_TRUE;
 	}
 }
@@ -129,7 +133,7 @@ int set_cnu_pro_sync(uint32_t clt_index, uint32_t cnu_index, BOOLEAN status)
 	BOOLEAN flag = status?BOOL_TRUE:BOOL_FALSE;
 	
 	st_iValue.ci.tbl = DBS_SYS_TBL_ID_CNU;
-	st_iValue.ci.row = (clt_index-1)*MAX_CNU_AMOUNT_LIMIT+cnu_index;
+	st_iValue.ci.row = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
 	st_iValue.ci.col = DBS_SYS_TBL_CNU_COL_ID_SYNCH;
 	st_iValue.ci.colType = DBS_INTEGER;
 	st_iValue.len = sizeof(uint32_t);
@@ -149,35 +153,38 @@ int set_cnu_pro_sync(uint32_t clt_index, uint32_t cnu_index, BOOLEAN status)
 
 /********************************************************************************************
 *	函数名称:find_idle
-*	函数功能:从CNU列表中查找第一个空闲的index
-*	返回值:成功:返回一个可用的index, 失败:返回0
+*	函数功能:从指定CLT的CNU列表中查找第一个空闲的index
+*	返回值:成功:返回该CLT拓扑中一个可用的index, 失败:返回0
 *	作者:frank
 *	时间:2010-07-23
 *********************************************************************************************/
-int find_idle()
+int find_idle(int cltid)
 {
 	int i = 0;
-	int id = 0;
+	int cnuid = 0;
 	
-	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
+	for( i=0; i<MAX_CNUS_PER_CLT; i++ )
 	{
-		if( BOOL_FALSE == isCnuIndexOnUsed(1, i+1))
+		cnuid = i+1;
+		//printf("\n##find_idle->isCnuIndexOnUsed()\n");
+		if( BOOL_FALSE == isCnuIndexOnUsed(cltid, cnuid))
 		{
-			id = i+1;
 			break;
 		}
-		usleep(2000);
+		//usleep(2000);
 	}
-	return id;
+	return cnuid;
 }
 
 void refresh_signon_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO *activeCnu)
 {
 	//int invalidCnuAccessEn = BOOL_FALSE;
 	st_dbsCnu cnu;
+	int cnuid = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
+	int inode = cnuid-1;
 	T_TOPOLOGY_INFO *this = &topEntry;
 
-	if( CMM_SUCCESS != db_get_cnu(cnu_index, &cnu) )
+	if( CMM_SUCCESS != db_get_cnu(clt_index, cnu_index, &cnu) )
 	{
 		perror("ERROR: refresh_signon_cnu->db_get_cnu !\n");
 		return;
@@ -193,10 +200,10 @@ void refresh_signon_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 		cnu.col_sts = DEV_STS_OFFLINE;
 		cnu.col_rx = 0;
 		cnu.col_tx = 0;
-		this->tb_cnu[cnu_index-1].online = DEV_STS_OFFLINE;
-		this->tb_cnu[cnu_index-1].RxRate = 0;
-		this->tb_cnu[cnu_index-1].TxRate = 0;
-		db_update_cnu(cnu_index, &cnu);
+		this->tb_cnu[inode].online = DEV_STS_OFFLINE;
+		this->tb_cnu[inode].RxRate = 0;
+		this->tb_cnu[inode].TxRate = 0;
+		db_update_cnu(clt_index, cnu_index, &cnu);
 		/* 写系统日志*/
 		dbs_sys_log(dbsdev, DBS_LOG_WARNING, "refresh_signon_cnu encountered cnu with conflict mac address");
 		/* 发送告警*/
@@ -207,20 +214,20 @@ void refresh_signon_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 	else
 	{
 		/* 更新网元数据库*/
-		cnu.id = cnu_index;
+		cnu.id = cnuid;
 		cnu.col_sts = DEV_STS_ONLINE;
 		//cnu.col_model = activeCnu->DevType;
 		cnu.col_rx = activeCnu->AvgPhyRx;
 		cnu.col_tx = activeCnu->AvgPhyTx;
-		if( CMM_SUCCESS == db_update_cnu(cnu_index, &cnu))
+		if( CMM_SUCCESS == db_update_cnu(clt_index, cnu_index, &cnu))
 		{
 			/* 同步数据至内存数据表*/
-			//this->tb_cnu[cnu_index-1].DevType = activeCnu->DevType;
-			this->tb_cnu[cnu_index-1].online = DEV_STS_ONLINE;
-			this->tb_cnu[cnu_index-1].RxRate = activeCnu->AvgPhyRx;
-			this->tb_cnu[cnu_index-1].TxRate = activeCnu->AvgPhyTx;
+			//this->tb_cnu[inode].DevType = activeCnu->DevType;
+			this->tb_cnu[inode].online = DEV_STS_ONLINE;
+			this->tb_cnu[inode].RxRate = activeCnu->AvgPhyRx;
+			this->tb_cnu[inode].TxRate = activeCnu->AvgPhyTx;
 			/* 通知告警管理模块*/
-			cnu_sts_transition_notification(1, cnu_index, DEV_STS_ONLINE);
+			cnu_sts_transition_notification(clt_index, cnu_index, DEV_STS_ONLINE);
 		}
 		else
 		{
@@ -233,6 +240,8 @@ void refresh_signon_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO *activeCnu)
 {
 	uint32_t PIB_CRC = 0;
+	int cnuid = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
+	int inode = cnuid-1;
 	//uint32_t MOD_CRC = 0;
 	//uint32_t tid = 0;
 	st_dbsCnu cnu;
@@ -249,7 +258,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 	/* 解决该问题的办法:下发配置之前检查数据库中的设备类型
 	字段是否与activeCnu结构中的一致，若一致则下发配置，若不
 	一致则发送告警并禁止下发配置*/
-	if( CMM_SUCCESS != db_get_cnu(cnu_index, &cnu) )
+	if( CMM_SUCCESS != db_get_cnu(clt_index, cnu_index, &cnu) )
 	{
 		perror("ERROR: do_cnu_auto_config->db_get_cnu !\n");
 		/* 发送CNU放弃自动配置的告警*/
@@ -276,9 +285,9 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 			/* 这里正确的做法应当是: */
 			
 			/* 1. 将数据库和内存中该设备的状态均置为离线状态；*/
-			this->tb_cnu[cnu_index-1].online = DEV_STS_OFFLINE;
-			this->tb_cnu[cnu_index-1].RxRate = 0;
-			this->tb_cnu[cnu_index-1].TxRate = 0;
+			this->tb_cnu[inode].online = DEV_STS_OFFLINE;
+			this->tb_cnu[inode].RxRate = 0;
+			this->tb_cnu[inode].TxRate = 0;
 
 			cnu.col_sts = DEV_STS_OFFLINE;
 			cnu.col_rx = 0;
@@ -287,11 +296,11 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 			/* 2. 如果发现的设备类型合法，则更新设备的类型；*/
 			if( boardapi_isCnuSupported(activeCnu->DevType) )
 			{
-				this->tb_cnu[cnu_index-1].DevType = activeCnu->DevType;
+				this->tb_cnu[inode].DevType = activeCnu->DevType;
 				cnu.col_model = activeCnu->DevType;
 				/* 这里假定设备类型变更则一定用重新发配置*/
 				cnu.col_synch = 0;
-				if( CMM_SUCCESS != dbsUpdateCnu(dbsdev, cnu_index, &cnu) )
+				if( CMM_SUCCESS != dbsUpdateCnu(dbsdev, cnuid, &cnu) )
 				{
 					perror("ERROR: do_cnu_auto_config->dbsUpdateCnu !\n");
 					/* 发送CNU放弃自动配置的告警*/
@@ -305,7 +314,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 					case WEC701_C4:
 					{
 						iValue.ci.tbl = DBS_SYS_TBL_ID_CNUPRO;
-						iValue.ci.row = cnu_index;
+						iValue.ci.row = cnuid;
 						iValue.ci.col = DBS_SYS_TBL_PROFILE_COL_ID_BASE;
 						iValue.ci.colType = DBS_INTEGER;
 						iValue.integer = 12;
@@ -333,7 +342,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 			{
 				/* 发送非法设备接入告警*/
 				/* 通知告警管理模块*/
-				lllegal_cnu_register_notification(1, activeCnu->Mac);
+				lllegal_cnu_register_notification(clt_index, activeCnu->Mac);
 				#if 0
 				/* 禁止添加该设备*/				
 				if( CMM_SUCCESS != msg_reg_mmead_bootout_dev(this->tb_clt.Mac, activeCnu->Mac) )
@@ -540,21 +549,23 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 void refresh_active_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO activeCnu)
 {
 	st_dbsCnu cnu;
+	int cnuid = (clt_index-1)*MAX_CNUS_PER_CLT+cnu_index;
+	int inode = cnuid-1;
 	T_TOPOLOGY_INFO *this = &topEntry;
 	
-	if( (this->tb_cnu[cnu_index-1].RxRate != activeCnu.AvgPhyRx) || 
-	     (this->tb_cnu[cnu_index-1].TxRate != activeCnu.AvgPhyTx))
+	if( (this->tb_cnu[inode].RxRate != activeCnu.AvgPhyRx) || 
+	     (this->tb_cnu[inode].TxRate != activeCnu.AvgPhyTx))
 	{
-		db_get_cnu(cnu_index, &cnu);
+		db_get_cnu(clt_index, cnu_index, &cnu);
 		
-		cnu.id = cnu_index;
+		cnu.id = cnuid;
 		cnu.col_rx = activeCnu.AvgPhyRx;
 		cnu.col_tx = activeCnu.AvgPhyTx;
-		if( CMM_SUCCESS == db_update_cnu(cnu_index, &cnu))
+		if( CMM_SUCCESS == db_update_cnu(clt_index, cnu_index, &cnu))
 		{
 			/* 同步数据*/
-			this->tb_cnu[cnu_index-1].RxRate = activeCnu.AvgPhyRx;
-			this->tb_cnu[cnu_index-1].TxRate = activeCnu.AvgPhyTx;
+			this->tb_cnu[inode].RxRate = activeCnu.AvgPhyRx;
+			this->tb_cnu[inode].TxRate = activeCnu.AvgPhyTx;
 		}		
 	}
 
@@ -586,21 +597,21 @@ void do_clt_register(uint32_t clt_index, T_MMEAD_CLT_INFO activeClt)
 
 	db_get_clt(clt_index, &clt);
 
-	if( DEV_STS_OFFLINE == this->tb_clt.online )
+	if( DEV_STS_OFFLINE == this->tb_clt[clt_index-1].online )
 	{
 		clt.id = clt_index;
 		clt.col_model = activeClt.DevType;
 		clt.col_sts = DEV_STS_ONLINE;
 		clt.col_numStas = activeClt.NumStas;		
 		
-		if( CMM_SUCCESS == db_update_clt(1, &clt))
+		if( CMM_SUCCESS == db_update_clt(clt_index, &clt))
 		{
 			/* 同步数据*/
-			this->tb_clt.online = DEV_STS_ONLINE;
-			this->tb_clt.DevType = activeClt.DevType;
-			this->tb_clt.NumStas = activeClt.NumStas;
+			this->tb_clt[clt_index-1].online = DEV_STS_ONLINE;
+			this->tb_clt[clt_index-1].DevType = activeClt.DevType;
+			this->tb_clt[clt_index-1].NumStas = activeClt.NumStas;
 			/* 通知告警管理模块*/
-			clt_sts_transition_notification(1, DEV_STS_ONLINE);			
+			clt_sts_transition_notification(clt_index, DEV_STS_ONLINE);			
 			/* 通知自动升级模块*/
 			/* 通知自动配置模块*/
 			/* 代码缺失*//* 暂不支持CLT自动配置*/
@@ -613,15 +624,15 @@ void do_clt_register(uint32_t clt_index, T_MMEAD_CLT_INFO activeClt)
 	else
 	{
 		/* 更新网元数据表中的NumStas 字段*/
-		if( this->tb_clt.NumStas != activeClt.NumStas )
+		if( this->tb_clt[clt_index-1].NumStas != activeClt.NumStas )
 		{
 			clt.id = clt_index;
 			clt.col_sts = DEV_STS_ONLINE;
 			clt.col_numStas = activeClt.NumStas;
-			if( CMM_SUCCESS == db_update_clt(1, &clt))
+			if( CMM_SUCCESS == db_update_clt(clt_index, &clt))
 			{
 				/* 同步数据*/
-				this->tb_clt.NumStas = activeClt.NumStas;
+				this->tb_clt[clt_index-1].NumStas = activeClt.NumStas;
 			}
 		}
 	}
@@ -640,18 +651,19 @@ void do_clt_register(uint32_t clt_index, T_MMEAD_CLT_INFO activeClt)
 *********************************************************************************************/
 void do_clt_unregister(uint32_t clt_index)
 {
+	int inode = clt_index-1;
 	T_TOPOLOGY_INFO *this = &topEntry;
 	
-	if( DEV_STS_OFFLINE != this->tb_clt.online )
+	if( DEV_STS_OFFLINE != this->tb_clt[inode].online )
 	{
 		/* 写数据库*/
-		if( CMM_SUCCESS == db_unregister_clt(1) )
+		if( CMM_SUCCESS == db_unregister_clt(clt_index) )
 		{
 			/* 同步数据*/
-			this->tb_clt.online = DEV_STS_OFFLINE;
-			this->tb_clt.NumStas = 0;
+			this->tb_clt[inode].online = DEV_STS_OFFLINE;
+			this->tb_clt[inode].NumStas = 0;
 			/* 通知告警管理模块*/
-			clt_sts_transition_notification(1, DEV_STS_OFFLINE);
+			clt_sts_transition_notification(clt_index, DEV_STS_OFFLINE);
 		}
 		else
 		{
@@ -678,28 +690,29 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 	int autoCfgSts = 0;
 	//uint32_t userType = 0;
 	//st_dbsCnu cnu;
+	int inode = (clt_index-1)*MAX_CNUS_PER_CLT+(cnu_index-1);
 	T_TOPOLOGY_INFO *this = &topEntry;
 	
 	/* 调用该函数进行注册的CNU一定是合法的设备，因为非法
 	** CNU在注册之前就禁止添加至用户表，根本不会触发注册过程*/
 
 	/* 如果有外部重新注册请求*/
-	if( REG_CNURESET == cnuFlags[cnu_index-1] )
+	if( REG_CNURESET == cnuFlags[inode] )
 	{
 		//printf("\r\n  register event call : reset clt %d cnu %d\n", clt_index, cnu_index);
 		
 		/* 发送MME重启CNU*/
-		msg_reg_mmead_reset_cnu(activeCnu.DevType, activeCnu.Mac);
+		msg_reg_mmead_reset_eoc(activeCnu.DevType, activeCnu.Mac);
 
 		/* 将该CNU强制下线*/
 		do_cnu_unregister(clt_index, cnu_index);
 		
 		//还原标志位
-		cnuFlags[cnu_index-1] = 0;
+		cnuFlags[inode] = 0;
 
 		return;
 	}
-	else if( REG_CNU_FORCE_REGISTRATION == cnuFlags[cnu_index-1] )
+	else if( REG_CNU_FORCE_REGISTRATION == cnuFlags[inode] )
 	{
 		//printf("\r\n  register event call : force clt %d cnu %d re-registration\n", clt_index, cnu_index);
 		
@@ -723,14 +736,14 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 		//set_cnu_pro_sync(clt_index, cnu_index, BOOL_FALSE);
 
 		//还原标志位
-		cnuFlags[cnu_index-1] = 0;
+		cnuFlags[inode] = 0;
 		
 		return;
 	}
 	
 	
 	/* 如果该设备有状态变迁则进行处理*/
-	if( DEV_STS_OFFLINE == this->tb_cnu[cnu_index-1].online )
+	if( DEV_STS_OFFLINE == this->tb_cnu[inode].online )
 	{
 		#if 0
 		/* 获取该CNU的用户类型*/
@@ -792,14 +805,15 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 
 void do_cnu_delete(uint32_t clt_index, uint32_t cnu_index)
 {
+	int inode = (clt_index-1)*MAX_CNUS_PER_CLT+(cnu_index-1);
 	T_TOPOLOGY_INFO *this = &topEntry;
 
 	/* 同步数据*/
-	this->tb_cnu[cnu_index-1].online = DEV_STS_OFFLINE;
-	this->tb_cnu[cnu_index-1].RxRate = 0;
-	this->tb_cnu[cnu_index-1].TxRate = 0;
-	this->tb_cnu[cnu_index-1].OnUsed = 0;
-	bzero(this->tb_cnu[cnu_index-1].Mac, 6);
+	this->tb_cnu[inode].online = DEV_STS_OFFLINE;
+	this->tb_cnu[inode].RxRate = 0;
+	this->tb_cnu[inode].TxRate = 0;
+	this->tb_cnu[inode].OnUsed = 0;
+	bzero(this->tb_cnu[inode].Mac, 6);
 
 	//db_unregister_cnu(cnu_index);	
 	/* 数据表项在TM中已经被删除*/
@@ -821,19 +835,21 @@ void do_cnu_delete(uint32_t clt_index, uint32_t cnu_index)
 *********************************************************************************************/
 void do_cnu_unregister(uint32_t clt_index, uint32_t cnu_index)
 {
+	int inode = (clt_index-1)*MAX_CNUS_PER_CLT+(cnu_index-1);
+	int cnuid = inode + 1;
 	T_TOPOLOGY_INFO *this = &topEntry;
 	
-	if( DEV_STS_OFFLINE != this->tb_cnu[cnu_index-1].online )
+	if( DEV_STS_OFFLINE != this->tb_cnu[inode].online )
 	{
 		/* 写数据库*/
-		if( CMM_SUCCESS == db_unregister_cnu(cnu_index) )
+		if( CMM_SUCCESS == db_unregister_cnu(clt_index, cnu_index) )
 		{
 			/* 同步数据*/
-			this->tb_cnu[cnu_index-1].online = DEV_STS_OFFLINE;
-			this->tb_cnu[cnu_index-1].RxRate = 0;
-			this->tb_cnu[cnu_index-1].TxRate = 0;
+			this->tb_cnu[inode].online = DEV_STS_OFFLINE;
+			this->tb_cnu[inode].RxRate = 0;
+			this->tb_cnu[inode].TxRate = 0;
 			/* 通知告警管理模块*/
-			cnu_sts_transition_notification(1, cnu_index, DEV_STS_OFFLINE);
+			cnu_sts_transition_notification(clt_index, cnu_index, DEV_STS_OFFLINE);
 		}
 		else
 		{
@@ -879,14 +895,16 @@ int __isNewCnuMacaddr(uint8_t mac[])
 		{
 			return 0;
 		}
-		usleep(5000);
+		//usleep(5000);
 	}
 	return 1;
 }
 
 void do_create_cnu(uint8_t macaddr[])
 {
-	int idle = 0;	
+	int cltid = 1;
+	int idle = 0;
+	int inode = 0;
 	st_dbsCnu cnu;
 	T_TOPOLOGY_INFO *this = &topEntry;
 
@@ -898,14 +916,14 @@ void do_create_cnu(uint8_t macaddr[])
 		macaddr[3], macaddr[4], macaddr[5]
 	);
 	cnu.col_sts = 0;
-	cnu.col_auth = 0;
-	strcpy(cnu.col_ver, "V4.1.0.1");
+	cnu.col_auth = 1;
+	strcpy(cnu.col_ver, "Unknown");
 	cnu.col_rx = 0;
 	cnu.col_tx = 0;
 	strcpy(cnu.col_snr, "0%");
 	strcpy(cnu.col_bpc, "0%");
 	strcpy(cnu.col_att, "0dB");
-	cnu.col_synch = BOOL_FALSE;
+	cnu.col_synch = BOOL_TRUE;
 	cnu.col_row_sts = BOOL_TRUE;
 
 	/* 先判断MAC 地址是否冲突*/
@@ -917,7 +935,8 @@ void do_create_cnu(uint8_t macaddr[])
 	}
 
 	/* 判断是否达到用户上限*/
-	idle = find_idle();	
+	idle = find_idle(cltid);
+	inode = (cltid-1)*MAX_CNUS_PER_CLT+(idle-1);
 	if( 0 == idle )
 	{		
 		/* CNU 表已满，禁止添加*/
@@ -928,16 +947,16 @@ void do_create_cnu(uint8_t macaddr[])
 	else
 	{
 		/* 需要添加至数据库以及内存中*/
-		cnu.id = idle;		
-		if( CMM_SUCCESS == db_new_cnu(idle, &cnu))
+		cnu.id = inode+1;		
+		if( CMM_SUCCESS == db_new_cnu(cltid, idle, &cnu))
 		{
 			/* 同步数据*/
-			this->tb_cnu[idle-1].DevType = WEC_604;
-			memcpy((char *)(this->tb_cnu[idle-1].Mac), (const char *)(macaddr), 6);			
-			this->tb_cnu[idle-1].online = 0;
-			this->tb_cnu[idle-1].RxRate = 0;
-			this->tb_cnu[idle-1].TxRate = 0;
-			this->tb_cnu[idle-1].OnUsed = BOOL_TRUE;
+			this->tb_cnu[inode].DevType = WEC701_C4;
+			memcpy((char *)(this->tb_cnu[inode].Mac), (const char *)(macaddr), 6);			
+			this->tb_cnu[inode].online = 0;
+			this->tb_cnu[inode].RxRate = 0;
+			this->tb_cnu[inode].TxRate = 0;
+			this->tb_cnu[inode].OnUsed = BOOL_TRUE;
 			db_fflush();
 			dbs_sys_log(dbsdev, DBS_LOG_INFO, "module register create entry for cnu success !");
 			return;
@@ -951,26 +970,20 @@ void do_create_cnu(uint8_t macaddr[])
 	}	
 }
 
-int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
+int try_to_add_cnu(int cltid, T_MMEAD_CNU_INFO activeCnu)
 {
 	int idle = 0;
+	int inode = 0;
 	int invalidCnuAccessEn = BOOL_TRUE;
 	uint8_t supCnuMac0[6] = {0x30, 0x71, 0xB2, 0x00, 0x00, 0x10};
 	uint8_t supCnuMac1[6] = {0x00, 0x1E, 0xE3, 0x20, 0x11, 0x01};
-	uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
-	uint8_t MB[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
+	//uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	//uint8_t MB[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
 	st_dbsCnu cnu;
 	T_TOPOLOGY_INFO *this = &topEntry;
 
 	//printf("\n@@try_to_add_cnu\n");
-
-	/* 不允许00:00:00:00:00:00 */
-	if( memcmp(activeCnu.Mac, MA, 6) == 0 )
-	{
-		return 0;
-	}
-	/* 不允许FF:FF:FF:FF:FF:FF */
-	if( memcmp(activeCnu.Mac, MB, 6) == 0 )
+	if( !boardapi_isValidUnicastMacb(activeCnu.Mac) )
 	{
 		return 0;
 	}
@@ -980,30 +993,32 @@ int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 	{		
 		/* 发送非法设备接入告警*/
 		/* 通知告警管理模块*/
-		lllegal_cnu_register_notification(1, activeCnu.Mac);		
+		lllegal_cnu_register_notification(cltid, activeCnu.Mac);		
 	}
 
-	idle = find_idle();
+	/* 返回该CLT下一个可用的CNU索引*/
+	idle = find_idle(cltid);
+	inode = (cltid-1)*MAX_CNUS_PER_CLT+(idle-1);
 	
 	if( 0 == idle )
 	{
 		/* 发送CNU用户数量超限的告警*/
-		cnu_exceed_notification(1);
+		cnu_exceed_notification(cltid);
 		/* 禁止添加该设备*/
-		if( CMM_SUCCESS != msg_reg_mmead_bootout_dev(this->tb_clt.Mac, activeCnu.Mac) )
+		if( CMM_SUCCESS != msg_reg_mmead_bootout_dev(this->tb_clt[cltid-1].Mac, activeCnu.Mac) )
 		{
 			
-			lllegal_cnu_kick_off_notification(1, activeCnu.Mac, BOOL_FALSE);
+			lllegal_cnu_kick_off_notification(cltid, activeCnu.Mac, BOOL_FALSE);
 		}
 		else
 		{
-			lllegal_cnu_kick_off_notification(1, activeCnu.Mac, BOOL_TRUE);
+			lllegal_cnu_kick_off_notification(cltid, activeCnu.Mac, BOOL_TRUE);
 		}
 	}
 	else
 	{
 		/* 先将该CNU的信息添加至网元数据库*/
-		cnu.id = idle;
+		cnu.id = inode+1;
 		cnu.col_model = activeCnu.DevType;
 		sprintf(cnu.col_mac, "%02X:%02X:%02X:%02X:%02X:%02X", 
 			activeCnu.Mac[0], activeCnu.Mac[1], activeCnu.Mac[2], 
@@ -1019,7 +1034,9 @@ int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 		}
 		else
 		{
-			cnu.col_auth = 0;
+			/* Modified by frank */
+			//cnu.col_auth = 0;
+			cnu.col_auth = 1;
 			/* 解决移机后配置会被局端作为匿名用户而覆盖的问题*/
 			/* 用户希望在A局点下开通之后直接拿到B局点下就可以使用*/
 			/* 如下2种情况可以正常移机使用*/
@@ -1030,16 +1047,23 @@ int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 			/* 2. 终端在局点B下已经是一个预开户的用户*/
 			cnu.col_synch = BOOL_TRUE;
 		}
-		switch(activeCnu.DevType)
+
+		if(boardapi_isCnuSupported(activeCnu.DevType))
 		{
-			case WEC701_C2:
-			case WEC701_C4:
-				strcpy(cnu.col_ver, "v7.1.1-FINAL");
-				break;
-			default:
-				strcpy(cnu.col_ver, "V4.1.0.1");
-				break;
-		}		
+			if(boardapi_isAr7400Device(activeCnu.DevType))
+			{
+				strcpy(cnu.col_ver, "AR7400-v7.1.1-1-X-FINAL");
+			}
+			else
+			{
+				strcpy(cnu.col_ver, "INT6000-v4.1.0-0-2-X-FINAL");
+			}
+		}
+		else
+		{
+			strcpy(cnu.col_ver, "unknown");
+		}
+				
 		cnu.col_rx = 0;
 		cnu.col_tx = 0;
 		strcpy(cnu.col_snr, "0%");
@@ -1050,13 +1074,13 @@ int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 
 		if( 1 == cnu.col_auth )
 		{
-			if( CMM_SUCCESS == db_new_su(idle, &cnu))
+			if( CMM_SUCCESS == db_new_su(cltid, idle, &cnu))
 			{
 				/* 同步数据*/
-				this->tb_cnu[idle-1].online = DEV_STS_OFFLINE;
-				this->tb_cnu[idle-1].DevType = activeCnu.DevType;
-				memcpy((char *)(this->tb_cnu[idle-1].Mac), (const char *)(activeCnu.Mac), 6);
-				this->tb_cnu[idle-1].OnUsed = BOOL_TRUE;
+				this->tb_cnu[inode].online = DEV_STS_OFFLINE;
+				this->tb_cnu[inode].DevType = activeCnu.DevType;
+				memcpy((char *)(this->tb_cnu[inode].Mac), (const char *)(activeCnu.Mac), 6);
+				this->tb_cnu[inode].OnUsed = BOOL_TRUE;
 				db_fflush();
 			}
 			else
@@ -1066,13 +1090,13 @@ int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 		}
 		else
 		{
-			if( CMM_SUCCESS == db_new_cnu(idle, &cnu))
+			if( CMM_SUCCESS == db_new_cnu(cltid, idle, &cnu))
 			{
 				/* 同步数据*/
-				this->tb_cnu[idle-1].online = DEV_STS_OFFLINE;
-				this->tb_cnu[idle-1].DevType = activeCnu.DevType;
-				memcpy((char *)(this->tb_cnu[idle-1].Mac), (const char *)(activeCnu.Mac), 6);
-				this->tb_cnu[idle-1].OnUsed = BOOL_TRUE;
+				this->tb_cnu[inode].online = DEV_STS_OFFLINE;
+				this->tb_cnu[inode].DevType = activeCnu.DevType;
+				memcpy((char *)(this->tb_cnu[inode].Mac), (const char *)(activeCnu.Mac), 6);
+				this->tb_cnu[inode].OnUsed = BOOL_TRUE;
 				db_fflush();
 			}
 			else
@@ -1093,14 +1117,16 @@ int try_to_add_cnu(T_MMEAD_CNU_INFO activeCnu)
 *	作者:frank
 *	时间:2010-07-23
 *********************************************************************************************/
-void try_to_register_new_cun(T_MMEAD_CNU_INFO activeCnu)
+void try_to_register_new_cun(int cltid, T_MMEAD_CNU_INFO activeCnu)
 {
 	int idle = 0;
+	int cnuid = 0;
 	
-	idle = try_to_add_cnu(activeCnu);
+	idle = try_to_add_cnu(cltid, activeCnu);
 	if( idle )
 	{
-		do_cnu_register(1, idle, activeCnu);
+		cnuid = idle%MAX_CNUS_PER_CLT;
+		do_cnu_register(cltid, cnuid, activeCnu);
 	}
 }
 
@@ -1111,9 +1137,9 @@ void try_to_register_new_cun(T_MMEAD_CNU_INFO activeCnu)
 *	作者:frank
 *	时间:2010-07-23
 *********************************************************************************************/
-void do_clt_discorver(T_MMEAD_TOPOLOGY *plist)
+void do_clt_discorver(int cltid, T_MMEAD_TOPOLOGY *plist)
 {
-	do_clt_register(1, plist->clt);
+	do_clt_register(cltid, plist->clt);
 }
 
 /********************************************************************************************
@@ -1123,10 +1149,14 @@ void do_clt_discorver(T_MMEAD_TOPOLOGY *plist)
 *	作者:frank
 *	时间:2010-07-23
 *********************************************************************************************/
-void do_cnu_dropped(T_MMEAD_TOPOLOGY *plist)
+void do_cnu_dropped(int cltid, T_MMEAD_TOPOLOGY *plist)
 {
 	int i = 0;
 	int j = 0;
+	int cnuid = 0;
+	int inode = 0;
+	//int inode = (clt-1)*MAX_CNUS_PER_CLT;
+	//int cnuid = inode + 1;
 	BOOLEAN find_cnu = BOOL_FALSE;
 	BOOLEAN isCnuOnused;
 	T_TOPOLOGY_INFO *this = &topEntry;
@@ -1134,18 +1164,21 @@ void do_cnu_dropped(T_MMEAD_TOPOLOGY *plist)
 
 	/* 如果之前在线的CNU设备在plist中找不到，则说明该设备下线了*/
 	
-	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
+	for( i=0; i<MMEAD_MAX_CNU_NUM; i++ )
 	{
-		isCnuOnused = isCnuIndexOnUsed(1, i+1);
+		inode = (cltid-1)*MAX_CNUS_PER_CLT+i;
+		cnuid = i+1;
+		//printf("\n##do_cnu_dropped->isCnuIndexOnUsed()\n");
+		isCnuOnused = isCnuIndexOnUsed(cltid, cnuid);
 		/* 寻找前一次拓扑中在线的CNU设备*/
-		if( (memcmp((const char *)(this->tb_cnu[i].Mac), (const char *)null_mac, 6) != 0) 
+		if( boardapi_isValidUnicastMacb(this->tb_cnu[inode].Mac)
 			&& (BOOL_TRUE == isCnuOnused) 
-			&& (DEV_STS_ONLINE == this->tb_cnu[i].online) )
+			&& (DEV_STS_ONLINE == this->tb_cnu[inode].online) )
 		{
 			find_cnu = BOOL_FALSE;
 			for( j=0; j<plist->clt.NumStas; j++ )
 			{
-				if( memcmp((const char *)(plist->cnu[j].Mac), (const char *)(this->tb_cnu[i].Mac), 6) == 0 )
+				if( memcmp((const char *)(plist->cnu[j].Mac), (const char *)(this->tb_cnu[inode].Mac), 6) == 0 )
 				{
 					find_cnu = BOOL_TRUE;
 					break;
@@ -1154,10 +1187,10 @@ void do_cnu_dropped(T_MMEAD_TOPOLOGY *plist)
 			if( !find_cnu )
 			{
 				/* 则说明该设备下线了*/				
-				do_cnu_unregister(1, i+1);
+				do_cnu_unregister(cltid, cnuid);
 			}
 		}
-		usleep(2000);
+		//usleep(2000);
 	}
 }
 
@@ -1168,10 +1201,12 @@ void do_cnu_dropped(T_MMEAD_TOPOLOGY *plist)
 *	作者:frank
 *	时间:2010-07-23
 *********************************************************************************************/
-void do_cnu_discorver(T_MMEAD_TOPOLOGY *plist)
+void do_cnu_discorver(int cltid, T_MMEAD_TOPOLOGY *plist)
 {
 	int i = 0;
 	int j = 0;	
+	int cnuid = 0;
+	int inode = 0;
 	BOOLEAN isCnuOnused;
 	BOOLEAN discover_new = BOOL_TRUE;		
 	//uint8_t null_mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -1181,23 +1216,26 @@ void do_cnu_discorver(T_MMEAD_TOPOLOGY *plist)
 	/* 1, 新发现的设备
 	** 2, 以前为off-line但现在变为online的设备*/
 	for( i=0; i<plist->clt.NumStas; i++ )
-	{
+	{	
 		discover_new = BOOL_TRUE;
-		for( j=0; j<MAX_CNU_AMOUNT_LIMIT; j++ )
+		for( j=0; j<MAX_CNUS_PER_CLT; j++ )
 		{
-			if( 0 != memcmp((const char *)(plist->cnu[i].Mac), (const char *)(this->tb_cnu[j].Mac), 6) )
+			inode = (cltid-1)*MAX_CNUS_PER_CLT+j;
+			cnuid = j+1;
+			if( 0 != memcmp((const char *)(plist->cnu[i].Mac), (const char *)(this->tb_cnu[inode].Mac), 6) )
 			{
 				continue;
 			}
 			else
 			{
-				isCnuOnused = isCnuIndexOnUsed(1, j+1);
+				//printf("\n##do_cnu_discorver->isCnuIndexOnUsed()\n");
+				isCnuOnused = isCnuIndexOnUsed(cltid, cnuid);
 				if( BOOL_TRUE == isCnuOnused )
 				{
 					/* 表示这不是一个新发现的设备*/
 					discover_new = BOOL_FALSE;
-					do_cnu_register(1, j+1, plist->cnu[i]);
-					usleep(2000);
+					do_cnu_register(cltid, cnuid, plist->cnu[i]);
+					//usleep(2000);
 					break;
 				}
 			}
@@ -1218,7 +1256,7 @@ void do_cnu_discorver(T_MMEAD_TOPOLOGY *plist)
 		/* 发现了一个新CNU设备*/
 		if( discover_new )
 		{
-			try_to_register_new_cun(plist->cnu[i]);
+			try_to_register_new_cun(cltid, plist->cnu[i]);
 		}
 	}
 }
@@ -1234,13 +1272,13 @@ void pro_clt_dropped(uint32_t clt_index)
 {
 	int i = 0;
 	
-	for( i=0; i<(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT); i++ )
+	for( i=0; i<MAX_CNUS_PER_CLT; i++ )
 	{
-		do_cnu_unregister(1, i+1);
-		usleep(5000);
+		do_cnu_unregister(clt_index, i+1);
+		//usleep(5000);
 	}
 
-	do_clt_unregister(1);
+	do_clt_unregister(clt_index);
 }
 
 /********************************************************************************************
@@ -1250,19 +1288,19 @@ void pro_clt_dropped(uint32_t clt_index)
 *	作者:frank
 *	时间:2010-07-23
 *********************************************************************************************/
-void pro_top_sts_transition(T_MMEAD_TOPOLOGY *plist)
+void pro_top_sts_transition(int clt, T_MMEAD_TOPOLOGY *plist)
 {
 	/* 这个函数里面,CLT一定在线*/
 	/* 如果之前CLT不在线，则需要写上线*/
-	do_clt_discorver(plist);
+	do_clt_discorver(clt, plist);
 	
 	/* 如果CNU较之前有状态变迁，需要做相应逻辑处理*/
 	/* 先处理下线的设备*/	
-	do_cnu_dropped(plist);	
+	do_cnu_dropped(clt, plist);	
 
 	/* 再处理上线的设备，分为2种:
 	新发现的设备和以前为off-line但现在变为online的设备*/
-	do_cnu_discorver(plist);
+	do_cnu_discorver(clt, plist);
 }
 
 /********************************************************************************************
@@ -1272,13 +1310,13 @@ void pro_top_sts_transition(T_MMEAD_TOPOLOGY *plist)
 *	作者:frank
 *	时间:2010-07-23
 *********************************************************************************************/
-void ProcessTopologyChange(T_MMEAD_TOPOLOGY *plist)
+void ProcessTopologyChange(int clt, T_MMEAD_TOPOLOGY *plist)
 {
 	if( NULL == plist )
 	{
 		/* 此分支可能意味着CLT都下线了，但是这种情况很少发生的*/
 		/* 只需要将所有在线的设备写下线并发告警*/
-		pro_clt_dropped(1);
+		pro_clt_dropped(clt);
 		return;
 	}
 	else
@@ -1286,7 +1324,7 @@ void ProcessTopologyChange(T_MMEAD_TOPOLOGY *plist)
 		/* 进入此分支意味着CLT一定在线，但CNU可能有其他状态变更*/
 		/* plist 仅仅包含在线的设备*/	
 		debug_print_top(plist);
-		pro_top_sts_transition(plist);
+		pro_top_sts_transition(clt, plist);
 		return;		
 	}
 }
@@ -1303,17 +1341,24 @@ void ProcessRegist(void)
 	/*  在进行发包测试时候，线卡会出现丢失的现象，在此添加线卡
 	**  丢失次数计数，当连续十次线卡丢失我们才认为是真正的丢失
 	**  故障，此时再进行线卡下线逻辑的处理*/
+	int i = 0;
+	int cltid = 0;
 	int iFlag = 0;
-	int cltLossTimes = 0;
+	int cltLossTimes[MAX_CLT_AMOUNT_LIMIT];
 	T_MMEAD_TOPOLOGY nelist;
+
+	for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++ )
+	{
+		cltLossTimes[i] = 0;
+	}
 	
 	while(1)
 	{		
 		if(iFlag)
-		{
-			sleep(5);
+		{			
 			/* 发送心跳*/
 			reg2alarm_send_heartbeat_notification();
+			sleep(5);
 		}
 		else
 		{
@@ -1327,50 +1372,58 @@ void ProcessRegist(void)
 		ProcessExtReq();
 
 		/* 如果REG_CLT_RESET 被置位，此处只处理了1个CLT复位*/
-		if( REG_CLT_RESET == cltFlags[0] )
+		for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++ )
 		{
-			//printf("\n-->register event call : reset clt\n");
-			
-			//还原标志位
-			cltFlags[0] = 0;
-			
-			/* 发送MME重启CLT */
-			msg_reg_mmead_reset_cnu(topEntry.tb_clt.DevType, topEntry.tb_clt.Mac);
-			
-			/* 设备下线 */
-			ProcessTopologyChange(NULL);
-			
-			continue;
-		}
-		
-		/* 从MMEAD获取在线设备列表*/
-		if( msg_reg_mmead_get_nelist(topEntry.tb_clt.Mac, &nelist) != CMM_SUCCESS )
-		{
-			/* 可能意味着CLT都下线了，但是这种情况很少发生的*/
-			cltLossTimes++;
-			if( cltLossTimes > 10 )
+			cltid = i+1;
+			if( REG_CLT_RESET == cltFlags[i] )
 			{
-				perror("ProcessRegist->msg_reg_mmead_get_nelist failed. Maybe CLT is off-line\n");
-				ProcessTopologyChange(NULL);
+				printf("\n-->register event call : reset clt\n");
+				//还原标志位
+				cltFlags[i] = 0;				
+				/* 发送MME重启CLT */
+				msg_reg_mmead_reset_eoc(topEntry.tb_clt[i].DevType, topEntry.tb_clt[i].Mac);
+				/* 设备下线 */
+				ProcessTopologyChange(cltid, NULL);				
 			}
-			continue;
-		}
-		else
-		{
-			/*  还原计数器*/
-			if( 0 != cltLossTimes )
+			else
 			{
-				/*  产生一条线卡暂时丢失的告警*/
-				clt_heartbeat_loss_notification(1, cltLossTimes);
-				cltLossTimes = 0;
-			}
-			/* 与上一次的拓扑信息相比较，处理状态变迁的节点*/
-			ProcessTopologyChange(&nelist);
-			if( CMM_SUCCESS != db_real_fflush() )
-			{
-				perror("ProcessRegist->db_real_fflush !\n");
+				/* 如果是有效的clt */
+				if( !boardapi_isValidUnicastMacb(topEntry.tb_clt[i].Mac) )
+				{
+					continue;
+				}
+				/* 从MMEAD获取在线设备列表*/
+				else if( msg_reg_mmead_get_nelist(topEntry.tb_clt[i].Mac, &nelist) != CMM_SUCCESS )
+				{
+					/* 可能意味着CLT都下线了，但是这种情况很少发生的*/
+					cltLossTimes[i]++;
+					if( cltLossTimes[i] > 5 )
+					{
+						cltLossTimes[i] = 0;
+						printf("\nProcessRegist: loss clt%d\n", cltid);
+						ProcessTopologyChange(cltid, NULL);
+					}
+					continue;
+				}
+				else
+				{
+					/*  还原计数器*/
+					if( 0 != cltLossTimes[i] )
+					{
+						/* 防止故障时告警发送过于频繁*/
+						if( cltLossTimes[i] > 5 )
+						{
+							/*  产生一条线卡暂时丢失的告警*/
+							clt_heartbeat_loss_notification(cltid, cltLossTimes[i]);
+						}
+						cltLossTimes[i] = 0;
+					}
+					/* 与上一次的拓扑信息相比较，处理状态变迁的节点*/
+					ProcessTopologyChange(cltid, &nelist);					
+				}
 			}
 		}
+		db_real_fflush();
 	}
 }
 
@@ -1502,6 +1555,9 @@ int msg_regi_init(void)
 int init_nelib(void)
 {
 	int i = 0;
+	int j = 0;
+	int inode = 0;
+	int cltdetected = 0;
 	uint8_t null_mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	st_dbsClt clt;
 	T_TOPOLOGY_INFO *topology = &topEntry;
@@ -1525,60 +1581,85 @@ int init_nelib(void)
 		}
 		else
 		{
-			topology->tb_clt.online = 0;
-			topology->tb_clt.NumStas = 0;
-			for( i=0; i<(MAX_CLT_AMOUNT_LIMIT*MAX_CNU_AMOUNT_LIMIT); i++ )
+			for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++ )
 			{
-				topology->tb_cnu[i].online = DEV_STS_OFFLINE;
-				topology->tb_cnu[i].RxRate = 0;
-				topology->tb_cnu[i].TxRate = 0;
-			}
+				topology->tb_clt[i].online = 0;
+				topology->tb_clt[i].NumStas = 0;
+				for( j=0; j<MAX_CNUS_PER_CLT; j++ )
+				{
+					inode = i*MAX_CNUS_PER_CLT+j;
+					topology->tb_cnu[inode].online = DEV_STS_OFFLINE;
+					topology->tb_cnu[inode].RxRate = 0;
+					topology->tb_cnu[inode].TxRate = 0;
+				}
+			}			
 		}
-	}
+	}	
 	
-	/* 我们假设只有1个CLT线卡，且CBAT启动之后CLT一定在线，
-	但是系统第一次启动时CBAT并不知道CLT的MAC，此时系统
-	需要获取CLT的MAC并写入数据库，下次启动就不用再次
-	获取CLT的MAC地址，只需要从数据库取即可*/
-	if( memcmp(topology->tb_clt.Mac, null_mac, 6) == 0 )
+	/* get clt info and save to dbs */
+	for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++ )
 	{
-		printf("no clt detected in dbs, try auto scanning......\n");
-		/* 获取CLT的MAC地址并写入数据库*/
-		if( msg_reg_mmead_get_clt(&(topology->tb_clt)) != CMM_SUCCESS )
+		clt.id = i+1;
+		strcpy(clt.col_mac, "00:00:00:00:00:00");
+		clt.col_sts = DEV_STS_OFFLINE;
+		clt.col_maxStas = MAX_CNUS_PER_CLT;
+		clt.col_numStas = 0;
+		strcpy(clt.col_swVersion, "AR7400-v7.1.1-1-X-FINAL");
+		clt.col_synch = 0;		
+		
+		/* 每次启动时都重新搜索每个端口的clt */		
+		/* bingding atheros address to clt port i */
+		if( CMM_SUCCESS != reg2cmm_bindingAtheroesAddr2CablePort(&SK_REG2CMM, clt.id) )
 		{
+			printf("register binding clt%d error\n", i+1);
+			/* delete this clt in dbs */
+			clt.col_row_sts = 0;
+			db_update_clt(i+1, &clt);
 			/* 发送不能发现线卡的异常告警*/
-			clt_cannot_finded_notification(1);
-			printf("init_nelib : CMM_FAILED");
-			return CMM_FAILED;
+			clt_cannot_finded_notification(i+1);
+			continue;
 		}
 		else
 		{
-			printf("register: [discovered clt for the first time]\n");
-			/* 在这里并不做设备上线的处理*/
-			/* 仅仅只是将CLT的MAC地址写入数据库*/
-			clt.id = 1;
-			clt.col_model = topology->tb_clt.DevType;
-			sprintf(clt.col_mac, "%02X:%02X:%02X:%02X:%02X:%02X", 
-				topology->tb_clt.Mac[0], topology->tb_clt.Mac[1], topology->tb_clt.Mac[2], 
-				topology->tb_clt.Mac[3], topology->tb_clt.Mac[4], topology->tb_clt.Mac[5]
-			);
-			clt.col_sts = DEV_STS_OFFLINE;
-			clt.col_maxStas = MAX_CNU_AMOUNT_LIMIT;			
-			clt.col_numStas = 0;
-			strcpy(clt.col_swVersion, "v7.1.1-FINAL");
-			clt.col_synch = 0;
-			clt.col_row_sts = 1;				
-			if( CMM_SUCCESS != db_update_clt(1, &clt))
+			/* check clt port link status first */
+			if( 0 == reg2cmm_getCltPortLinkStatus(&SK_REG2CMM, clt.id) )
 			{
-				printf("init_nelib : CMM_FAILED");
-				return CMM_FAILED;
+				printf("probe clt%d: no clt present\r\n", i+1);
+				/* delete this clt in dbs */
+				clt.col_row_sts = 0;
+				db_update_clt(i+1, &clt);
+				/* 发送不能发现线卡的异常告警*/
+				clt_cannot_finded_notification(i+1);
+			}
+			/* 获取CLT的MAC地址并写入数据库*/
+			else if( msg_reg_mmead_get_clt(&(topology->tb_clt[i])) != CMM_SUCCESS )
+			{
+				printf("probe clt%d: no clt present\r\n", i+1);
+				/* delete this clt in dbs */
+				clt.col_row_sts = 0;
+				db_update_clt(i+1, &clt);
+				/* 发送不能发现线卡的异常告警*/
+				clt_cannot_finded_notification(i+1);				
 			}
 			else
 			{
-				db_fflush();
+				printf("probe clt%d: success\n", i+1);
+				cltdetected++;				
+				/* 在这里并不做设备上线的处理*/
+				/* 仅仅只是将CLT的MAC地址写入数据库*/				
+				clt.col_model = topology->tb_clt[i].DevType;
+				sprintf(clt.col_mac, "%02X:%02X:%02X:%02X:%02X:%02X", 
+					topology->tb_clt[i].Mac[0], topology->tb_clt[i].Mac[1], topology->tb_clt[i].Mac[2], 
+					topology->tb_clt[i].Mac[3], topology->tb_clt[i].Mac[4], topology->tb_clt[i].Mac[5]
+				);				
+				clt.col_row_sts = 1;		
+				db_update_clt(i+1, &clt);				
 			}
 		}
-	}	
+		
+	}
+	db_fflush();
+	//return cltdetected?CMM_SUCCESS:CMM_FAILED;
 	return CMM_SUCCESS;
 }
 
@@ -1629,6 +1710,15 @@ int main(void)
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 
+	/*创建与模板管理模块通讯的外部SOCKET接口*/
+	if( CMM_SUCCESS != reg2cmm_init(&SK_REG2CMM) )
+	{
+		perror("Register->reg2cmm_init error, exited !\n");
+		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module register reg2cmm_init error, exited !");
+		reg_dbsClose();
+		return CMM_CREATE_SOCKET_ERROR;
+	}
+
 	/* 创建处理外部请求的SOCKET接口*/
 	if( CMM_SUCCESS != msg_regi_init() )
 	{
@@ -1638,26 +1728,26 @@ int main(void)
 		return CMM_CREATE_SOCKET_ERROR;
 	}
 
-	/* step 1:模块启动时初始化，获取DB中原始拓扑信息*/
-	if( init_nelib() != CMM_SUCCESS )
-	{
-		perror("Register->init_nelib error, exited !\n");
-		dbs_sys_log(dbsdev, DBS_LOG_EMERG, "module register init_nelib error, exited !");
-		reg_dbsClose();
-		return CMM_FAILED;
-	}
-	
 	/* 注册异常退出句柄函数*/
-	signal(SIGTERM, RegSignalProcessHandle);	
+	signal(SIGTERM, RegSignalProcessHandle);
 
 	/* 发送系统启动的告警*/
 	cbat_system_sts_notification(1);
 
-	fprintf(stderr, "Starting module Register	......		[OK]\n\n");
-	fprintf(stderr, "====================================================================\n");
-	fprintf(stderr, "				SUCCESS\n");
-	fprintf(stderr, "====================================================================\n# \n# \n# ");
+	/* step 1:模块启动时初始化，获取DB中原始拓扑信息*/
+	if( init_nelib() != CMM_SUCCESS )
+	{
+		perror("module register done: no clt detected\n");
+		dbs_sys_log(dbsdev, DBS_LOG_WARNING, "module register done: no clt detected");
+		reg2cmm_destroy(&SK_REG2CMM);
+		msg_tm_destroy();
+		msg_alarm_destroy();
+		msg_mmead_destroy();
+		reg_dbsClose();
+		return CMM_FAILED;
+	}
 
+	fprintf(stderr, "Starting module Register	......		[OK]\n");
 	dbs_sys_log(dbsdev, DBS_LOG_INFO, "starting module register success");
 	
 	/* 循环处理注册事件*/

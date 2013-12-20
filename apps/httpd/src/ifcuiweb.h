@@ -11,6 +11,7 @@
 #include <secdefs.h>
 
 void BcmWeb_getAllInfo(PWEB_NTWK_VAR pWebVar);
+void BcmWeb_initRtl8306eSettings(PWEB_NTWK_VAR pWebVar);
 
 #endif
 

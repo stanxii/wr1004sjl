@@ -294,7 +294,7 @@ function isValidMacAddress(address) {
       for ( j = 0; j < addrParts[i].length; j++ ) {
          c = addrParts[i].toLowerCase().charAt(j);
          if ( (c >= '0' && c <= '9') ||
-              (c >= 'a' && c <= 'f') )
+              (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
             continue;
          else
             return false;
@@ -317,6 +317,25 @@ function isValidVlanId(vlanid) {
 	if ( value < 1 || value > 4094 )
 	{
             msg = 'Vlan id "' + vlanid + '" is out of range [1-4094].';
+            alert(msg);
+            return false;
+       }
+	return true;
+}
+
+function isValidBctrlValue(value) {
+	var msg;
+	var value;
+	if ( isNaN(parseInt(value)) == true )
+	{
+            msg = 'Bandwidth value "' + value + '" is invalid.';
+            alert(msg);
+            return false;
+       }
+	value = parseInt(value);
+	if ( value < 0 || value > 1526 )
+	{
+            msg = 'Bandwidth value "' + value + '" is out of range [0-1526].';
             alert(msg);
             return false;
        }

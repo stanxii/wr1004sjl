@@ -27,6 +27,7 @@ UBIFSIMG = ubifs.bin
 apps = sqlite
 apps += busybox
 apps += mtd-utils
+apps += rtl8306e
 apps += boardapi
 apps += nvm
 apps += dbs
@@ -65,6 +66,7 @@ clean:
 nfs:
 	sudo rm -rf $(NFS_DIR)/*
 	sudo cp -a $(ROOTFSDIR)/* $(NFS_DIR)/
+	sudo cp -a $(USERFSDIR)/* $(NFS_DIR)/usr/mnt/
 
 distclean:	
 	rm -f $(TFTPROOT)/$(UBIFSIMG)

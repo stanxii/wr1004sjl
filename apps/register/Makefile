@@ -12,7 +12,7 @@ LDFLAGS += -L../dbs/client/lib
 DBS_LIB = -ldbs
 BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 
-OBJ = register.o reg_dbs.o reg_alarm.o reg_mmead.o reg_tm.o
+OBJ = register.o reg_dbs.o reg_alarm.o reg_mmead.o reg_tm.o reg_cmm.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
 #BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
@@ -30,6 +30,7 @@ build:
 	$(CC) $(IFLAGS) -c reg_alarm.c $(CFLAGS)
 	$(CC) $(IFLAGS) -c reg_mmead.c $(CFLAGS)
 	$(CC) $(IFLAGS) -c reg_tm.c $(CFLAGS)
+	$(CC) $(IFLAGS) -c reg_cmm.c $(CFLAGS)
 	$(CC) $(OBJ) -o register $(LDFLAGS) $(DBS_LIB) $(BOARDAPI_LD_FLAGS)
 	$(STRIP) register
 	

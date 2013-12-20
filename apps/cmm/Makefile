@@ -24,7 +24,9 @@ BOARDAPI_LD_FLAGS = -L../boardapi -lboardapi
 
 QD_LIB = $(DSDTSWDIR)/Library/qdDrv.o
 
-OBJ = cmm.o cmm_tm.o cmm_mmead.o cmm_reg.o cmm_alarm.o cmm_dsdt.o cmm_sysMonitor.o upgrade.o at30ts75.o at30ts.o  i2c_recieve.o i2c_transmit.o
+OBJ = cmm.o cmm_tm.o cmm_mmead.o cmm_reg.o cmm_alarm.o cmm_dsdt.o 
+OBJ += cmm_sysMonitor.o upgrade.o at30ts75.o at30ts.o  i2c_recieve.o i2c_transmit.o
+OBJ += cmm_rtl8306e.o
 
 ROOTFSDIR = ${ROOTDIR}/apps/rootfs
 #BIN_PATH = $(ROOTFSDIR)/usr/mnt/app
@@ -49,6 +51,7 @@ build:
 	$(CC) $(IFLAGS) -c cmm_mmead.c $(CFLAGS)
 	$(CC) $(IFLAGS) -c cmm_reg.c $(CFLAGS)
 	$(CC) $(IFLAGS) -c cmm_alarm.c $(CFLAGS)
+	$(CC) $(IFLAGS) -c cmm_rtl8306e.c $(CFLAGS)
 	$(CC) $(IFLAGS) $(DSDT_INC) -c cmm_dsdt.c $(CFLAGS)
 	$(CC) $(IFLAGS) -c cmm.c $(CFLAGS)
 	$(CC) $(OBJ) $(QD_LIB) -o cmm $(LDFLAGS) $(DBS_LIB) $(BOARDAPI_LD_FLAGS)

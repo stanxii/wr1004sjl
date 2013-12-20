@@ -25,6 +25,7 @@
 #define CLI_CMD_FORMAT_DEBUG "debug: {cmm}|{dbs}|{sql} {enable}|{disable}"
 #define CLI_CMD_FORMAT_AR8236_SMI_REG "ar8236-reg: {read}|{write <regvalue(h0x00~0xffffffff)>} {register <regad(h0x00~0xffff)>}"
 #define CLI_CMD_FORMAT_AR8236_SMI_PHY "ar8236-phy: {read}|{write <regvalue(h0x00~0xffff)>} {phy <phyad(h0~4)>} {register <regad(h0x00~0xff)>}"
+#define CLI_CMD_FORMAT_CNU_SWITCH "cnu-switch: {read}|{write <regvalue(h0x0000~0xffff)>} {phy <phyad(u0~6)>} {register <regad(u0~32)>} {page <pageid(u0~3)>}"
 #define CLI_CMD_FORMAT_MME_MDIO "mme-mdio: {read}|{write <regvalue(h0x00~0xffff)>} {phy <phyad(h0x0~0xf)>} {register <regad(h0x00~0xff)>}"
 #define CLI_CMD_FORMAT_VLAN "vlan: {set <port(eth1|eth2|eth3|eth4)>} {vlan-id <vid(u1~4094)>}"
 #define CLI_CMD_FORMAT_UNDO_CNU_VLAN "undo vlan"
@@ -57,6 +58,7 @@
 #define CLI_CMD_FORMAT_DSDT_DBG_STAS "dsdt-stats: {print}|{clear}"
 #define CLI_CMD_FORMAT_DSDT_TIMING_DELAY "dsdt-rgmii-delay: {get}|{enable}|{disable} {port5}|{port6} {rx}|{tx}|{all}"
 #define CLI_CMD_FORMAT_DSDT_PORT_MIRROR "dsdt-port-mirror: {from <sport(p0|p1|p2|p3|p4|p5|p6)>} {to <deport(p0|p1|p2|p3|p4|p5|p6)>}"
+#define CLI_CMD_FORMAT_DSDT_MAC_BINDING "dsdt-binding: {mac-address <mac(c)>} {to <deport(p0|p1|p2|p3|p4|p5|p6)>}"
 
 #endif
 

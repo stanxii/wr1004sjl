@@ -31,6 +31,7 @@
 #include "cmm_reg.h"
 #include "cmm_alarm.h"
 #include "cmm_dsdt.h"
+#include "cmm_rtl8306e.h"
 #include "upgrade.h"
 #include "at30tk175stk/at30ts75.h"
 
@@ -466,10 +467,14 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 	{
 		return CMM_SUCCESS;
 	}
-	if( req->HEADER.usMsgType == CMM_GET_CBAT_TEMPERATURE )
+	if( req->HEADER.usSrcMID == MID_REGISTER )
 	{
 		return CMM_SUCCESS;
 	}
+	if( req->HEADER.usMsgType == CMM_GET_CBAT_TEMPERATURE )
+	{
+		return CMM_SUCCESS;
+	}	
 
 	/* 获取系统当前时间*/
 	time(&b_time);
@@ -645,6 +650,16 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 		case CMM_SET_DSDT_RGMII_DELAY:
 		{
 			strcpy(log.cmd, "CMM_SET_DSDT_RGMII_DELAY");
+			break;
+		}
+		case CMM_CNU_SWITCH_READ:
+		{
+			strcpy(log.cmd, "read cnu switch register");
+			break;
+		}
+		case CMM_CNU_SWITCH_WRITE:
+		{
+			strcpy(log.cmd, "write cnu switch register");
 			break;
 		}
 		default:
@@ -1104,6 +1119,192 @@ int CMM_ProcessWriteAr8236Phy(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+int CMM_ProcessCnuSwitchConfigRead(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+	
+	st_rtl8306eSettings ack_data;
+
+	if( (req_data->cnu<1)||(req_data->cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, req_data->cnu, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != mmead_get_rtl8306e_configs(bMac, &ack_data) )
+	{
+		printf("\n#ERROR[05]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, (uint8_t *)&ack_data, sizeof(st_rtl8306eSettings));
+
+	return opt_sts;
+	
+}
+
+
+int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
+{
+	uint32_t len = 0;
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	uint8_t mod[1024] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	
+	//st_rtl8306eSettings ack_data;
+
+	if( (req_data->node.cnu<1)||(req_data->node.cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, req_data->node.cnu, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	//gen mod
+	len = rtl8306e_gen_mod(&req_data->rtl8306eConfig, mod);
+	if( len == 0 )
+	{
+		printf("\n#ERROR[05]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	//**************send to mmead*************//
+	opt_sts = mmead_write_rtl8306e_mod(bMac, mod, len);
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+
+	return opt_sts;
+	
+}
+
+int CMM_ProcessCnuSwitchRead(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	T_szSwRtl8306eConfig *req_data = (T_szSwRtl8306eConfig *)(req->BUF);
+	
+	T_szSwRtl8306eConfig ack_data;
+	//T_szMdioPhy ar8236_phy;
+	
+
+	ack_data.clt = req_data->clt;
+	ack_data.cnu = req_data->cnu;
+	ack_data.mdioInfo.phy = req_data->mdioInfo.phy;
+	ack_data.mdioInfo.reg = req_data->mdioInfo.reg;
+	ack_data.mdioInfo.page = req_data->mdioInfo.page;
+	ack_data.mdioInfo.value = 0x0000;
+	//printf("\nRead phy %d register %d page %d\n", ack_data.mdioInfo.phy, ack_data.mdioInfo.reg, ack_data.mdioInfo.page);
+
+	if( (ack_data.cnu<1)||(ack_data.cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}	
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, ack_data.cnu, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != mmead_get_rtl8306e_register(bMac, &ack_data) )
+	{
+		printf("\n#ERROR[05]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, (uint8_t *)&ack_data, sizeof(T_szSwRtl8306eConfig));
+
+	return opt_sts;
+}
+
+int CMM_ProcessCnuSwitchWrite(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	T_szSwRtl8306eConfig *req_data = (T_szSwRtl8306eConfig *)(req->BUF);
+	
+	if( (req_data->cnu < 1)||(req_data->cnu > MAX_CNU_AMOUNT_LIMIT))
+	{
+		opt_sts = CMM_FAILED;
+	}	
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, req_data->cnu, &cnu) )
+	{
+		opt_sts = CMM_DB_GETCNU_ERROR;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else
+	{
+		/* 从MMEAD获取信息*/
+		opt_sts = mmead_set_rtl8306e_register(bMac, req_data);		
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
+
 int CMM_ProcessReadAr8236Reg(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
@@ -1201,6 +1402,7 @@ int CMM_ProcessWriteAr8236Reg(BBLOCK_QUEUE *this)
 int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
+	int tblCnuRid = 0;
 	st_dbsCnu cnu;
 	st_dbsClt clt;
 	uint8_t oda[6] = {0};
@@ -1211,6 +1413,8 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	T_MMEAD_LINK_DIAG_INFO inputInfo;
 	T_MMEAD_LINK_DIAG_RESULT outputInfo;	
 
+	tblCnuRid = (msg_data->clt - 1)*MAX_CNUS_PER_CLT + msg_data->cnu;
+		
 	/* RX/TX */
 	if( msg_data->dir > 1 )
 	{
@@ -1221,7 +1425,7 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	}
 
 	/* Get CCo MAC address */
-	if( CMM_SUCCESS == dbsGetClt(dbsdev, 1, &clt) )
+	if( CMM_SUCCESS == dbsGetClt(dbsdev, msg_data->clt, &clt) )
 	{
 		inputInfo.dir = msg_data->dir;
 		if( CMM_SUCCESS != boardapi_macs2b(clt.col_mac, inputInfo.ccoMac) )
@@ -1242,7 +1446,7 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 	}
 
 	/* CNU 不在线禁止诊断*/
-	if( CMM_SUCCESS == dbsGetCnu(dbsdev, msg_data->cnu, &cnu) )
+	if( CMM_SUCCESS == dbsGetCnu(dbsdev, tblCnuRid, &cnu) )
 	{
 		if( DEV_STS_ONLINE != cnu.col_sts )
 		{
@@ -1315,6 +1519,25 @@ int CMM_ProcessGetPortPropety(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+int CMM_ProcessGetCltPortLinkSts(BBLOCK_QUEUE *this)
+{
+	//int opt_sts = CMM_SUCCESS;
+	uint32_t cltid = 0;
+	uint32_t portid = 0;
+	uint32_t linkStatus = 0;
+
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	uint32_t *req_data = (uint32_t *)(req->BUF);
+	cltid = *req_data;
+
+	portid = boardapi_getCltDsdtPortid(cltid);
+	linkStatus = cmm2dsdt_getPortLinkStatus(portid);
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(CMM_SUCCESS, this, (uint8_t *)&linkStatus, sizeof(linkStatus));
+	return CMM_SUCCESS;
+}
+
 int CMM_ProcessGetDsdtRgmiiDelay(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;	
@@ -1368,6 +1591,115 @@ int CMM_ProcessSetDsdtPortMirroring(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+int CMM_ProcessAddAtherosMulticastAddr2CablePort(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	uint32_t portid = 0;
+	
+	T_Msg_CMM *msg = (T_Msg_CMM *)(this->b);
+	uint32_t cid = *(uint32_t *)(msg->BUF);
+
+	switch(cid)
+	{
+		case 1:
+		{
+			#ifdef PORT_CABLE1_PORT_ID
+			portid = PORT_CABLE1_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case 2:
+		{
+			#ifdef PORT_CABLE2_PORT_ID
+			portid = PORT_CABLE2_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case 3:
+		{
+			#ifdef PORT_CABLE3_PORT_ID
+			portid = PORT_CABLE3_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case 4:
+		{
+			#ifdef PORT_CABLE4_PORT_ID
+			portid = PORT_CABLE4_PORT_ID;
+			#else
+			portid = PORT_CABLE_PORT_NULL;
+			#endif
+			break;
+		}
+		case PORT_CABLE_PORT_ALL:
+		{
+			portid = PORT_CABLE_PORT_ALL;
+			break;
+		}
+		default:
+		{
+			portid = PORT_CABLE_PORT_NULL;
+			break;
+		}
+	}
+
+	/* del atu mac entry before add */
+	if( CMM_SUCCESS == cmm2dsdt_delAtherosMulticastAddressFromAtu() )
+	{
+		if( PORT_CABLE_PORT_ALL == portid )
+		{
+			opt_sts = cmm2dsdt_addAtherosMulticastAddressToAllCablePort();
+		}
+		else if( PORT_CABLE_PORT_NULL == portid )
+		{
+			opt_sts = CMM_SUCCESS;
+		}
+		else
+		{
+			opt_sts = cmm2dsdt_addAtherosMulticastAddress2Port(portid);
+		}
+	}
+	else
+	{
+		opt_sts = CMM_FAILED;
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
+
+int CMM_ProcessDelAtherosMulticastAddr(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+
+	opt_sts = cmm2dsdt_delAtherosMulticastAddressFromAtu();	
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
+
+int CMM_ProcessDsdtMacAddressBinding(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	
+	T_Msg_CMM *msg = (T_Msg_CMM *)(this->b);
+	stDsdtMacBinding *macBindingInfo = (stDsdtMacBinding *)(msg->BUF);
+	
+	/* del atu mac entry before add */
+	opt_sts = cmm2dsdt_bindingMacAddress(macBindingInfo);
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+	return opt_sts;
+}
 
 int CMM_ProcessGetCbatTemperature(BBLOCK_QUEUE *this)
 {
@@ -1837,6 +2169,26 @@ void cmmProcessManager(void)
 				opt_sts = CMM_ProcessWriteAr8236Reg(this);
 				break;
 			}
+			case CMM_CNU_SWITCH_READ:
+			{
+				opt_sts = CMM_ProcessCnuSwitchRead(this);
+				break;
+			}
+			case CMM_CNU_SWITCH_CONFIG_READ:
+			{
+				opt_sts = CMM_ProcessCnuSwitchConfigRead(this);
+				break;
+			}
+			case CMM_CNU_SWITCH_CONFIG_WRITE:
+			{
+				opt_sts = CMM_ProcessCnuSwitchConfigWrite(this);
+				break;
+			}
+			case CMM_CNU_SWITCH_WRITE:
+			{
+				opt_sts = CMM_ProcessCnuSwitchWrite(this);
+				break;
+			}
 			case CMM_MME_MDIO_READ:
 			{
 				opt_sts = CMM_ProcessMmeMdioPhyRead(this);
@@ -1951,6 +2303,26 @@ void cmmProcessManager(void)
 				opt_sts=CMM_ProcessSetDsdtPortMirroring(this);
 				break;
 			}
+			case CMM_ADD_ATHEROS_ADDR:
+			{
+				opt_sts=CMM_ProcessAddAtherosMulticastAddr2CablePort(this);
+				break;
+			}
+			case CMM_DEL_ATHEROS_ADDR:
+			{
+				opt_sts=CMM_ProcessDelAtherosMulticastAddr(this);
+				break;
+			}
+			case CMM_DSDT_MAC_BINDING:
+			{
+				opt_sts=CMM_ProcessDsdtMacAddressBinding(this);
+				break;
+			}
+			case CMM_GET_CLT_PORT_LINK_STS:
+			{
+				opt_sts = CMM_ProcessGetCltPortLinkSts(this);
+				break;
+			}
 			case CMM_CONNET:
 			{
 				opt_sts = CMM_ProcessMTConnect(this);
@@ -1960,7 +2332,7 @@ void cmmProcessManager(void)
 			{
 				opt_sts = CMM_ProcessMTProgram(this);
 				break;
-			}
+			}			
 			default:
 			{
 				/* 对于不支持的消息类型应该给予应答以便让请求者知道 */
@@ -2146,7 +2518,7 @@ int main(void)
 	}
 	else
 	{
-		fprintf(stderr, "cmm binding atheros multicast address\n");
+		//fprintf(stderr, "cmm binding atheros multicast address\n");
 		dbs_sys_log(dbsdev, DBS_LOG_INFO, "cmm add atheros multicast address to all cable port");
 	}
 	

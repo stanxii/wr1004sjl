@@ -81,6 +81,8 @@ ULONG CLI_Cmd_DoDsdtPortStats();
 ULONG CLI_Cmd_DoDsdtRgmiiTimingDelay();
 ULONG CLI_Cmd_DoDsdtPortMirror();
 ULONG CLI_CmdMmeMdio();
+ULONG CLI_CmdCnuSwitch();
+ULONG CLI_Cmd_DoDsdtMacBinding();
 /* ****************** 更新后的函数定义****************** */
 
 

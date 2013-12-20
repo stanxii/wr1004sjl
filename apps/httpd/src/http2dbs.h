@@ -15,6 +15,7 @@ int http2dbs_getCnu(uint16_t id, st_dbsCnu * cnu);
 
 int http2dbs_doCltAgTimeSettings(PWEB_NTWK_VAR pWebVar);
 int http2dbs_doCltDecapSettings(PWEB_NTWK_VAR pWebVar);
+int http2dbs_doCltQosEnable(PWEB_NTWK_VAR pWebVar);
 int http2dbs_doCltQosSettings(PWEB_NTWK_VAR pWebVar);
 
 int http2dbs_getWebAdminPwd(char *varValue);

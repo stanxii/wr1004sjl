@@ -51,7 +51,14 @@ struct mime_handler {
                 char *sptPasswd, char *usrPasswd);
 };
 
+struct cgi_do_file_list{
+	char *path;
+	size_t len;
+	void *data;
+};
+
 extern struct mime_handler mime_handlers[];
+extern struct cgi_do_file_list cgi_do_file_table[];
 
 /* CGI helper function */
 extern void parse_cgi(char *path, void (*set)(char *name, char *value));

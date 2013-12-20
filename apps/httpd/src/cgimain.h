@@ -237,6 +237,50 @@ typedef struct {
    int eth4sts;
    int eth4linksts;
 
+   //add for 8306e
+   int swVlanEnable;
+   int swUplinkPortVMode;
+   int swEth1PortVMode;
+   int swEth2PortVMode;
+   int swEth3PortVMode;
+   int swEth4PortVMode;
+   int swUplinkPortVid;
+   int swEth1PortVid;
+   int swEth2PortVid;
+   int swEth3PortVid;
+   int swEth4PortVid;
+   
+   int swRxRateLimitEnable;
+   int swTxRateLimitEnable;
+   int swUplinkRxRate;
+   int swEth1RxRate;
+   int swEth2RxRate;
+   int swEth3RxRate;
+   int swEth4RxRate;
+   int swUplinkTxRate;
+   int swEth1TxRate;
+   int swEth2TxRate;
+   int swEth3TxRate;
+   int swEth4TxRate;
+
+   int swLoopDetect;
+   int swldmethod;
+   int swldtime;
+   int swldbckfrq;
+   int swldsclr;
+   int swpabuzzer;
+   int swentaglf;
+   int swlpttlinit;
+   int swlpfpri;
+   int swenlpfpri;
+   int swdisfltlf;
+   int swenlpttl;
+   int swEth1LoopStatus;
+   int swEth2LoopStatus;
+   int swEth3LoopStatus;
+   int swEth4LoopStatus;
+   char swSwitchSid[IFC_SMALL_LEN];
+
    int wecSysupHours;
    int wecSysupMins;
    int wecSysupSecs;
@@ -323,6 +367,7 @@ void cgiGetVar(char *varName, char *varValue);
 void cgiSetVar(char *varName, char *varValue);
 
 void cgiGetAllInfo(void);
+void cgiInitRtl8306eSettings(void);
 
 int cgiReboot(void);
 void cgiUrlDecode(char *s);

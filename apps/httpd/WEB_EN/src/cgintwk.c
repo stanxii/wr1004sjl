@@ -75,50 +75,202 @@ int mapRate2SelectIndex(uint32_t rate)
 	return 0;
 }
 
-void writePageHeader(FILE *fs) {
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
-	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n</head>\n<body>\n<blockquote>\n<form>\n");
-}
 
-void writePopErrorPage(FILE *fs)
+void cgiNtwkView(char *query, FILE *fs)
 {
-	writePageHeader(fs);		
+	st_dbsNetwork row;
+	
+	dbsGetNetwork(dbsdev, 1, &row);
+	
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'/>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'/>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript' src='util.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+	
+	fprintf(fs, "function frmLoad(){\n");
+	fprintf(fs, "	var ivalue;\n");
+	fprintf(fs, "	var ists;\n");
+	fprintf(fs, "	$('#ethIpAddress').val('%s');\n", row.col_ip);
+	fprintf(fs, "	$('#ethSubnetMask').val('%s');\n", row.col_netmask);
+	fprintf(fs, "	$('#ethGateway').val('%s');\n", row.col_gw);
+	fprintf(fs, "	$('#ethaddr').val('%s');\n", row.col_mac);
+	fprintf(fs, "	$('#ethaddr').attr('disabled', 'disabled');\n");
+	if( 0 == row.col_mvlan_sts )
+	{
+		fprintf(fs, "	hideMgmtVlanInfo(true);\n");
+		fprintf(fs, "	$('#enblMgmtVlan').attr('checked', false);\n");
+		fprintf(fs, "	$('#vlanid').val(1);\n");
+	}
+	else
+	{
+		fprintf(fs, "	hideMgmtVlanInfo(false);\n");
+		fprintf(fs, "	$('#enblMgmtVlan').attr('checked', true);\n");
+		fprintf(fs, "	$('#vlanid').val(%d);\n", row.col_mvlan_id);
+	}
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "function hideMgmtVlanInfo(hide){\n");
+	fprintf(fs, "	if( hide ) $('#mgmtVlanInfo').hide();\n");
+	fprintf(fs, "	else $('#mgmtVlanInfo').show();\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "function mgmtVlanCbClick(){\n");
+	fprintf(fs, "	if ( $('#enblMgmtVlan').is(':checked') == true ) hideMgmtVlanInfo(false);\n");
+	fprintf(fs, "	else hideMgmtVlanInfo(true);\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "function btnSave(){\n");
+	fprintf(fs, "	var ivalue;\n");
+	fprintf(fs, "	var loc = 'ntwkcfg.cgi?';\n");
+	fprintf(fs, "	ivalue = $('#ethIpAddress').val();\n");
+	fprintf(fs, "	if ( isValidIpAddress(ivalue) == false ){\n");
+	fprintf(fs, "		alert('IP address \"' + ivalue + '\" is invalid.');\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}else loc += 'wecIpaddr=' + ivalue;\n");
+	fprintf(fs, "	ivalue = $('#ethSubnetMask').val();\n");
+	fprintf(fs, "	if ( isValidSubnetMask(ivalue) == false ){\n");
+	fprintf(fs, "		alert('Subnet mask \"' + ivalue + '\" is invalid.');\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, " 	}else loc += '&wecNetmask=' + ivalue;\n");
+	fprintf(fs, "	ivalue = $('#ethGateway').val();\n");
+	fprintf(fs, "	if ( isValidGwAddress(ivalue) == false ){\n");
+	fprintf(fs, "		alert('Gateway \"' + ivalue + '\" is invalid.');\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}else loc += '&wecDefaultGw=' + ivalue;\n");
+	fprintf(fs, "	ivalue = $('#vlanid').val();\n");
+	fprintf(fs, "	if ( enblMgmtVlan.checked == true ){\n");
+	fprintf(fs, "		loc += '&wecMgmtVlanSts=1';\n");
+	fprintf(fs, "		if ( isValidVlanId(ivalue) == false ) return;\n");
+	fprintf(fs, "		else loc += '&wecMgmtVlanId=' + ivalue;\n");
+	fprintf(fs, "	}else{\n");
+	fprintf(fs, "		loc += '&wecMgmtVlanSts=0';\n");
+	fprintf(fs, "		loc += '&wecMgmtVlanId=1';\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	frmLoad();\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#dialog').dialog({\n");
+	fprintf(fs, "		autoOpen: false,\n");
+	fprintf(fs, "		width:450,\n");
+	fprintf(fs, "		show:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'blind',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "		hide:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'explode',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#opener').button(\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			icons:\n");
+	fprintf(fs, "			{\n");
+	fprintf(fs, "				primary: 'ui-icon-help'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "			text: false\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	).click(function(){\n");
+	fprintf(fs, "		$('#dialog').dialog('open');\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#comBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-arrowthickstop-1-s'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#comBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnSave();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
 	fprintf(fs, "<br>\n");
 	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='maintitle'><b>System Message</b></td>\n");		
-	fprintf(fs, "	</tr>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>Network Settings</b></td></tr>\n");
 	fprintf(fs, "</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='mainline' width=450></td>\n");		
-	fprintf(fs, "	</tr>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
 	fprintf(fs, "</table>\n");
-	fprintf(fs, "<br>This page displays the results of your operating.</br>\n");
-	fprintf(fs, "<br><br>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='diagret' width=250>Operating Results</td>\n");	
-	fprintf(fs, "		<td class='diagret' width=150>&nbsp;</td>\n");	
-	fprintf(fs, "	</tr>\n");
-	fprintf(fs, "	<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>\n");
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='diagdata'>Operating Status</td>\n");
-	fprintf(fs, "		<td class='diagdata'><b><font color=red>Failed</font></b></td>\n");
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "	<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>\n");
-	fprintf(fs, "	<tr><td class='listend' colspan=2></td></tr>\n");	
-	fprintf(fs, "</table>\n");
-	fprintf(fs, "<br><br>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<div id='accordion'>\n");
+	fprintf(fs, "	<h3>Network configuration parameters</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata' width=260>IP Address:</td>\n");
+	fprintf(fs, "				<td class='diagdata' width=300><input type='text' id='ethIpAddress'></td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Netmask:</td>\n");
+	fprintf(fs, "				<td class='diagdata'><input type='text' id='ethSubnetMask'></td>\n");
+	fprintf(fs, "			</tr>\n");	
+	fprintf(fs, "				<td class='diagdata'>Default Gateway:</td>\n");
+	fprintf(fs, "				<td class='diagdata'><input type='text' id='ethGateway'></td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>MAC Address:</td>\n");
+	fprintf(fs, "				<td class='diagdata'><input type='text' id='ethaddr'></td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata' colspan=2>&nbsp;</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'><input type='checkbox' id='enblMgmtVlan' onClick='mgmtVlanCbClick()'></td>\n");
+	fprintf(fs, "				<td class='diagdata'>Enable MGMT-VLAN</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "		</table>\n");
+
+	fprintf(fs, "		<div id='mgmtVlanInfo'>\n");
+	fprintf(fs, "			<table border=0 cellpadding=0 cellspacing=0>	\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata' width=260>MGMT VLAN-ID</td>\n");
+	fprintf(fs, "					<td class='diagdata' width=300><input type='text' id='vlanid'></td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "			</table>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "</div>\n");	
 	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='window.close()' value='Close'>\n");
+	fprintf(fs, "	<button id='comBtn'>Commit</button>\n");
+	fprintf(fs, "	<button id='opener'>Help</button>\n");
 	fprintf(fs, "</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	
+	fprintf(fs, "<div id='dialog' title='Help Information'>\n");
+	fprintf(fs, "	Through this page, you can set the management IP address and VLAN of the device. </br>\n");
+	fprintf(fs, "	<br>Note:</br>\n");
+	fprintf(fs, "	1. Make sure to save the modified configuration to nonvolatile memory.</br>\n");
+	fprintf(fs, "	2. Network settings will take effect after the system restart.</br>\n");
+	fprintf(fs, "	3. Please login the device by the new IP address and VLAN after the settings to take effect.</br>	\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
 	fflush(fs);	
 }
+
 
 void cgiPortPropety(char *query, FILE *fs)
 {
@@ -128,207 +280,222 @@ void cgiPortPropety(char *query, FILE *fs)
 	cgiGetValueByName(query, "portid", action);
 	id = atoi(action);
 
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
-	
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+
 	fprintf(fs, "<script language='javascript'>\n");
-
-	fprintf(fs, "function frmLoad() {\n");
-	fprintf(fs, "	with ( document.forms[0] ) {\n");
-	
-	if( 1 == id )
-	{
-		fprintf(fs, "		portSpeed.selectedIndex = %d\n", glbWebVar.eth1speed);
-		fprintf(fs, "		portDuplex.selectedIndex = %d\n", glbWebVar.eth1duplex);
-		fprintf(fs, "		portPri.selectedIndex = %d\n", glbWebVar.eth1pri);
-		fprintf(fs, "		portFlowControl.selectedIndex = %d\n", glbWebVar.eth1fc);
-		fprintf(fs, "		portStatus.selectedIndex = %d\n", glbWebVar.eth1sts);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "		portSpeed.selectedIndex = %d\n", glbWebVar.eth2speed);
-		fprintf(fs, "		portDuplex.selectedIndex = %d\n", glbWebVar.eth2duplex);
-		fprintf(fs, "		portPri.selectedIndex = %d\n", glbWebVar.eth2pri);
-		fprintf(fs, "		portFlowControl.selectedIndex = %d\n", glbWebVar.eth2fc);
-		fprintf(fs, "		portStatus.selectedIndex = %d\n", glbWebVar.eth2sts);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "		portSpeed.selectedIndex = %d\n", glbWebVar.eth3speed);
-		fprintf(fs, "		portDuplex.selectedIndex = %d\n", glbWebVar.eth3duplex);
-		fprintf(fs, "		portPri.selectedIndex = %d\n", glbWebVar.eth3pri);
-		fprintf(fs, "		portFlowControl.selectedIndex = %d\n", glbWebVar.eth3fc);
-		fprintf(fs, "		portStatus.selectedIndex = %d\n", glbWebVar.eth3sts);
-	}
-	else
-	{
-		fprintf(fs, "		portSpeed.selectedIndex = %d\n", glbWebVar.eth4speed);
-		fprintf(fs, "		portDuplex.selectedIndex = %d\n", glbWebVar.eth4duplex);
-		fprintf(fs, "		portPri.selectedIndex = %d\n", glbWebVar.eth4pri);
-		fprintf(fs, "		portFlowControl.selectedIndex = %d\n", glbWebVar.eth4fc);
-		fprintf(fs, "		portStatus.selectedIndex = %d\n", glbWebVar.eth4sts);
-	}
-
-	fprintf(fs, "	}\n");
-	fprintf(fs, "}\n");	
-	
-	fprintf(fs, "function btnSave(portid){\n");
-	fprintf(fs, "	var loc = 'portPropety.cgi?portid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0]){\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "		loc += '&eth1speed=' + portSpeed.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth1duplex=' + portDuplex.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth1pri=' + portPri.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth1fc=' + portFlowControl.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth1sts=' + portStatus.selectedIndex;\n");
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "		loc += '&eth2speed=' + portSpeed.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth2duplex=' + portDuplex.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth2pri=' + portPri.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth2fc=' + portFlowControl.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth2sts=' + portStatus.selectedIndex;\n");		
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "		loc += '&eth3speed=' + portSpeed.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth3duplex=' + portDuplex.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth3pri=' + portPri.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth3fc=' + portFlowControl.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth3sts=' + portStatus.selectedIndex;\n");		
-	}
-	else
-	{
-		fprintf(fs, "		loc += '&eth4speed=' + portSpeed.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth4duplex=' + portDuplex.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth4pri=' + portPri.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth4fc=' + portFlowControl.selectedIndex;\n");
-		fprintf(fs, "		loc += '&eth4sts=' + portStatus.selectedIndex;\n");
-	}
-	fprintf(fs, "		if( portStatus.selectedIndex == 0 ){\n");
-	fprintf(fs, "			if(!confirm('Warning: The port will be shutdown. Are you sure to do it?')) return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "	}\n");
-	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");		
+	fprintf(fs, "function btnReturn(){\n");
+	fprintf(fs, "	var loc = 'wecPortPropety.html';\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
-	fprintf(fs, "}\n");	
-	
-	fprintf(fs, "</script>\n");
-	
-	fprintf(fs, "</head>\n<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n\n");
-
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function btnSave(portid){\n");
+	fprintf(fs, "	var loc = 'portPropety.cgi?portid=%d';\n", id);
 	if( 1 == id )
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH1 Propety</b></td>\n</tr>\n</table>\n");
+		fprintf(fs, "		loc += '&eth1speed=' + $(\"#portSpeed\").val();\n");
+		fprintf(fs, "		loc += '&eth1duplex=' + $(\"#portDuplex\").val();\n");
+		fprintf(fs, "		loc += '&eth1pri=' + $(\"#portPri\").val();\n");
+		fprintf(fs, "		loc += '&eth1fc=' + $(\"#portFlowControl\").val();\n");
+		fprintf(fs, "		loc += '&eth1sts=' + $(\"#portStatus\").val();\n");
 	}
 	else if( 2 == id )
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH2 Propety</b></td>\n</tr>\n</table>\n");
+		fprintf(fs, "		loc += '&eth2speed=' + $(\"#portSpeed\").val();\n");
+		fprintf(fs, "		loc += '&eth2duplex=' + $(\"#portDuplex\").val();\n");
+		fprintf(fs, "		loc += '&eth2pri=' + $(\"#portPri\").val();\n");
+		fprintf(fs, "		loc += '&eth2fc=' + $(\"#portFlowControl\").val();\n");
+		fprintf(fs, "		loc += '&eth2sts=' + $(\"#portStatus\").val();\n");
 	}
 	else if( 3 == id )
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable1 Propety</b></td>\n</tr>\n</table>\n");
+		fprintf(fs, "		loc += '&eth3speed=' + $(\"#portSpeed\").val();\n");
+		fprintf(fs, "		loc += '&eth3duplex=' + $(\"#portDuplex\").val();\n");
+		fprintf(fs, "		loc += '&eth3pri=' + $(\"#portPri\").val();\n");
+		fprintf(fs, "		loc += '&eth3fc=' + $(\"#portFlowControl\").val();\n");
+		fprintf(fs, "		loc += '&eth3sts=' + $(\"#portStatus\").val();\n");
 	}
 	else
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable2 Propety</b></td>\n</tr>\n</table>\n");
+		fprintf(fs, "		loc += '&eth4speed=' + $(\"#portSpeed\").val();\n");
+		fprintf(fs, "		loc += '&eth4duplex=' + $(\"#portDuplex\").val();\n");
+		fprintf(fs, "		loc += '&eth4pri=' + $(\"#portPri\").val();\n");
+		fprintf(fs, "		loc += '&eth4fc=' + $(\"#portFlowControl\").val();\n");
+		fprintf(fs, "		loc += '&eth4sts=' + $(\"#portStatus\").val();\n");
+	}	
+	fprintf(fs, "	if( $(\"#portStatus\").val() == 0 ){\n");
+	fprintf(fs, "		if(!confirm('Warning: The port will be shutdown. Are you sure to do it?')) return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	if( 1 == id )
+	{
+		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth1speed);
+		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth1duplex);
+		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth1pri);
+		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth1fc);
+		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth1sts);
 	}
-
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br><br>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret' width=300>Parameter</td>\n");
-	fprintf(fs, "	<td class='diagret' width=260>Value</td>\n");
-	fprintf(fs, "</tr>\n");
+	else if( 2 == id )
+	{
+		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth2speed);
+		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth2duplex);
+		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth2pri);
+		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth2fc);
+		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth2sts);
+	}
+	else if( 3 == id )
+	{
+		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth3speed);
+		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth3duplex);
+		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth3pri);
+		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth3fc);
+		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth3sts);
+	}
+	else
+	{
+		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth4speed);
+		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth4duplex);
+		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth4pri);
+		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth4fc);
+		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth4sts);
+	}
+	fprintf(fs, "	$(\"#accordion\").accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$(\"#retBtn\" ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#saveBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-disk'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( \"#saveBtn\" ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnSave();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
+	if( 1 == id )
+	{
+		fprintf(fs, "<tr><td class='maintitle'><b>ETH1 Propety</b></td></tr>\n");
+	}
+	else if( 2 == id )
+	{
+		fprintf(fs, "<tr><td class='maintitle'><b>ETH2 Propety</b></td></tr>\n");
+	}
+	else if( 3 == id )
+	{
+		fprintf(fs, "<tr><td class='maintitle'><b>Cable1 Propety</b></td></tr>\n");
+	}
+	else
+	{
+		fprintf(fs, "<tr><td class='maintitle'><b>Cable2 Propety</b></td></tr>\n");
+	}
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
+	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br><br>\n");
+	fprintf(fs, "	<div id=\"accordion\">\n");
+	fprintf(fs, "		<h3>Port configuration parameters</h3>\n");
+	fprintf(fs, "		<div>\n");
+	fprintf(fs, "			<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata' width=300>Port Speed</td>\n");
+	fprintf(fs, "					<td class='diagdata' width=260>\n");
+	fprintf(fs, "						<select id=portSpeed style='WIDTH: 150px'>\n");
+	fprintf(fs, "							<option value=0>Auto Negotiation</option>\n");
+	fprintf(fs, "							<option value=1>10Mbps</option>\n");
+	fprintf(fs, "							<option value=2>100Mbps</option>\n");
+	fprintf(fs, "							<option value=3>1000Mbps</option>\n");
+	fprintf(fs, "						</select>\n");
+	fprintf(fs, "					</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Port Duplex</td>\n");
+	fprintf(fs, "					<td class='diagdata'>\n");
+	fprintf(fs, "						<select id=portDuplex style='WIDTH: 150px'>\n");
+	fprintf(fs, "							<option value=0>Auto Negotiation</option>\n");
+	fprintf(fs, "							<option value=1>Half Duplex</option>\n");
+	fprintf(fs, "							<option value=2>Full Duplex</option>\n");
+	fprintf(fs, "						</select>\n");
+	fprintf(fs, "					</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Port Priority</td>\n");
+	fprintf(fs, "					<td class='diagdata'>\n");
+	fprintf(fs, "						<select id=portPri style='WIDTH: 150px'>\n");
+	fprintf(fs, "							<option value=0>0</option>\n");
+	fprintf(fs, "							<option value=1>1</option>\n");
+	fprintf(fs, "							<option value=2>2</option>\n");
+	fprintf(fs, "							<option value=3>3</option>\n");
+	fprintf(fs, "							<option value=4>4</option>\n");
+	fprintf(fs, "							<option value=5>5</option>\n");
+	fprintf(fs, "							<option value=6>6</option>\n");
+	fprintf(fs, "							<option value=7>7</option>\n");
+	fprintf(fs, "						</select>\n");
+	fprintf(fs, "					</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Flow Control</td>\n");
+	fprintf(fs, "					<td class='diagdata'>\n");
+	fprintf(fs, "						<select id=portFlowControl style='WIDTH: 150px'>\n");
+	fprintf(fs, "							<option value=0>Disable</option>\n");
+	fprintf(fs, "							<option value=1>Enable</option>\n");
+	fprintf(fs, "						</select>\n");
+	fprintf(fs, "					</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Port Status</td>\n");
+	fprintf(fs, "					<td class='diagdata'>\n");
+	fprintf(fs, "						<select id=portStatus style='WIDTH: 150px'>\n");
+	fprintf(fs, "							<option value=0>Disable</option>\n");
+	fprintf(fs, "							<option value=1>Enable</option>\n");
+	fprintf(fs, "						</select>\n");
+	fprintf(fs, "					</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata' colspan=2>&nbsp;</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "			</table>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id='retBtn'>Return</button>\n");
+	fprintf(fs, "		<button id='saveBtn'>Save</button>\n");
+	fprintf(fs, "	</p>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
 	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>&nbsp;</td>\n");	
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Port Speed</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name=portSpeed style='WIDTH: 150px'>\n");
-	fprintf(fs, "			<option value=0>Auto Negotiation\n");
-	fprintf(fs, "			<option value=1>10Mbps\n");
-	fprintf(fs, "			<option value=2>100Mbps\n");
-	fprintf(fs, "			<option value=3>1000Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Port Duplex</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name=portDuplex style='WIDTH: 150px'>\n");
-	fprintf(fs, "			<option value=0>Auto Negotiation\n");
-	fprintf(fs, "			<option value=1>Half Duplex\n");
-	fprintf(fs, "			<option value=2>Full Duplex\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Port Priority</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name=portPri style='WIDTH: 150px'>\n");
-	fprintf(fs, "			<option value=0>0\n");
-	fprintf(fs, "			<option value=1>1\n");
-	fprintf(fs, "			<option value=2>2\n");
-	fprintf(fs, "			<option value=3>3\n");
-	fprintf(fs, "			<option value=4>4\n");
-	fprintf(fs, "			<option value=5>5\n");
-	fprintf(fs, "			<option value=6>6\n");
-	fprintf(fs, "			<option value=7>7\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Flow Control</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name=portFlowControl style='WIDTH: 150px'>\n");
-	fprintf(fs, "			<option value=0>Disable\n");
-	fprintf(fs, "			<option value=1>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Port Status</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name=portStatus style='WIDTH: 150px'>\n");
-	fprintf(fs, "			<option value=0>Disable\n");
-	fprintf(fs, "			<option value=1>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>&nbsp;</td>\n");	
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='listend' colspan=2></td>\n");	
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "</table>\n");
-
-	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='location.href=\"wecPortPropety.html\"' value='Return'>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='btnSave()' value='Save'>\n");
-	fprintf(fs, "</p>\n");
-
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
 }
 
@@ -337,309 +504,247 @@ void cgiPortStatsView(char *query, FILE *fs)
 	char action[IFC_LARGE_LEN];
 	int id = 0;
 
+	char strTitle[32];
+	
+	uint32_t packets_Broadcast_rx;
+	uint32_t packets_Unicast_rx;
+	uint32_t packets_Multicast_rx;
+	uint32_t packets_Errors_rx;
+	uint32_t packets_Runts_rx;
+	uint32_t packets_Giants_rx;
+	uint32_t packets_CRCErrors_rx;
+	uint32_t packets_Frame_rx;
+	uint32_t packets_Aborts_rx;
+	uint32_t packets_Ignored_rx;
+
+	uint32_t packets_Broadcast_tx;
+	uint32_t packets_Unicast_tx;
+	uint32_t packets_Multicast_tx;
+	uint32_t packets_Errors_tx;
+	uint32_t packets_Runts_tx;
+	uint32_t packets_Giants_tx;
+	uint32_t packets_CRCErrors_tx;
+	uint32_t packets_Frame_tx;
+	uint32_t packets_Aborts_tx;
+	uint32_t packets_Ignored_tx;
+
 	cgiGetValueByName(query, "portid", action);
 	id = atoi(action);
 
-	writePageHeader(fs);
+	packets_Errors_rx = 0;
+	packets_Runts_rx = 0;
+	packets_Giants_rx = 0;
+	packets_CRCErrors_rx = 0;
+	packets_Frame_rx = 0;
+	packets_Aborts_rx = 0;
+	packets_Ignored_rx = 0;
+	packets_Errors_tx = 0;
+	packets_Runts_tx = 0;
+	packets_Giants_tx = 0;
+	packets_CRCErrors_tx = 0;
+	packets_Frame_tx = 0;
+	packets_Aborts_tx = 0;
+	packets_Ignored_tx = 0;
 
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
 	if( 1 == id )
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH1 Statistics</b></td>\n</tr>\n</table>\n");
+		strcpy(strTitle, "ETH1 Statistics");
+		packets_Broadcast_rx = glbWebVar.eth1rxbc;
+		packets_Unicast_rx = glbWebVar.eth1rxu;
+		packets_Multicast_rx = glbWebVar.eth1rxm;		
+		packets_Broadcast_tx = glbWebVar.eth1txbc;
+		packets_Unicast_tx = glbWebVar.eth1txu;
+		packets_Multicast_tx = glbWebVar.eth1txm;		
 	}
 	else if( 2 == id )
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH2 Statistics</b></td>\n</tr>\n</table>\n");
+		strcpy(strTitle, "ETH2 Statistics");
+		packets_Broadcast_rx = glbWebVar.eth2rxbc;
+		packets_Unicast_rx = glbWebVar.eth2rxu;
+		packets_Multicast_rx = glbWebVar.eth2rxm;
+		packets_Broadcast_tx = glbWebVar.eth2txbc;
+		packets_Unicast_tx = glbWebVar.eth2txu;
+		packets_Multicast_tx = glbWebVar.eth2txm;
 	}
 	else if( 3 == id )
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable1 Statistics</b></td>\n</tr>\n</table>\n");
+		strcpy(strTitle, "Cable1 Statistics");
+		packets_Broadcast_rx = glbWebVar.eth3rxbc;
+		packets_Unicast_rx = glbWebVar.eth3rxu;
+		packets_Multicast_rx = glbWebVar.eth3rxm;
+		packets_Broadcast_tx = glbWebVar.eth3txbc;
+		packets_Unicast_tx = glbWebVar.eth3txu;
+		packets_Multicast_tx = glbWebVar.eth3txm;
 	}
 	else
 	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable2 Statistics</b></td>\n</tr>\n</table>\n");
+		strcpy(strTitle, "Cable2 Statistics");
+		packets_Broadcast_rx = glbWebVar.eth4rxbc;
+		packets_Unicast_rx = glbWebVar.eth4rxu;
+		packets_Multicast_rx = glbWebVar.eth4rxm;
+		packets_Broadcast_tx = glbWebVar.eth4txbc;
+		packets_Unicast_tx = glbWebVar.eth4txu;
+		packets_Multicast_tx = glbWebVar.eth4txm;
 	}
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br><br>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret' width=300>RX packets</td>\n");
-	fprintf(fs, "	<td class='diagret' width=260>Counter</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>&nbsp;</td>\n");	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Broadcast</td>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth1rxbc);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth2rxbc);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth3rxbc);
-	}
-	else
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth4rxbc);
-	}	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Unicast</td>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth1rxu);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth2rxu);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth3rxu);
-	}
-	else
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth4rxu);
-	}	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Multicast</td>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth1rxm);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth2rxm);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth3rxm);
-	}
-	else
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth4rxm);
-	}	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Errors</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Runts</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Giants</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>CRC Errors</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Frame</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Aborts</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Ignored</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>	\n");
+	fprintf(fs, "function btnReturn(){\n");
+	fprintf(fs, "	var loc = 'wecPortStas.cgi';\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");	
+	fprintf(fs, "	$(\"#accordion\").accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$(\"#retBtn\" ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");	
+	fprintf(fs, "});\n");
+	fprintf(fs, "</script>\n");
 	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>&nbsp;</td>\n");	
-	fprintf(fs, "</tr>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "		<tr><td class='maintitle'><b>%s</b></td></tr>", strTitle);	
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
+	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr> \n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br><br>\n");	
+	fprintf(fs, "	<div id=\"accordion\">\n");	
+	fprintf(fs, "		<h3>Port RX Counters</h3>\n");
+	fprintf(fs, "		<div>\n");	
+	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");	
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata' width=300>Broadcast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Broadcast_rx);	
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Unicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Unicast_rx);	
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Multicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Multicast_rx);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Errors</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Runts</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Giants</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>CRC Errors</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Frame</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Aborts</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Ignored</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "		</table>\n");
+	fprintf(fs, "		</div>\n");	
+	fprintf(fs, "		<h3>Port TX Counters</h3>\n");
+	fprintf(fs, "		<div>\n");	
+	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");	
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata' width=300>Broadcast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Broadcast_tx);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Unicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Unicast_tx);	
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Multicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Multicast_tx);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Errors</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Runts</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Giants</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>CRC Errors</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Frame</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Aborts</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata'>Ignored</td>\n");
+	fprintf(fs, "				<td class='diagdata'>0</td>\n");
+	fprintf(fs, "			</tr>\n");	
+	fprintf(fs, "		</table>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
 
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret'>TX packets</td>\n");
-	fprintf(fs, "	<td class='diagret'>Counter</td>\n");
-	fprintf(fs, "</tr>\n");
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id='retBtn'>Return</button>\n");
+	fprintf(fs, "	</p>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
 	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>&nbsp;</td>\n");	
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Broadcast</td>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth1txbc);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth2txbc);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth3txbc);
-	}
-	else
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth4txbc);
-	}	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Unicast</td>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth1txu);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth2txu);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth3txu);
-	}
-	else
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth4txu);
-	}	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Multicast</td>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth1txm);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth2txm);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth3txm);
-	}
-	else
-	{
-		fprintf(fs, "	<td class='diagdata'>%d</td>\n", glbWebVar.eth4txm);
-	}	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Errors</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Runts</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Giants</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>CRC Errors</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Frame</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Aborts</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Ignored</td>\n");
-	fprintf(fs, "	<td class='diagdata'>0</td>\n");
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>&nbsp;</td>\n");	
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='listend' colspan=2></td>\n");	
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "</table>\n");
-
-	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='location.href=\"wecPortStas.cgi\"' value='Return'>\n");
-	fprintf(fs, "</p>\n");
-
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
 }
 
-void cgiOptlogViewAll(char *query, FILE *fs)
-{   
-	int i=0;
-	int logCount = 0;
-	st_dbsOptlog st_log;
-	struct tm *tim;
-	char timenow[32] = {0};
-
-	writePageHeader(fs);
-
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Operating Log</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Display operating logs in the table list bellow [Filter condition=All]:</br>\n<br><br>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='diagret' width=160>Time</td>\n");
-	fprintf(fs, "<td class='diagret' width=100>Operator</td>\n");
-	fprintf(fs, "<td class='diagret' width=100>Resulte</td>\n");
-	fprintf(fs, "<td class='diagret' width=400>Log Information</td>\n</tr>\n</table>\n<br>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=2>\n");
-	//fprintf(fs, "\n");
-   
-	// write body
-	for( i=1; i<=512; i++ )
-	{
-		if( http2dbs_getOptlog(i, &st_log) == CMM_SUCCESS )
-		{
-			logCount++;
-			tim = localtime((const time_t *)&st_log.time);
-			sprintf(timenow,"%4d-%02d-%02d %02d:%02d",tim->tm_year+1900,tim->tm_mon+1,
-			tim->tm_mday, tim->tm_hour, tim->tm_min
-			);
-			if( st_log.result == 0 )
-			{
-				fprintf(fs, "<tr>\n");
-				fprintf(fs, "<td class='diagdata' width=158>%s</td>\n", timenow);
-				fprintf(fs, "<td class='diagdata' width=98>%s</td>\n", boardapi_getModNameStr(st_log.who));
-				fprintf(fs, "<td class='diagdata' width=98>SUCCESS</td>\n");
-				fprintf(fs, "<td class='diagdata' width=398>%s</td>\n</tr>\n", st_log.cmd);
-			}
-			else
-			{
-				fprintf(fs, "<tr>\n");
-				fprintf(fs, "<td class='logfailed' width=158>%s</td>\n", timenow);
-				fprintf(fs, "<td class='logfailed' width=98>%s</td>\n", boardapi_getModNameStr(st_log.who));
-				fprintf(fs, "<td class='logfailed' width=98>FAILED</td>\n");
-				fprintf(fs, "<td class='logfailed' width=398>%s</td>\n</tr>\n", st_log.cmd);
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-	if(logCount == 0 )
-	{
-		fprintf(fs, "<tr>\n<td class='diagdata' colspan=4>No operating log to list</td>\n</tr>\n");
-	}
-	
-	fprintf(fs, "</table>\n");
-	
-	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=760></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"wecOptlog.html\"' value='Return'>\n");
-	fprintf(fs, "<input type='button' class='btn2L' onClick='window.location.reload()' value='Refresh'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
-	fflush(fs);
+#if 0
+void writePageHeader(FILE *fs) {
+	fprintf(fs, "<html><head>\n");
+	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
+	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n</head>\n<body>\n<blockquote>\n<form>\n");
 }
 
 void cgiCltProfileView(char *query, FILE *fs) 
@@ -783,9 +888,12 @@ void cgiCltProfileView(char *query, FILE *fs)
 	fflush(fs);
 }
 
+
 void cgiCnuProfileView(char *query, FILE *fs) 
 {
 	int id = 0;
+	int cltid = 0;
+  	int cnuid = 0;
 	st_dbsProfile profile;
 	char action[IFC_LARGE_LEN];
 
@@ -802,13 +910,15 @@ void cgiCnuProfileView(char *query, FILE *fs)
 		
 	if( CMM_SUCCESS == dbsGetProfile(dbsdev, id, &profile) )
 	{
+		cltid = id/MAX_CNUS_PER_CLT + 1;
+		cnuid = id%MAX_CNUS_PER_CLT;
 		fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
 		fprintf(fs, "<tr>\n<td class='diagret' width=300>General Information</td>\n");
 		fprintf(fs, "<td class='diagret' width=260>&nbsp;</td>\n</tr>\n");
 		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
 		
 		fprintf(fs, "<tr>\n<td class='diagdata'>CNU ID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>1/%d</td>\n</tr>\n", profile.id);
+		fprintf(fs, "<td class='diagdata'>%d/%d</td>\n</tr>\n", cltid, cnuid);
 
 		fprintf(fs, "<tr>\n<td class='diagdata'>Additional PIB ID:</td>\n");
 		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_base);
@@ -1109,6 +1219,8 @@ void cgiCnuProfileView(char *query, FILE *fs)
 	fflush(fs);
 }
 
+#endif
+
 void cgiCltProfile(char *query, FILE *fs) 
 {
 	int id = 0;
@@ -1121,147 +1233,70 @@ void cgiCltProfile(char *query, FILE *fs)
 	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, id, &profile) )
 	{
 		/*Error*/
-		strcpy(glbWebVar.returnUrl, "cltManagement.cmd");
+		sprintf(glbWebVar.returnUrl, "cltManagement.cmd?cltid=%d", id);
 		glbWebVar.wecOptCode = CMM_FAILED;
 		do_ej("/webs/wecOptResult2.html", fs);
 		return;
 	}
 
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
-	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
-	fprintf(fs, "<script language='javascript' src='util.js'></script>\n");
-	fprintf(fs, "<SCRIPT language=JavaScript>\n");
-	fprintf(fs, "function frmLoad() {\n");
-	fprintf(fs, "	with ( document.forms[0] ) {\n");
-	fprintf(fs, "		loagTime.value = %d\n", profile.col_loagTime);
-	fprintf(fs, "		reagTime.value = %d\n", profile.col_reagTime);
-	fprintf(fs, "		igmpPri.selectedIndex = %d\n", profile.col_igmpPri);
-	fprintf(fs, "		unicastPri.selectedIndex = %d\n", profile.col_unicastPri);
-	fprintf(fs, "		avsPri.selectedIndex = %d\n", profile.col_avsPri);
-	fprintf(fs, "		mcastPri.selectedIndex = %d\n", profile.col_mcastPri);	
-	fprintf(fs, "		tbaPriSts.selectedIndex = %d\n", profile.col_tbaPriSts?1:0);
-	fprintf(fs, "		asPriType.selectedIndex = %d\n", profile.col_cosPriSts?0:1);
-	if( profile.col_cosPriSts )
-	{
-		fprintf(fs, "		pri0QueueMap.selectedIndex = %d\n", profile.col_cos0pri);
-		fprintf(fs, "		pri1QueueMap.selectedIndex = %d\n", profile.col_cos1pri);
-		fprintf(fs, "		pri2QueueMap.selectedIndex = %d\n", profile.col_cos2pri);
-		fprintf(fs, "		pri3QueueMap.selectedIndex = %d\n", profile.col_cos3pri);
-		fprintf(fs, "		pri4QueueMap.selectedIndex = %d\n", profile.col_cos4pri);
-		fprintf(fs, "		pri5QueueMap.selectedIndex = %d\n", profile.col_cos5pri);
-		fprintf(fs, "		pri6QueueMap.selectedIndex = %d\n", profile.col_cos6pri);
-		fprintf(fs, "		pri7QueueMap.selectedIndex = %d\n", profile.col_cos7pri);
-	}
-	else
-	{
-		fprintf(fs, "		pri0QueueMap.selectedIndex = %d\n", profile.col_tos0pri);
-		fprintf(fs, "		pri1QueueMap.selectedIndex = %d\n", profile.col_tos1pri);
-		fprintf(fs, "		pri2QueueMap.selectedIndex = %d\n", profile.col_tos2pri);
-		fprintf(fs, "		pri3QueueMap.selectedIndex = %d\n", profile.col_tos3pri);
-		fprintf(fs, "		pri4QueueMap.selectedIndex = %d\n", profile.col_tos4pri);
-		fprintf(fs, "		pri5QueueMap.selectedIndex = %d\n", profile.col_tos5pri);
-		fprintf(fs, "		pri6QueueMap.selectedIndex = %d\n", profile.col_tos6pri);
-		fprintf(fs, "		pri7QueueMap.selectedIndex = %d\n", profile.col_tos7pri);
-	}
-	fprintf(fs, "	}\n");
-	fprintf(fs, "}\n");	
-	
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'/>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'/>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+	fprintf(fs, "function btnReturn(){\n");
+	fprintf(fs, "	location.href = 'cltManagement.cmd?cltid=%d';\n", id);
+	fprintf(fs, "}\n");
 	fprintf(fs, "function setAgTime()\n");
 	fprintf(fs, "{\n");
 	fprintf(fs, "	var msg;\n");
 	fprintf(fs, "	var value;\n");
 	fprintf(fs, "	var loc = 'setCltAgTime.cgi?';\n");
 	fprintf(fs, "	loc += 'cltid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0])\n");
+	fprintf(fs, "	if ( isNaN(parseInt($('#loagTime').val())) == true )\n");
 	fprintf(fs, "	{\n");
-	fprintf(fs, "		if ( isNaN(parseInt(loagTime.value)) == true )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'loagTime \"' + loagTime.value + '\" is invalid.';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		value = parseInt(loagTime.value);\n");
-	fprintf(fs, "		if ( value < 1 || value > 2000 )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'loagTime \"' + value + '\" is out of range [1-2000].';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		if ( isNaN(parseInt(reagTime.value)) == true )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'reagTime \"' + reagTime.value + '\" is invalid.';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		value = parseInt(reagTime.value);\n");
-	fprintf(fs, "		if ( value < 1 || value > 2000 )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'reagTime \"' + value + '\" is out of range [1-2000].';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		loc += '&col_loagTime=' + loagTime.value;\n");
-	fprintf(fs, "		loc += '&col_reagTime=' + reagTime.value;\n");
+	fprintf(fs, "		msg = 'loagTime \"' + $('#loagTime').val() + '\" is invalid.';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
 	fprintf(fs, "	}\n");
-	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
-	fprintf(fs, "	//alert(code);\n");
-	fprintf(fs, "	eval(code);\n");
-	fprintf(fs, "}\n");
-	
-	fprintf(fs, "function setDefaultCap()\n");
-	fprintf(fs, "{\n");
-	fprintf(fs, "	var loc = 'setCltDeCap.cgi?cltid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0])\n");
-	fprintf(fs, "	{\n");	
-	fprintf(fs, "		loc += '&col_igmpPri=' + igmpPri.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_unicastPri=' + unicastPri.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_avsPri=' + avsPri.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_mcastPri=' + mcastPri.selectedIndex;\n");
+	fprintf(fs, "	value = parseInt($('#loagTime').val());\n");
+	fprintf(fs, "	if ( value < 1 || value > 2000 )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		msg = 'loagTime \"' + value + '\" is out of range [1-2000].';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
 	fprintf(fs, "	}\n");
+	fprintf(fs, "	if ( isNaN(parseInt($('#reagTime').val())) == true )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		msg = 'reagTime \"' + $('#reagTime').val() + '\" is invalid.';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	value = parseInt($('#reagTime').val());\n");
+	fprintf(fs, "	if ( value < 1 || value > 2000 )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		msg = 'reagTime \"' + value + '\" is out of range [1-2000].';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += '&col_loagTime=' + $('#loagTime').val();\n");
+	fprintf(fs, "	loc += '&col_reagTime=' + $('#reagTime').val();\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
 
-	fprintf(fs, "function setQoS()\n");
+	fprintf(fs, "function enableQoS()\n");
 	fprintf(fs, "{\n");
-	fprintf(fs, "	var loc = 'setCltQoS.cgi?cltid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0])\n");
-	fprintf(fs, "	{\n");	
-	fprintf(fs, "		loc += '&col_tbaPriSts=' + tbaPriSts.selectedIndex;\n");
-	fprintf(fs, "		if( 0 != tbaPriSts.selectedIndex )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			if( 0 == asPriType.selectedIndex )\n");
-	fprintf(fs, "			{\n");
-	fprintf(fs, "				loc += '&col_cosPriSts=1';\n");
-	fprintf(fs, "				loc += '&col_tosPriSts=0';\n");
-	fprintf(fs, "				loc += '&col_cos0pri=' + pri0QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_cos1pri=' + pri1QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_cos2pri=' + pri2QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_cos3pri=' + pri3QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_cos4pri=' + pri4QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_cos5pri=' + pri5QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_cos6pri=' + pri6QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_cos7pri=' + pri7QueueMap.selectedIndex;\n");
-	fprintf(fs, "			}\n");
-	fprintf(fs, "			else\n");
-	fprintf(fs, "			{\n");
-	fprintf(fs, "				loc += '&col_cosPriSts=0';\n");
-	fprintf(fs, "				loc += '&col_tosPriSts=1';\n");
-	fprintf(fs, "				loc += '&col_tos0pri=' + pri0QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_tos1pri=' + pri1QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_tos2pri=' + pri2QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_tos3pri=' + pri3QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_tos4pri=' + pri4QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_tos5pri=' + pri5QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_tos6pri=' + pri6QueueMap.selectedIndex;\n");
-	fprintf(fs, "				loc += '&col_tos7pri=' + pri7QueueMap.selectedIndex;\n");
-	fprintf(fs, "			}\n");
-	fprintf(fs, "		}\n");	
-	fprintf(fs, "	}\n");
+	fprintf(fs, "	var loc = 'enableCltQoS.cgi?cltid=%d';\n", id);
+	fprintf(fs, "	loc += '&col_tbaPriSts=' + $('#tbaPriSts').val();\n");		
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
@@ -1273,973 +1308,1829 @@ void cgiCltProfile(char *query, FILE *fs)
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+
+	fprintf(fs, "function setDefaultCap()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	var loc = 'setCltDeCap.cgi?cltid=%d';\n", id);	
+	fprintf(fs, "	loc += '&col_igmpPri=' + $('#igmpPri').val();\n");
+	fprintf(fs, "	loc += '&col_unicastPri=' + $('#unicastPri').val();\n");
+	fprintf(fs, "	loc += '&col_avsPri=' + $('#avsPri').val();\n");
+	fprintf(fs, "	loc += '&col_mcastPri=' + $('#mcastPri').val();\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function setQoS()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	var loc = 'setCltQoS.cgi?cltid=%d';\n", id);
+	fprintf(fs, "	if( 0 == $('#asPriType').val() )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&col_cosPriSts=1';\n");
+	fprintf(fs, "		loc += '&col_tosPriSts=0';\n");
+	fprintf(fs, "		loc += '&col_cos0pri=' + $('#pri0QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_cos1pri=' + $('#pri1QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_cos2pri=' + $('#pri2QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_cos3pri=' + $('#pri3QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_cos4pri=' + $('#pri4QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_cos5pri=' + $('#pri5QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_cos6pri=' + $('#pri6QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_cos7pri=' + $('#pri7QueueMap').val();\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&col_cosPriSts=0';\n");
+	fprintf(fs, "		loc += '&col_tosPriSts=1';\n");
+	fprintf(fs, "		loc += '&col_tos0pri=' + $('#pri0QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_tos1pri=' + $('#pri1QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_tos2pri=' + $('#pri2QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_tos3pri=' + $('#pri3QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_tos4pri=' + $('#pri4QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_tos5pri=' + $('#pri5QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_tos6pri=' + $('#pri6QueueMap').val();\n");
+	fprintf(fs, "		loc += '&col_tos7pri=' + $('#pri7QueueMap').val();\n");
+	fprintf(fs, "	}\n");	
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");	
+	
+	fprintf(fs, "function btnSave(eventid)\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	if(1==eventid)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		setAgTime();\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else if(2==eventid)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		enableQoS();\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else if(3==eventid)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		setDefaultCap();\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else if(4==eventid)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		setQoS();\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		alert('Error: btnSave(null)');\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function btnDone(){\n");
+	fprintf(fs, "	var loc = 'saveCltProfile.cgi?cltid=%d';\n", id);
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	$('#loagTime').val(%d);\n", profile.col_loagTime);
+	fprintf(fs, "	$('#reagTime').val(%d);\n", profile.col_reagTime);
+	fprintf(fs, "	$('#tbaPriSts').val(%d);\n", profile.col_tbaPriSts?1:0);
+	fprintf(fs, "	$('#igmpPri').val(%d);\n", profile.col_igmpPri);
+	fprintf(fs, "	$('#unicastPri').val(%d);\n", profile.col_unicastPri);
+	fprintf(fs, "	$('#avsPri').val(%d);\n", profile.col_avsPri);
+	fprintf(fs, "	$('#mcastPri').val(%d);\n", profile.col_mcastPri);
+	fprintf(fs, "	$('#asPriType').val(%d);\n", profile.col_cosPriSts?0:1);
+	if( profile.col_cosPriSts )
+	{
+		fprintf(fs, "	$('#pri0QueueMap').val(%d);\n", profile.col_cos0pri);
+		fprintf(fs, "	$('#pri1QueueMap').val(%d);\n", profile.col_cos1pri);
+		fprintf(fs, "	$('#pri2QueueMap').val(%d);\n", profile.col_cos2pri);
+		fprintf(fs, "	$('#pri3QueueMap').val(%d);\n", profile.col_cos3pri);
+		fprintf(fs, "	$('#pri4QueueMap').val(%d);\n", profile.col_cos4pri);
+		fprintf(fs, "	$('#pri5QueueMap').val(%d);\n", profile.col_cos5pri);
+		fprintf(fs, "	$('#pri6QueueMap').val(%d);\n", profile.col_cos6pri);
+		fprintf(fs, "	$('#pri7QueueMap').val(%d);\n", profile.col_cos7pri);
+	}
+	else
+	{
+		fprintf(fs, "	$('#pri0QueueMap').val(%d);\n", profile.col_tos0pri);
+		fprintf(fs, "	$('#pri1QueueMap').val(%d);\n", profile.col_tos1pri);
+		fprintf(fs, "	$('#pri2QueueMap').val(%d);\n", profile.col_tos2pri);
+		fprintf(fs, "	$('#pri3QueueMap').val(%d);\n", profile.col_tos3pri);
+		fprintf(fs, "	$('#pri4QueueMap').val(%d);\n", profile.col_tos4pri);
+		fprintf(fs, "	$('#pri5QueueMap').val(%d);\n", profile.col_tos5pri);
+		fprintf(fs, "	$('#pri6QueueMap').val(%d);\n", profile.col_tos6pri);
+		fprintf(fs, "	$('#pri7QueueMap').val(%d);\n", profile.col_tos7pri);
+	}	
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#dialog').dialog({\n");
+	fprintf(fs, "		autoOpen: false,\n");
+	fprintf(fs, "		width:400,\n");
+	fprintf(fs, "		show:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'blind',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "		hide:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'explode',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#opener').button(\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			icons:\n");
+	fprintf(fs, "			{\n");
+	fprintf(fs, "				primary: 'ui-icon-help'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "			text: false\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	).click(function(){\n");
+	fprintf(fs, "		$('#dialog').dialog('open');\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save1Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnSave(1);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save2Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnSave(2);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save3Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnSave(3);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save4Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnSave(4);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#comBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-disk'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#comBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnDone();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>CLT Configuration</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<div id='accordion'>\n");
+	fprintf(fs, "	<h3>Bridged Address Aging</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "	  				<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=250>local bridged table aging time:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=250><input type='text' id='loagTime' size='8'>Minutes[Range of 1~2000]</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>remote bridged table aging time:</td>\n");
+	fprintf(fs, "						<td class='diagdata'><input type='text' id='reagTime' size='8'>Minutes[Range of 1~2000]</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'><button id='save1Btn'>Commit</button></div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>QoS->Gloable Settings</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "	  			<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=300>TX Buffer Allocation Based on Priority:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=200>\n");
+	fprintf(fs, "							<select id='tbaPriSts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'><button id='save2Btn'>Commit</button></div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>QoS->Default CAP</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=300>igmp:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=200>\n");
+	fprintf(fs, "							<select id='igmpPri' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>unicast:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='unicastPri' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>igmp managed multicast stream:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='avsPri' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>multicast/broadcast:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='mcastPri' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'><button id='save3Btn'>Commit</button></div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>QoS->Traffic Class</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=300>Assign Priority Using:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=200>\n");
+	fprintf(fs, "							<select id='asPriType' size=1>\n");
+	fprintf(fs, "								<option value='0'>COS</option>\n");
+	fprintf(fs, "								<option value='1'>TOS</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata' colspan=2></td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS0/TOS0:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri0QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS1/TOS1:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri1QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS2/TOS2:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri2QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS3/TOS3:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri3QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS4/TOS4:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri4QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS5/TOS5:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri5QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS6/TOS6:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri6QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>COS7/TOS7:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='pri7QueueMap' size=1>\n");
+	fprintf(fs, "								<option value='0'>CAP0</option>\n");
+	fprintf(fs, "								<option value='1'>CAP1</option>\n");
+	fprintf(fs, "								<option value='2'>CAP2</option>\n");
+	fprintf(fs, "								<option value='3'>CAP3</option>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'><button id='save4Btn'>Commit</button></div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='returnBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='comBtn'>Save</button>\n");
+	fprintf(fs, "	<button id='opener'>Help</button>\n");
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "<div id='dialog' title='Help Information'>\n");
+	fprintf(fs, "	Through this page, you can complete profile settings for CLT. </br>\n");
+	fprintf(fs, "	<br>1. Please click the 'Commit' button to submit the appropriate configuration.\n");
+	fprintf(fs, "	<br>2. Please click the 'Save' button to save all configuration to flash finally.\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
 	
 	//fprintf(fs, "\n");
-	
-	fprintf(fs, "</SCRIPT>\n");
-	fprintf(fs, "</head>\n");
-	fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
-
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Profile Settings</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Through this page, you can complete profile settings for CLT/%d.\n", id);
-	fprintf(fs, "<br>-- Please click the 'Save' button to submit the appropriate configuration.\n");
-	fprintf(fs, "<br>-- Please click the 'Done' button to save all configuration to flash finally.</br>\n");
-	fprintf(fs, "<br><br>\n");
-
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");		
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret' width=240>Bridged Address Aging</td>\n");
-	fprintf(fs, "	<td class='diagret' width=260>&nbsp;</td>\n");
-	fprintf(fs, "	<td class='diagret' width=80>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>local bridged table aging:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2><input type='text' name='loagTime' size='8'>Minutes[Range of 1~2000]</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>remote bridged table aging:</td>\n");
-	fprintf(fs, "	<td class='diagdata'><input type='text' name='reagTime' size='8'>Minutes[Range of 1~2000]</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setAgTime()' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret'>Default CAP</td>\n");
-	fprintf(fs, "	<td class='diagret' colspan=2>[Lowest Priority Classification]</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>igmp:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='igmpPri' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>unicast:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='unicastPri' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>igmp managed multicast stream:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='avsPri' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>multicast/broadcast:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='mcastPri' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setDefaultCap()' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret'>QoS Settings</td>\n");
-	fprintf(fs, "	<td class='diagret' colspan=2>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Status:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='tbaPriSts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Assign Priority Using:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='asPriType' size=1>\n");
-	fprintf(fs, "			<option value='0'>COS\n");
-	fprintf(fs, "			<option value='1'>TOS\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "</tr>\n");	
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-	fprintf(fs, "</table>\n");
-	
-	//Table2
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata' width=120>COS0/TOS0:</td>\n");
-	fprintf(fs, "	<td class='diagdata' width=120>\n");
-	fprintf(fs, "		<select name='pri0QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "	<td class='diagdata' width=130>COS1/TOS1:</td>\n");
-	fprintf(fs, "	<td class='diagdata' width=130>\n");
-	fprintf(fs, "		<select name='pri1QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' width=80>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>COS2/TOS2:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='pri2QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "	<td class='diagdata'>COS3/TOS3:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='pri3QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>COS4/TOS4:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='pri4QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "	<td class='diagdata'>COS5/TOS5:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='pri5QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>COS6/TOS6:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='pri6QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");	
-	fprintf(fs, "	<td class='diagdata'>COS7/TOS7:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='pri7QueueMap' size=1>\n");
-	fprintf(fs, "			<option value='0'>CAP0\n");
-	fprintf(fs, "			<option value='1'>CAP1\n");
-	fprintf(fs, "			<option value='2'>CAP2\n");
-	fprintf(fs, "			<option value='3'>CAP3\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setQoS()' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");	
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=5>&nbsp;</td>\n</tr>\n");	
-	fprintf(fs, "<tr>\n<td class='listend' colspan=5></td>\n</tr>\n");
-	
-	fprintf(fs, "</table>\n");
-	
-	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='location.href=\"cltManagement.cmd\"' value='Return'>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='saveProfile()' value='Done'>\n");
-	fprintf(fs, "</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
 }
 
 void cgiCnuProfile(char *query, FILE *fs) 
 {
 	int id = 0;
+	int cltid = 0;
+   	int cnuid = 0;
 	st_dbsProfile profile;
 	char action[IFC_LARGE_LEN];
 
 	cgiGetValueByName(query, "cnuid", action);
 	id = atoi(action);
-
 	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id, &profile) )
 	{
 		/*Error*/
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", id);
 		glbWebVar.wecOptCode = CMM_FAILED;
 		do_ej("/webs/wecOptResult2.html", fs);
 		return;
 	}
+	cltid = (id-1)/MAX_CNUS_PER_CLT+1;
+	cnuid = (id-1)%MAX_CNUS_PER_CLT+1;
 
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
-	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'/>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'/>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
 	fprintf(fs, "<script language='javascript' src='util.js'></script>\n");
-	fprintf(fs, "<SCRIPT language=JavaScript>\n");
-	fprintf(fs, "function frmLoad() {\n");
-	fprintf(fs, "	with ( document.forms[0] ) {\n");
-	fprintf(fs, "		macLimitSts.selectedIndex = %d\n", profile.col_macLimit?1:0);
-	fprintf(fs, "		macLimitNum.selectedIndex = %d\n", ((profile.col_macLimit==65)||(profile.col_macLimit>8))?0:profile.col_macLimit);
-	fprintf(fs, "		loagTime.value = %d\n", profile.col_loagTime);
-	fprintf(fs, "		reagTime.value = %d\n", profile.col_reagTime);
-	fprintf(fs, "		sfbSts.selectedIndex = %d\n", profile.col_sfbSts?1:0);
-	fprintf(fs, "		sfuSts.selectedIndex = %d\n", profile.col_sfuSts?1:0);
-	fprintf(fs, "		sfmSts.selectedIndex = %d\n", profile.col_sfmSts?1:0);
-	fprintf(fs, "		vlanSts.selectedIndex = %d\n", profile.col_vlanSts?1:0);
-	fprintf(fs, "		eth1vid.value = %d\n", profile.col_eth1vid);
-	fprintf(fs, "		eth2vid.value = %d\n", profile.col_eth2vid);
-	fprintf(fs, "		eth3vid.value = %d\n", profile.col_eth3vid);
-	fprintf(fs, "		eth4vid.value = %d\n", profile.col_eth4vid);
-	//fprintf(fs, "		rxLimitSts.selectedIndex = %d\n", profile.col_rxLimitSts?1:0);
+	fprintf(fs, "<script language='javascript'>\n");
+	
+	fprintf(fs, "function frmLoad() {\n");	
+	fprintf(fs, "	$('#macLimitSts').val(%d);\n", profile.col_macLimit?1:0);
+	fprintf(fs, "	$('#macLimitNum').val(%d);\n", ((profile.col_macLimit==65)||(profile.col_macLimit>8))?0:profile.col_macLimit);
+	fprintf(fs, "	$('#loagTime').val(%d);\n", profile.col_loagTime);
+	fprintf(fs, "	$('#reagTime').val(%d);\n", profile.col_reagTime);
+	fprintf(fs, "	$('#sfbSts').val(%d);\n", profile.col_sfbSts?1:0);
+	fprintf(fs, "	$('#sfuSts').val(%d);\n", profile.col_sfuSts?1:0);
+	fprintf(fs, "	$('#sfmSts').val(%d);\n", profile.col_sfmSts?1:0);
+	fprintf(fs, "	$('#vlanSts').val(%d);\n", profile.col_vlanSts?1:0);
+	fprintf(fs, "	$('#eth1vid').val(%d);\n", profile.col_eth1vid);
+	fprintf(fs, "	$('#eth2vid').val(%d);\n", profile.col_eth2vid);
+	fprintf(fs, "	$('#eth3vid').val(%d);\n", profile.col_eth3vid);
+	fprintf(fs, "	$('#eth4vid').val(%d);\n", profile.col_eth4vid);	
 	if( 0 == profile.col_rxLimitSts )
 	{
-		fprintf(fs, "		cpuPortRx.selectedIndex = 0\n");
-		fprintf(fs, "		eth1rx.selectedIndex = 0\n");
-		fprintf(fs, "		eth2rx.selectedIndex = 0\n");
-		fprintf(fs, "		eth3rx.selectedIndex = 0\n");
-		fprintf(fs, "		eth4rx.selectedIndex = 0\n");
+		fprintf(fs, "	$('#cpuPortRx').val(0);\n");
+		fprintf(fs, "	$('#eth1rx').val(0);\n");
+		fprintf(fs, "	$('#eth2rx').val(0);\n");
+		fprintf(fs, "	$('#eth3rx').val(0);\n");
+		fprintf(fs, "	$('#eth4rx').val(0);\n");
 	}
 	else
 	{
-		fprintf(fs, "		cpuPortRx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_cpuPortRxRate));
-		fprintf(fs, "		eth1rx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth1rx));
-		fprintf(fs, "		eth2rx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth2rx));
-		fprintf(fs, "		eth3rx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth3rx));
-		fprintf(fs, "		eth4rx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth4rx));
-	}
-	//fprintf(fs, "		txLimitSts.selectedIndex = %d\n", profile.col_txLimitSts?1:0);
+		fprintf(fs, "	$('#cpuPortRx').val(%d);\n", mapRate2SelectIndex(profile.col_cpuPortRxRate));
+		fprintf(fs, "	$('#eth1rx').val(%d);\n", mapRate2SelectIndex(profile.col_eth1rx));
+		fprintf(fs, "	$('#eth2rx').val(%d);\n", mapRate2SelectIndex(profile.col_eth2rx));
+		fprintf(fs, "	$('#eth3rx').val(%d);\n", mapRate2SelectIndex(profile.col_eth3rx));
+		fprintf(fs, "	$('#eth4rx').val(%d);\n", mapRate2SelectIndex(profile.col_eth4rx));
+	}	
 	if( 0 == profile.col_txLimitSts )
 	{
-		fprintf(fs, "		cpuPortTx.selectedIndex = 0\n");
-		fprintf(fs, "		eth1tx.selectedIndex = 0\n");
-		fprintf(fs, "		eth2tx.selectedIndex = 0\n");
-		fprintf(fs, "		eth3tx.selectedIndex = 0\n");
-		fprintf(fs, "		eth4tx.selectedIndex = 0\n");
+		fprintf(fs, "	$('#cpuPortTx').val(0);\n");
+		fprintf(fs, "	$('#eth1tx').val(0);\n");
+		fprintf(fs, "	$('#eth2tx').val(0);\n");
+		fprintf(fs, "	$('#eth3tx').val(0);\n");
+		fprintf(fs, "	$('#eth4tx').val(0);\n");
 	}
 	else
 	{
-		fprintf(fs, "		cpuPortTx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_cpuPortTxRate));
-		fprintf(fs, "		eth1tx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth1tx));
-		fprintf(fs, "		eth2tx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth2tx));
-		fprintf(fs, "		eth3tx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth3tx));
-		fprintf(fs, "		eth4tx.selectedIndex = %d\n", mapRate2SelectIndex(profile.col_eth4tx));
-	}
-	//fprintf(fs, "		psctlSts.selectedIndex = %d\n", profile.col_psctlSts?1:0);
-	fprintf(fs, "		eth1sts.selectedIndex = %d\n", profile.col_eth1sts?1:0);
-	fprintf(fs, "		eth2sts.selectedIndex = %d\n", profile.col_eth2sts?1:0);
-	fprintf(fs, "		eth3sts.selectedIndex = %d\n", profile.col_eth3sts?1:0);
-	fprintf(fs, "		eth4sts.selectedIndex = %d\n", profile.col_eth4sts?1:0);
-	fprintf(fs, "	}\n");
-	fprintf(fs, "}\n");	
-	fprintf(fs, "function btn1save() {\n");
-	fprintf(fs, "	var loc = 'macLimit.cgi?';\n");
-	fprintf(fs, "	loc += 'cnuid=%d';\n", id);
-	fprintf(fs, "	with ( document.forms[0] ) {\n");
-	fprintf(fs, "		if(macLimitSts.selectedIndex){\n");
-	fprintf(fs, "			if( macLimitNum.selectedIndex == 0 ){\n");
-	fprintf(fs, "				loc += '&col_macLimit=65';\n");
-	fprintf(fs, "			}else{\n");
-	fprintf(fs, "				loc += '&col_macLimit=' + macLimitNum.selectedIndex;\n");
-	fprintf(fs, "			}\n");
-	fprintf(fs, "		}else{\n");
-	fprintf(fs, "			loc += '&col_macLimit=0';\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "	}\n");
+		fprintf(fs, "	$('#cpuPortTx').val(%d);\n", mapRate2SelectIndex(profile.col_cpuPortTxRate));
+		fprintf(fs, "	$('#eth1tx').val(%d);\n", mapRate2SelectIndex(profile.col_eth1tx));
+		fprintf(fs, "	$('#eth2tx').val(%d);\n", mapRate2SelectIndex(profile.col_eth2tx));
+		fprintf(fs, "	$('#eth3tx').val(%d);\n", mapRate2SelectIndex(profile.col_eth3tx));
+		fprintf(fs, "	$('#eth4tx').val(%d);\n", mapRate2SelectIndex(profile.col_eth4tx));
+	}	
+	fprintf(fs, "	$('#eth1sts').val(%d);\n", profile.col_eth1sts?1:0);
+	fprintf(fs, "	$('#eth2sts').val(%d);\n", profile.col_eth2sts?1:0);
+	fprintf(fs, "	$('#eth3sts').val(%d);\n", profile.col_eth3sts?1:0);
+	fprintf(fs, "	$('#eth4sts').val(%d);\n", profile.col_eth4sts?1:0);	
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function btnReturn(){\n");
+	fprintf(fs, "	var loc = 'cnuManagement.cmd?cnuid=';\n");
+	fprintf(fs, "	loc += %d;\n", id);
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+	
+	fprintf(fs, "function setMacLimiting() {\n");
+	fprintf(fs, "	var loc = 'macLimit.cgi?';\n");
+	fprintf(fs, "	loc += 'cnuid=%d';\n", id);	
+	fprintf(fs, "	if($('#macLimitSts').val() == 0){\n");
+	fprintf(fs, "		loc += '&col_macLimit=0';\n");	
+	fprintf(fs, "	}else{\n");
+	fprintf(fs, "		if( $('#macLimitNum').val() == 0 ){\n");
+	fprintf(fs, "			loc += '&col_macLimit=65';\n");
+	fprintf(fs, "		}else{\n");
+	fprintf(fs, "			loc += '&col_macLimit=' + $('#macLimitNum').val();\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	}\n");	
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	
 	fprintf(fs, "function setAgTime()\n");
 	fprintf(fs, "{\n");
 	fprintf(fs, "	var msg;\n");
 	fprintf(fs, "	var value;\n");
 	fprintf(fs, "	var loc = 'setAgTime.cgi?';\n");
 	fprintf(fs, "	loc += 'cnuid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0])\n");
+	fprintf(fs, "	value = parseInt($('#loagTime').val());\n");
+	fprintf(fs, "	if ( isNaN(value) == true )\n");
 	fprintf(fs, "	{\n");
-	fprintf(fs, "		if ( isNaN(parseInt(loagTime.value)) == true )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'loagTime \"' + loagTime.value + '\" is invalid.';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		value = parseInt(loagTime.value);\n");
-	fprintf(fs, "		if ( value < 1 || value > 2000 )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'loagTime \"' + value + '\" is out of range [1-2000].';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		if ( isNaN(parseInt(reagTime.value)) == true )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'reagTime \"' + reagTime.value + '\" is invalid.';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		value = parseInt(reagTime.value);\n");
-	fprintf(fs, "		if ( value < 1 || value > 2000 )\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			msg = 'reagTime \"' + value + '\" is out of range [1-2000].';\n");
-	fprintf(fs, "			alert(msg);\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		loc += '&col_loagTime=' + loagTime.value;\n");
-	fprintf(fs, "		loc += '&col_reagTime=' + reagTime.value;\n");
+	fprintf(fs, "		msg = 'loagTime \"' + $('#loagTime').val() + '\" is invalid.';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}\n");	
+	fprintf(fs, "	if ( value < 1 || value > 2000 )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		msg = 'loagTime \"' + value + '\" is out of range [1-2000].';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
 	fprintf(fs, "	}\n");
+	fprintf(fs, "	value = parseInt($('#reagTime').val());\n");
+	fprintf(fs, "	if ( isNaN(value) == true )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		msg = 'reagTime \"' + value + '\" is invalid.';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}\n");	
+	fprintf(fs, "	if ( value < 1 || value > 2000 )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		msg = 'reagTime \"' + value + '\" is out of range [1-2000].';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += '&col_loagTime=' + $('#loagTime').val();\n");
+	fprintf(fs, "	loc += '&col_reagTime=' + $('#reagTime').val();\n");	
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+	
 	fprintf(fs, "function setSFilter(sts)\n");
 	fprintf(fs, "{\n");
-	fprintf(fs, "	var loc = 'setSFilter.cgi?cnuid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0])\n");
+	fprintf(fs, "	var loc = 'setSFilter.cgi?cnuid=%d';\n", id);	
+	fprintf(fs, "	if(0 == sts)\n");
 	fprintf(fs, "	{\n");
-	fprintf(fs, "		if(!sts)\n");
-	fprintf(fs, "		{\n");
-	fprintf(fs, "			sfbSts.selectedIndex = 0;\n");
-	fprintf(fs, "			sfuSts.selectedIndex = 0;\n");
-	fprintf(fs, "			sfmSts.selectedIndex = 0;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		loc += '&col_sfbSts=' + sfbSts.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_sfuSts=' + sfuSts.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_sfmSts=' + sfmSts.selectedIndex;\n");
+	fprintf(fs, "		loc += '&col_sfbSts=0';\n");
+	fprintf(fs, "		loc += '&col_sfuSts=0';\n");
+	fprintf(fs, "		loc += '&col_sfmSts=0';\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&col_sfbSts=' + $('#sfbSts').val();\n");
+	fprintf(fs, "		loc += '&col_sfuSts=' + $('#sfuSts').val();\n");
+	fprintf(fs, "		loc += '&col_sfmSts=' + $('#sfmSts').val();\n");
 	fprintf(fs, "	}\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+	
 	fprintf(fs, "function setVlan(sts){\n");
-	fprintf(fs, "	var loc = 'setCnuVlan.cgi?cnuid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0]){\n");
-	fprintf(fs, "		if( (!sts) || (vlanSts.selectedIndex==0)){\n");
-	fprintf(fs, "			vlanSts.selectedIndex = 0;\n");
-	fprintf(fs, "			eth1vid.value = 1;\n");
-	fprintf(fs, "			eth2vid.value = 1;\n");
-	fprintf(fs, "			eth3vid.value = 1;\n");
-	fprintf(fs, "			eth4vid.value = 1;\n");
-	fprintf(fs, "		}else{\n");
-	fprintf(fs, "			if( isValidVlanId(eth1vid.value) == false ) return;\n");
-	fprintf(fs, "			if( isValidVlanId(eth2vid.value) == false ) return;\n");
-	fprintf(fs, "			if( isValidVlanId(eth3vid.value) == false ) return;\n");
-	fprintf(fs, "			if( isValidVlanId(eth4vid.value) == false ) return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		loc += '&col_vlanSts=' + vlanSts.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth1vid=' + eth1vid.value;\n");
-	fprintf(fs, "		loc += '&col_eth2vid=' + eth2vid.value;\n");
-	fprintf(fs, "		loc += '&col_eth3vid=' + eth3vid.value;\n");
-	fprintf(fs, "		loc += '&col_eth4vid=' + eth4vid.value;\n");
+	fprintf(fs, "	var loc = 'setCnuVlan.cgi?cnuid=%d';\n", id);	
+	fprintf(fs, "	if( (0==sts) || ($('#vlanSts').val()==0)){\n");
+	fprintf(fs, "		$('#vlanSts').val(0);\n");
+	fprintf(fs, "		$('#eth1vid').val(1);\n");
+	fprintf(fs, "		$('#eth2vid').val(1);\n");
+	fprintf(fs, "		$('#eth3vid').val(1);\n");
+	fprintf(fs, "		$('#eth4vid').val(1);\n");
+	fprintf(fs, "	}else{\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth1vid').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth2vid').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth3vid').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth4vid').val()) == false ) return;\n");
 	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += '&col_vlanSts=' + $('#vlanSts').val();\n");
+	fprintf(fs, "	loc += '&col_eth1vid=' + $('#eth1vid').val();\n");
+	fprintf(fs, "	loc += '&col_eth2vid=' + $('#eth2vid').val();\n");
+	fprintf(fs, "	loc += '&col_eth3vid=' + $('#eth3vid').val();\n");
+	fprintf(fs, "	loc += '&col_eth4vid=' + $('#eth4vid').val();\n");	
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+	
 	fprintf(fs, "function setPLinkSts(sts){\n");
-	fprintf(fs, "	var loc = 'setPLinkSts.cgi?cnuid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0]){\n");
-	fprintf(fs, "		if( !sts){\n");
-	//fprintf(fs, "			psctlSts.selectedIndex = 0;\n");
-	fprintf(fs, "			eth1sts.selectedIndex = 1;\n");
-	fprintf(fs, "			eth2sts.selectedIndex = 1;\n");
-	fprintf(fs, "			eth3sts.selectedIndex = 1;\n");
-	fprintf(fs, "			eth4sts.selectedIndex = 1;\n");
-	fprintf(fs, "		}\n");
-	//fprintf(fs, "		loc += '&col_psctlSts=' + psctlSts.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth1sts=' + eth1sts.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth2sts=' + eth2sts.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth3sts=' + eth3sts.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth4sts=' + eth4sts.selectedIndex;\n");
-	fprintf(fs, "	}\n");
+	fprintf(fs, "	var loc = 'setPLinkSts.cgi?cnuid=%d';\n", id);	
+	fprintf(fs, "	if( 0==sts){\n");	
+	fprintf(fs, "		$('#eth1sts').val(1);\n");
+	fprintf(fs, "		$('#eth2sts').val(1);\n");
+	fprintf(fs, "		$('#eth3sts').val(1);\n");
+	fprintf(fs, "		$('#eth4sts').val(1);\n");
+	fprintf(fs, "	}\n");	
+	fprintf(fs, "	loc += '&col_eth1sts=' + $('#eth1sts').val();\n");
+	fprintf(fs, "	loc += '&col_eth2sts=' + $('#eth2sts').val();\n");
+	fprintf(fs, "	loc += '&col_eth3sts=' + $('#eth3sts').val();\n");
+	fprintf(fs, "	loc += '&col_eth4sts=' + $('#eth4sts').val();\n");	
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+	
 	fprintf(fs, "function doRateLimit(sts){\n");
-	fprintf(fs, "	var loc = 'doRateLimit.cgi?cnuid=%d';\n", id);
-	fprintf(fs, "	with (document.forms[0]){\n");
-	fprintf(fs, "		if(!sts){\n");
-	fprintf(fs, "			cpuPortRx.selectedIndex = 0;\n");
-	fprintf(fs, "			cpuPortTx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth1rx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth2rx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth3rx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth4rx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth1tx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth2tx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth3tx.selectedIndex = 0;\n");
-	fprintf(fs, "			eth4tx.selectedIndex = 0;\n");
-	fprintf(fs, "			loc += '&col_rxLimitSts=0';\n");
-	fprintf(fs, "			loc += '&col_txLimitSts=0';\n");
-	fprintf(fs, "		}else{\n");
-	fprintf(fs, "			loc += '&col_rxLimitSts=1';\n");
-	fprintf(fs, "			loc += '&col_txLimitSts=1';\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		loc += '&col_cpuPortRxRate=' + cpuPortRx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_cpuPortTxRate=' + cpuPortTx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth1rx=' + eth1rx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth1tx=' + eth1tx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth2rx=' + eth2rx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth2tx=' + eth2tx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth3rx=' + eth3rx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth3tx=' + eth3tx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth4rx=' + eth4rx.selectedIndex;\n");
-	fprintf(fs, "		loc += '&col_eth4tx=' + eth4tx.selectedIndex;\n");
+	fprintf(fs, "	var loc = 'doRateLimit.cgi?cnuid=%d';\n", id);	
+	fprintf(fs, "	if(0==sts){\n");
+	fprintf(fs, "		$('#cpuPortRx').val(0);\n");
+	fprintf(fs, "		$('#cpuPortTx').val(0);\n");
+	fprintf(fs, "		$('#eth1rx').val(0);\n");
+	fprintf(fs, "		$('#eth2rx').val(0);\n");
+	fprintf(fs, "		$('#eth3rx').val(0);\n");
+	fprintf(fs, "		$('#eth4rx').val(0);\n");
+	fprintf(fs, "		$('#eth1tx').val(0);\n");
+	fprintf(fs, "		$('#eth2tx').val(0);\n");
+	fprintf(fs, "		$('#eth3tx').val(0);\n");
+	fprintf(fs, "		$('#eth4tx').val(0);\n");
+	fprintf(fs, "		loc += '&col_rxLimitSts=0';\n");
+	fprintf(fs, "		loc += '&col_txLimitSts=0';\n");
+	fprintf(fs, "	}else{\n");
+	fprintf(fs, "		loc += '&col_rxLimitSts=1';\n");
+	fprintf(fs, "		loc += '&col_txLimitSts=1';\n");
 	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += '&col_cpuPortRxRate=' + $('#cpuPortRx').val();\n");
+	fprintf(fs, "	loc += '&col_cpuPortTxRate=' + $('#cpuPortTx').val();\n");
+	fprintf(fs, "	loc += '&col_eth1rx=' + $('#eth1rx').val();\n");
+	fprintf(fs, "	loc += '&col_eth1tx=' + $('#eth1tx').val();\n");
+	fprintf(fs, "	loc += '&col_eth2rx=' + $('#eth2rx').val();\n");
+	fprintf(fs, "	loc += '&col_eth2tx=' + $('#eth2tx').val();\n");
+	fprintf(fs, "	loc += '&col_eth3rx=' + $('#eth3rx').val();\n");
+	fprintf(fs, "	loc += '&col_eth3tx=' + $('#eth3tx').val();\n");
+	fprintf(fs, "	loc += '&col_eth4rx=' + $('#eth4rx').val();\n");
+	fprintf(fs, "	loc += '&col_eth4tx=' + $('#eth4tx').val();\n");	
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+	
 	fprintf(fs, "function saveProfile(){\n");
 	fprintf(fs, "	var loc = 'saveProfile.cgi?cnuid=%d';\n", id);
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
-	//fprintf(fs, "\n");
-	fprintf(fs, "</SCRIPT>\n");
-	fprintf(fs, "</head>\n");
-	fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
 
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Profile Settings</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Through this page, you can complete profile settings for CNU/1/%d.\n", id);	
-	fprintf(fs, "<br>-- Please click the 'Save' button to submit the appropriate configuration.\n");
-	fprintf(fs, "<br>-- Click the 'Clear' button if you want to undo the appropriate configuration.\n");
-	fprintf(fs, "<br>-- Please click the 'Done' button to save all configuration to flash finally.</br>\n");
-	fprintf(fs, "<br><br>\n");
-
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");	
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	frmLoad();\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#dialog').dialog({\n");
+	fprintf(fs, "		autoOpen: false,\n");
+	fprintf(fs, "		width:400,\n");
+	fprintf(fs, "		show:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'blind',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "		hide:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'explode',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#opener').button(\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			icons:\n");
+	fprintf(fs, "			{\n");
+	fprintf(fs, "				primary: 'ui-icon-help'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "			text: false\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	).click(function(){\n");
+	fprintf(fs, "		$('#dialog').dialog('open');\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
 	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret' width=240>Mac Address Limiting</td>\n");
-	fprintf(fs, "	<td class='diagret' width=260>&nbsp;</td>\n");
-	fprintf(fs, "	<td class='diagret' width=80>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
+	fprintf(fs, "	$('#save1Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setMacLimiting();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save2Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setAgTime();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save3Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setSFilter(1);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save4Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setVlan(1);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save5Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setPLinkSts(1);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#save6Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		doRateLimit(1);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#clear1Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setSFilter(0);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#clear2Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setVlan(0);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#clear3Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		setPLinkSts(0);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#clear4Btn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		doRateLimit(0);\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#comBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-disk'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#comBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		saveProfile();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	//fprintf(fs, "\n");
 
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Status:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='macLimitSts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>MAX Bridged Hosts:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='macLimitNum' size=1>\n");
-	fprintf(fs, "			<option value='0'>0\n");
-	fprintf(fs, "			<option value='1'>1\n");
-	fprintf(fs, "			<option value='2'>2\n");
-	fprintf(fs, "			<option value='3'>3\n");
-	fprintf(fs, "			<option value='4'>4\n");
-	fprintf(fs, "			<option value='5'>5\n");
-	fprintf(fs, "			<option value='6'>6\n");
-	fprintf(fs, "			<option value='7'>7\n");
-	fprintf(fs, "			<option value='8'>8\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='btn1save()' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret'>Bridged Address Aging</td>\n");
-	fprintf(fs, "	<td class='diagret' colspan=2>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>local bridged table aging:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2><input type='text' name='loagTime' size='8'>Minutes[Range of 1~2000]</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>remote bridged table aging:</td>\n");
-	fprintf(fs, "	<td class='diagdata'><input type='text' name='reagTime' size='8'>Minutes[Range of 1~2000]</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setAgTime()' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret'>Storm Filter Settings</td>\n");
-	fprintf(fs, "	<td class='diagret' colspan=2>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>broadcast storm filter:</td>\n");	
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='sfbSts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>unicast storm filter:</td>\n");	
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='sfuSts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setSFilter(0)' value='Clear'></td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>multicast storm filter:</td>\n");	
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='sfmSts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>storm filter level:</td>\n");
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>Profile Settings</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<div id='accordion'>\n");
+	fprintf(fs, "	<h3>Mac Address Limiting</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "	  				<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=240>Status:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=260>\n");
+	fprintf(fs, "							<select id='macLimitSts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>MAX Bridged Hosts:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='macLimitNum' size=1>\n");
+	fprintf(fs, "								<option value='0'>0</option>\n");
+	fprintf(fs, "								<option value='1'>1</option>\n");
+	fprintf(fs, "								<option value='2'>2</option>\n");
+	fprintf(fs, "								<option value='3'>3</option>\n");
+	fprintf(fs, "								<option value='4'>4</option>\n");
+	fprintf(fs, "								<option value='5'>5</option>\n");
+	fprintf(fs, "								<option value='6'>6</option>\n");
+	fprintf(fs, "								<option value='7'>7</option>\n");
+	fprintf(fs, "								<option value='8'>8</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'><button id='save1Btn'>Commit</button></div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>Bridged Address Aging</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "	  				<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=240>local bridged table aging:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=260>\n");
+	fprintf(fs, "							<input type='text' id='loagTime' size='8'>Minutes[Range of 1~2000]\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "	  				<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>remote bridged table aging:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<input type='text' id='reagTime' size='8'>Minutes[Range of 1~2000]\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'><button id='save2Btn'>Commit</button></div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>Storm Filter Settings</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=240>broadcast storm filter:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=260>\n");
+	fprintf(fs, "							<select id='sfbSts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>unicast storm filter:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='sfuSts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>multicast storm filter:</td>\n");	
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='sfmSts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>storm filter level:</td>\n");
 	if( 0 == profile.col_sfRate )
 	{			
-		fprintf(fs, "	<td class='diagdata'>Disable</td>\n");
+		fprintf(fs, "					<td class='diagdata'>Disable</td>\n");
 	}
 	else
 	{
-		fprintf(fs, "	<td class='diagdata'>%d Kpps</td>\n", (1<<(profile.col_sfRate-1)));
+		fprintf(fs, "					<td class='diagdata'>%d Kpps</td>\n", (1<<(profile.col_sfRate-1)));
 	}
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setSFilter(1)' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret'>802.1Q VLAN Settings</td>\n");
-	fprintf(fs, "	<td class='diagret' colspan=2>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>status:</td>\n");	
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='vlanSts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH1 PVID:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2><input type='text' name='eth1vid' size='8'>[Range of 1~4094]</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH2 PVID:</td>\n");
-	fprintf(fs, "	<td class='diagdata'><input type='text' name='eth2vid' size='8'>[Range of 1~4094]</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setVlan(0)' value='Clear'></td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH3 PVID:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2><input type='text' name='eth3vid' size='8'>[Range of 1~4094]</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH4 PVID:</td>\n");
-	fprintf(fs, "	<td class='diagdata'><input type='text' name='eth4vid' size='8'>[Range of 1~4094]</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setVlan(1)' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret'>Port Link Status Control</td>\n");
-	fprintf(fs, "	<td class='diagret' colspan=2>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-#if 0
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>status:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='psctlSts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-#endif
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH1 link status:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='eth1sts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH2 link status:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth2sts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setPLinkSts(0)' value='Clear'></td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH3 link status:</td>\n");
-	fprintf(fs, "	<td class='diagdata' colspan=2>\n");
-	fprintf(fs, "		<select name='eth3sts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "</tr>\n");
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH4 link status:</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth4sts' size=1>\n");
-	fprintf(fs, "			<option value='0'>Disable\n");
-	fprintf(fs, "			<option value='1'>Enable\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='setPLinkSts(1)' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");	
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-	fprintf(fs, "</table>\n");
-
-	//table 2
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");	
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagret' width=160>Port Speed Limiting</td>\n");
-	fprintf(fs, "	<td class='diagret' width=170>&nbsp;</td>\n");
-	fprintf(fs, "	<td class='diagret' width=170>&nbsp;</td>\n");
-	fprintf(fs, "	<td class='diagret' width=80>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=4>&nbsp;</td>\n</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>Port</td>\n");
-	fprintf(fs, "	<td class='diagdata'>Uplink Speed</td>\n");
-	fprintf(fs, "	<td class='diagdata'>Downlink Speed</td>\n");
-	fprintf(fs, "	<td class='diagdata'>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>cpu port</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='cpuPortTx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='cpuPortRx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-	
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH1</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth1rx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth1tx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH2</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth2rx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth2tx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='doRateLimit(0)' value='Clear'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH3</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth3rx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth3tx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>&nbsp;</td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n");
-	fprintf(fs, "	<td class='diagdata'>ETH4</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth4rx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata'>\n");
-	fprintf(fs, "		<select name='eth4tx' size=1>\n");
-	fprintf(fs, "			<option value='0'>Unlimited\n");
-	fprintf(fs, "			<option value='1'>128 Kbps\n");
-	fprintf(fs, "			<option value='2'>256 Kbps\n");
-	fprintf(fs, "			<option value='3'>512 Kbps\n");
-	fprintf(fs, "			<option value='4'>1 Mbps\n");
-	fprintf(fs, "			<option value='5'>1.5 Mbps\n");
-	fprintf(fs, "			<option value='6'>2 Mbps\n");
-	fprintf(fs, "			<option value='7'>3 Mbps\n");	
-	fprintf(fs, "			<option value='8'>4 Mbps\n");
-	fprintf(fs, "			<option value='9'>6 Mbps\n");
-	fprintf(fs, "			<option value='10'>8 Mbps\n");
-	fprintf(fs, "		</select>\n");
-	fprintf(fs, "	</td>\n");
-	fprintf(fs, "	<td class='diagdata' align='right'><input type='button' class='btn2L' onClick='doRateLimit(1)' value='Save'></td>\n");
-	fprintf(fs, "</tr>\n");
-
-	fprintf(fs, "<tr>\n<td class='diagdata' colspan=4>&nbsp;</td>\n</tr>\n");	
-	fprintf(fs, "<tr>\n<td class='listend' colspan=4></td>\n</tr>\n");	
-	fprintf(fs, "</table>\n");
-
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'>\n");
+	fprintf(fs, "				<button id='clear1Btn'>Clear</button><br>\n");
+	fprintf(fs, "				<button id='save3Btn'>Commit</button>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>802.1Q VLAN Settings</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=240>status:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=260>\n");
+	fprintf(fs, "							<select id='vlanSts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH1 PVID:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<input type='text' id='eth1vid' size='8'>[Range of 1~4094]\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH2 PVID:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<input type='text' id='eth2vid' size='8'>[Range of 1~4094]\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH3 PVID:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<input type='text' id='eth3vid' size='8'>[Range of 1~4094]\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH4 PVID:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<input type='text' id='eth4vid' size='8'>[Range of 1~4094]\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");	
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'>\n");
+	fprintf(fs, "				<button id='clear2Btn'>Clear</button>\n");
+	fprintf(fs, "				<button id='save4Btn'>Commit</button>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>Port Link Status Control</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "	  				<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=240>ETH1 link status:</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=260>\n");
+	fprintf(fs, "							<select id='eth1sts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH2 link status:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth2sts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH3 link status:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth3sts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH4 link status:</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth4sts' size=1>\n");
+	fprintf(fs, "								<option value='0'>Disable</option>\n");
+	fprintf(fs, "								<option value='1'>Enable</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'>\n");
+	fprintf(fs, "				<button id='clear3Btn'>Clear</button><br>\n");
+	fprintf(fs, "				<button id='save5Btn'>Commit</button>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<h3>Port Speed Limiting</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<div class='dwall'>\n");
+	fprintf(fs, "			<div class='dwcontent'>\n");
+	fprintf(fs, "				<table class='dwcontent'>\n");
+	fprintf(fs, "	  				<tr>\n");
+	fprintf(fs, "						<td class='diagdata' width=160>Port</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=170>Uplink Speed</td>\n");
+	fprintf(fs, "						<td class='diagdata' width=170>Downlink Speed</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>cpu port</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='cpuPortTx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='cpuPortRx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH1</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth1rx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth1tx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH2</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth2rx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth2tx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH3</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth3rx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth3tx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "					<tr>\n");
+	fprintf(fs, "						<td class='diagdata'>ETH4</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth4rx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "						<td class='diagdata'>\n");
+	fprintf(fs, "							<select id='eth4tx' size=1>\n");
+	fprintf(fs, "								<option value='0'>Unlimited</option>\n");
+	fprintf(fs, "								<option value='1'>128 Kbps</option>\n");
+	fprintf(fs, "								<option value='2'>256 Kbps</option>\n");
+	fprintf(fs, "								<option value='3'>512 Kbps</option>\n");
+	fprintf(fs, "								<option value='4'>1 Mbps</option>\n");
+	fprintf(fs, "								<option value='5'>1.5 Mbps</option>\n");
+	fprintf(fs, "								<option value='6'>2 Mbps</option>\n");
+	fprintf(fs, "								<option value='7'>3 Mbps</option>\n");	
+	fprintf(fs, "								<option value='8'>4 Mbps</option>\n");
+	fprintf(fs, "								<option value='9'>6 Mbps</option>\n");
+	fprintf(fs, "								<option value='10'>8 Mbps</option>\n");
+	fprintf(fs, "							</select>\n");
+	fprintf(fs, "						</td>\n");
+	fprintf(fs, "					</tr>\n");
+	fprintf(fs, "				</table>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "			<div class='dwbtn'>\n");
+	fprintf(fs, "				<button id='clear4Btn'>Clear</button><br>\n");
+	fprintf(fs, "				<button id='save6Btn'>Commit</button>\n");
+	fprintf(fs, "			</div>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "</div>\n");
 	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='location.href=\"previewCnus.cgi\"' value='Return'>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='saveProfile()' value='Done'>\n");
+	fprintf(fs, "	<button id='returnBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='comBtn'>Save</button>\n");
+	fprintf(fs, "	<button id='opener'>Help</button>\n");
 	fprintf(fs, "</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "<div id='dialog' title='Help Information'>\n");
+	fprintf(fs, "	Through this page, you can complete profile settings for CNU/%d/%d.</br>\n", cltid, cnuid);
+	fprintf(fs, "	<br>-- Please click the 'Commit' button to submit the appropriate configuration.\n");
+	fprintf(fs, "	<br>-- Click the 'Clear' button if you want to undo the appropriate configuration.\n");
+	fprintf(fs, "	<br>-- Please click the 'Save' button to save all configuration to flash finally.</br>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
 	fflush(fs);
 }
 
-void cgiCltMgmt(char *query, FILE *fs)
+void cgiCnuProfileExt(char *query, FILE *fs) 
 {
-	int i=0;
-	int iCount = 0;
-	st_dbsClt clt;
+	st_dbsCnu cnu;
+	uint8_t *p = NULL;
+	uint32_t iTemp = 0;
+	uint8_t mymac[6] = {0};
+	uint8_t mySid[32] = {0};
 
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
-	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
-	fprintf(fs, "<script language='javascript'>\n");
-	fprintf(fs, "function cltAction(opt, cltid){\n");
-	fprintf(fs, "	if( opt == 0 ){var loc = 'editCltPro.cmd?cltid=';}\n");
-	fprintf(fs, "	else if( opt == 1 ) {\n");
-	fprintf(fs, "		var loc = 'cltReboot.cgi?cltid=';\n");
-	fprintf(fs, "		if(!confirm('Are you sure to reboot the clt right now?')) return;\n");
+	dbsGetCnu(dbsdev, glbWebVar.cnuid, &cnu);
+	boardapi_macs2b(cnu.col_mac, mymac);
+	p = (uint8_t *)&iTemp;
+	p[0] = mymac[5];
+	p[1] = mymac[4];
+	p[2] = mymac[3];
+	p[3] = mymac[2];
+	iTemp++;
+	mymac[5] = p[0];
+	mymac[4] = p[1];
+	mymac[3] = p[2];
+	mymac[2] = p[3];
+	sprintf(mySid, "%02X:%02X:%02X:%02X:%02X:%02X", mymac[0], mymac[1], mymac[2], mymac[3], mymac[4], mymac[5]);
+	
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'/>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'/>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript' src='util.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");	
+	fprintf(fs, "function frmLoad(){\n");
+	fprintf(fs, "	$('#vlanStatus').val(%d);\n", glbWebVar.swVlanEnable);
+	fprintf(fs, "	$('#eth1vmode').val(%d);\n", glbWebVar.swEth1PortVMode);
+	fprintf(fs, "	$('#eth1vid').val(%d);\n", glbWebVar.swEth1PortVid);
+	fprintf(fs, "	$('#eth2vmode').val(%d);\n", glbWebVar.swEth2PortVMode);
+	fprintf(fs, "	$('#eth2vid').val(%d);\n", glbWebVar.swEth2PortVid);
+	fprintf(fs, "	$('#eth3vmode').val(%d);\n", glbWebVar.swEth3PortVMode);
+	fprintf(fs, "	$('#eth3vid').val(%d);\n", glbWebVar.swEth3PortVid);
+	fprintf(fs, "	$('#eth4vmode').val(%d);\n", glbWebVar.swEth4PortVMode);
+	fprintf(fs, "	$('#eth4vid').val(%d);\n", glbWebVar.swEth4PortVid);
+	fprintf(fs, "	$('#cpuvmode').val(%d);\n", glbWebVar.swUplinkPortVMode);
+	fprintf(fs, "	$('#cpuvid').val(%d);\n", glbWebVar.swUplinkPortVid);
+	fprintf(fs, "	$('#rxBctrlStatus').val(%d);\n", glbWebVar.swRxRateLimitEnable);
+	fprintf(fs, "	$('#txBctrlStatus').val(%d);\n", glbWebVar.swTxRateLimitEnable);
+	fprintf(fs, "	$('#eth1rxvalue').val(%d);\n", glbWebVar.swEth1RxRate);
+	fprintf(fs, "	$('#eth2rxvalue').val(%d);\n", glbWebVar.swEth2RxRate);
+	fprintf(fs, "	$('#eth3rxvalue').val(%d);\n", glbWebVar.swEth3RxRate);
+	fprintf(fs, "	$('#eth4rxvalue').val(%d);\n", glbWebVar.swEth4RxRate);
+	fprintf(fs, "	$('#cablerxvalue').val(%d);\n", glbWebVar.swUplinkRxRate);
+	fprintf(fs, "	$('#eth1txvalue').val(%d);\n", glbWebVar.swEth1TxRate);
+	fprintf(fs, "	$('#eth2txvalue').val(%d);\n", glbWebVar.swEth2TxRate);
+	fprintf(fs, "	$('#eth3txvalue').val(%d);\n", glbWebVar.swEth3TxRate);
+	fprintf(fs, "	$('#eth4txvalue').val(%d);\n", glbWebVar.swEth4TxRate);
+	fprintf(fs, "	$('#cabletxvalue').val(%d);\n", glbWebVar.swUplinkTxRate);
+	fprintf(fs, "	$('#loopDetectStatus').val(%d);\n", glbWebVar.swLoopDetect);
+	fprintf(fs, "	$('#swsid').val('%s');\n", glbWebVar.swSwitchSid);
+	fprintf(fs, "	$('#swsid').attr('disabled', 'disabled');\n");
+	fprintf(fs, "	$('#sidQuickSetup').val(0);\n");
+	fprintf(fs, "	$('#eth1LoopStatus').val(%d);\n", glbWebVar.swEth1LoopStatus);
+	fprintf(fs, "	$('#eth2LoopStatus').val(%d);\n", glbWebVar.swEth2LoopStatus);
+	fprintf(fs, "	$('#eth3LoopStatus').val(%d);\n", glbWebVar.swEth3LoopStatus);
+	fprintf(fs, "	$('#eth4LoopStatus').val(%d);\n", glbWebVar.swEth4LoopStatus);
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function sidSetup(){\n");
+	fprintf(fs, "	var mysid = $('#sidQuickSetup').val();\n");
+	fprintf(fs, "	var myselectid = $('#sidQuickSetup')[0].selectedIndex;\n");
+	fprintf(fs, "	if(myselectid==1)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		$('#swsid').val(mysid);\n");
+	fprintf(fs, "		$('#swsid').attr('disabled', 'disabled');\n");
 	fprintf(fs, "	}\n");
-	fprintf(fs, "	else if( opt == 2 ) {\n");
-	fprintf(fs, "		var loc = 'cltReload.cgi?cltid=';\n");
-	fprintf(fs, "		if(!confirm('Are you sure that you want to reload the profile from CBAT to the CLT?')) return;\n");
-	fprintf(fs, "	}\n");	
-	fprintf(fs, "	else {var loc = 'editCltPro.cmd?cltid=';}\n");
+	fprintf(fs, "	else if(myselectid==2)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		$('#swsid').val(mysid);\n");
+	fprintf(fs, "		$('#swsid').attr('disabled', 'disabled');\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else if(myselectid==3)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		$('#swsid').val(mysid);\n");
+	fprintf(fs, "		$('#swsid').removeAttr('disabled');\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "function Return(){\n");
+	fprintf(fs, "	var loc = 'cnuManagement.cmd?cnuid=';\n");
+	fprintf(fs, "	loc += %d;\n", glbWebVar.cnuid);
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function Read(){\n");
+	fprintf(fs, "	$('#btn_read').attr('disabled', true);\n");
+	fprintf(fs, "	$('#btn_write').attr('disabled', true);\n");
+	fprintf(fs, "	$('#btn_return').attr('disabled', true);\n");
+	fprintf(fs, "	var loc = 'rtl8306eConfigRead.cgi?';\n");
+	fprintf(fs, "	loc += 'cnuid=' + %d;\n", glbWebVar.cnuid);
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function Write(){\n");
+	fprintf(fs, "	var msg;\n");
+	fprintf(fs, "	var loc = 'rtl8306eConfigWrite.cgi?';\n");
+	fprintf(fs, "	if($('#vlanStatus').val() != 0){\n");
+	fprintf(fs, "		if( isValidVlanId($('#cpuvid').val()) == false ) return;	\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth1vid').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth2vid').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth3vid').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidVlanId($('#eth4vid').val()) == false ) return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	if($('#rxBctrlStatus').val() != 0){\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth1rxvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth2rxvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth3rxvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth4rxvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#cablerxvalue').val()) == false ) return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	if($('#txBctrlStatus').val() != 0)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth1txvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth2txvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth3txvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#eth4txvalue').val()) == false ) return;\n");
+	fprintf(fs, "		if( isValidBctrlValue($('#cabletxvalue').val()) == false ) return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += 'cnuid=' + %d;\n", glbWebVar.cnuid);
+	fprintf(fs, "	loc += '&swVlanEnable=' + $('#vlanStatus').val();\n");
+	fprintf(fs, "	if($('#vlanStatus').val() != 0)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&swUplinkPortVMode=' + $('#cpuvmode').val();\n");
+	fprintf(fs, "		loc += '&swEth1PortVMode=' + $('#eth1vmode').val();\n");
+	fprintf(fs, "		loc += '&swEth2PortVMode=' + $('#eth2vmode').val();\n");
+	fprintf(fs, "		loc += '&swEth3PortVMode=' + $('#eth3vmode').val();\n");
+	fprintf(fs, "		loc += '&swEth4PortVMode=' + $('#eth4vmode').val();\n");
+	fprintf(fs, "		loc += '&swUplinkPortVid=' + $('#cpuvid').val();\n");
+	fprintf(fs, "		loc += '&swEth1PortVid=' + $('#eth1vid').val();\n");
+	fprintf(fs, "		loc += '&swEth2PortVid=' + $('#eth2vid').val();\n");
+	fprintf(fs, "		loc += '&swEth3PortVid=' + $('#eth3vid').val();\n");
+	fprintf(fs, "		loc += '&swEth4PortVid=' + $('#eth4vid').val();\n");
+	fprintf(fs, "	}else{\n");
+	fprintf(fs, "		loc += '&swUplinkPortVMode=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth1PortVMode=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth2PortVMode=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth3PortVMode=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth4PortVMode=' + 0;\n");
+	fprintf(fs, "		loc += '&swUplinkPortVid=' + 1;\n");
+	fprintf(fs, "		loc += '&swEth1PortVid=' + 1;\n");
+	fprintf(fs, "		loc += '&swEth2PortVid=' + 1;\n");
+	fprintf(fs, "		loc += '&swEth3PortVid=' + 1;\n");
+	fprintf(fs, "		loc += '&swEth4PortVid=' + 1;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += '&swRxRateLimitEnable=' + $('#rxBctrlStatus').val();\n");
+	fprintf(fs, "	loc += '&swTxRateLimitEnable=' + $('#txBctrlStatus').val();\n");
+	fprintf(fs, "	if($('#rxBctrlStatus').val() != 0)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&swUplinkRxRate=' + $('#cablerxvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth1RxRate=' + $('#eth1rxvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth2RxRate=' + $('#eth2rxvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth3RxRate=' + $('#eth3rxvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth4RxRate=' + $('#eth4rxvalue').val();\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&swUplinkRxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth1RxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth2RxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth3RxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth4RxRate=' + 0;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	if($('#txBctrlStatus').val() != 0)\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&swUplinkTxRate=' + $('#cabletxvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth1TxRate=' + $('#eth1txvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth2TxRate=' + $('#eth2txvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth3TxRate=' + $('#eth3txvalue').val();\n");
+	fprintf(fs, "		loc += '&swEth4TxRate=' + $('#eth4txvalue').val();\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	else\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		loc += '&swUplinkTxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth1TxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth2TxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth3TxRate=' + 0;\n");
+	fprintf(fs, "		loc += '&swEth4TxRate=' + 0;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += '&swLoopDetect=' + $('#loopDetectStatus').val();\n");
+	fprintf(fs, "	if( isValidMacAddress($('#swsid').val()) == false ){\n");
+	fprintf(fs, "		msg = 'SID \"' + $('#swsid').val() + '\" is invalid.';\n");
+	fprintf(fs, "		alert(msg);\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += '&swSwitchSid=' + $('#swsid').val();\n");
+	fprintf(fs, "	$('#btn_read').attr('disabled', true);\n");
+	fprintf(fs, "	$('#btn_write').attr('disabled', true);\n");
+	fprintf(fs, "	$('#btn_return').attr('disabled', true);\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	frmLoad();\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#dialog').dialog({\n");
+	fprintf(fs, "		autoOpen: false,\n");
+	fprintf(fs, "		width:370,\n");
+	fprintf(fs, "		show:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'blind',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "		hide:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'explode',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#opener').button(\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			icons:\n");
+	fprintf(fs, "			{\n");
+	fprintf(fs, "				primary: 'ui-icon-help'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "			text: false\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	).click(function(){\n");
+	fprintf(fs, "		$('#dialog').dialog('open');\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#btn_return').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#btn_return').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		Return();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#btn_read').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-arrow-4-diag'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#btn_read').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		Read();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#btn_write').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-tag'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#btn_write').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		Write();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>CNU Configuration</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<br><br>\n");
+	fprintf(fs, "<div id='accordion'>  \n");
+	fprintf(fs, "<h3>802.1Q VLAN Settings</h3>\n");
+	fprintf(fs, "<div>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>802.1q Vlan Status</td>\n");
+	fprintf(fs, "			<td class='diagdata' colspan=2>\n");
+	fprintf(fs, "				<select id='vlanStatus' size=1>\n");
+	fprintf(fs, "					<option value='0'>Disable</option>\n");
+	fprintf(fs, "					<option value='1'>Enable</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata' width=150>Port</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=150>Tag Mode</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=300>Vlan ID</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>CPU Port</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='cpuvmode' size=1>\n");
+	fprintf(fs, "					<option value='0'>Transparent</option>\n");
+	fprintf(fs, "					<option value='1'>Untag</option>\n");
+	fprintf(fs, "					<option value='2'>Tag</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='cpuvid' size='8'>[Range of 1~4094]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH1</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth1vmode' size=1>\n");
+	fprintf(fs, "					<option value='0'>Transparent</option>\n");
+	fprintf(fs, "					<option value='1'>Untag</option>\n");
+	fprintf(fs, "					<option value='2'>Tag</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth1vid' size='8'>[Range of 1~4094]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH2</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth2vmode' size=1>\n");
+	fprintf(fs, "					<option value='0'>Transparent</option>\n");
+	fprintf(fs, "					<option value='1'>Untag</option>\n");
+	fprintf(fs, "					<option value='2'>Tag</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth2vid' size='8'>[Range of 1~4094]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH3</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth3vmode' size=1>\n");
+	fprintf(fs, "					<option value='0'>Transparent</option>\n");
+	fprintf(fs, "					<option value='1'>Untag</option>\n");
+	fprintf(fs, "					<option value='2'>Tag</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth3vid' size='8'>[Range of 1~4094]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH4</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth4vmode' size=1>\n");
+	fprintf(fs, "					<option value='0'>Transparent</option>\n");
+	fprintf(fs, "					<option value='1'>Untag</option>\n");
+	fprintf(fs, "					<option value='2'>Tag</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth4vid' size='8'>[Range of 1~4094]</td>\n");
+	fprintf(fs, "		</tr> \n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "<h3>Port Bandwidth Control Settings</h3>\n");
+	fprintf(fs, "<div>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0>  \n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata' width=300>Port RX Bandwidth Control Status</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=300>\n");
+	fprintf(fs, "				<select id='rxBctrlStatus' size=1>\n");
+	fprintf(fs, "					<option value='0'>Disable</option>\n");
+	fprintf(fs, "					<option value='1'>Enable</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH1 Port RX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth1rxvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH2 Port RX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth2rxvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH3 Port RX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth3rxvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH4 Port RX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth4rxvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>Cable Port RX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='cablerxvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>Port TX Bandwidth Control Status</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='txBctrlStatus' size=1>\n");
+	fprintf(fs, "					<option value='0'>Disable</option>\n");
+	fprintf(fs, "					<option value='1'>Enable</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH1 Port TX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth1txvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH2 Port TX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth2txvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH3 Port TX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth3txvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH4 Port TX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='eth4txvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>Cable Port TX Bandwidth Value</td>\n");
+	fprintf(fs, "			<td class='diagdata'><input type='text' id='cabletxvalue' size='10'>*64Kbits/s [Range of 0~1526]</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "<h3>Loop Detection</h3>\n");
+	fprintf(fs, "<div>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata' width=300>Loop Detection Status:</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=150>\n");
+	fprintf(fs, "				<select id='loopDetectStatus' size=1>\n");
+	fprintf(fs, "					<option value='0'>Disable</option>\n");
+	fprintf(fs, "					<option value='1'>Enable</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>Loop Detection SID:</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<input type='text' id='swsid'>\n");
+	fprintf(fs, "				<select id='sidQuickSetup' size=1 onclick='sidSetup()'>\n");
+	fprintf(fs, "					<option value='0'>Quick Setup</option>\n");
+	fprintf(fs, "					<option value='52:54:4C:83:05:C0'>Default</option>\n");
+	fprintf(fs, "					<option value='%s'>Recommend</option>\n", mySid);
+	fprintf(fs, "					<option value=''>Custom</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH1 Loop Status:</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth1LoopStatus' disabled='disabled'>\n");
+	fprintf(fs, "					<option value='0'>No</option>\n");
+	fprintf(fs, "					<option value='1'>Yes</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH2 Loop Status:</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth2LoopStatus' disabled='disabled'>\n");
+	fprintf(fs, "					<option value='0'>No</option>\n");
+	fprintf(fs, "					<option value='1'>Yes</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH3 Loop Status:</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth3LoopStatus' disabled='disabled'>\n");
+	fprintf(fs, "					<option value='0'>No</option>\n");
+	fprintf(fs, "					<option value='1'>Yes</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class='diagdata'>ETH4 Loop Status:</td>\n");
+	fprintf(fs, "			<td class='diagdata'>\n");
+	fprintf(fs, "				<select id='eth4LoopStatus' disabled='disabled'>\n");
+	fprintf(fs, "					<option value='0'>No</option>\n");
+	fprintf(fs, "					<option value='1'>Yes</option>\n");
+	fprintf(fs, "				</select>\n");
+	fprintf(fs, "			</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "  	</table>\n");
+	fprintf(fs, "  </div>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='btn_return'>Return</button>\n");
+	fprintf(fs, "	<button id='btn_read'>Read</button>\n");
+	fprintf(fs, "	<button id='btn_write'>Write</button>\n");
+	fprintf(fs, "	<button id='opener'>Help</button>\n");
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "<div id='dialog' title='Help Information'>\n");
+	fprintf(fs, "Through this page, you can view and configure the switch port settings.<br><br>\n");
+	fprintf(fs, "1. Click 'Read' button to get the current settings from the device.<br>		\n");
+	fprintf(fs, "2. Click 'Write' button to save the the configuration to the device.<br>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
+	fflush(fs);	
+}
+
+
+void cgiCltMgmt(char *query, FILE *fs)
+{	
+	int id = 0;
+	st_dbsClt clt;
+	char action[IFC_LARGE_LEN];
+
+	cgiGetValueByName(query, "cltid", action);
+	id = atoi(action);
+
+	dbsGetClt(dbsdev, id, &clt);
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'/>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'/>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+	fprintf(fs, "function btnReturn(){\n");
+	fprintf(fs, "	location.href = 'previewTopology.cgi';\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function btnReboot(cltid){\n");
+	fprintf(fs, "	var loc = 'cltReboot.cgi?cltid=';\n");
+	fprintf(fs, "	loc += cltid;\n");
+	fprintf(fs, "	if(!confirm('Are you sure to reboot the clt right now?')) return;\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function btnConfig(cltid){\n");
+	fprintf(fs, "	var loc = 'editCltPro.cmd?cltid=';\n");
 	fprintf(fs, "	loc += cltid;\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
-	fprintf(fs, "}\n");	
+	fprintf(fs, "}\n");
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#dialog').dialog({\n");
+	fprintf(fs, "		autoOpen: false,\n");
+	fprintf(fs, "		width:400,\n");
+	fprintf(fs, "		show:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'blind',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "		hide:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'explode',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#opener').button(\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			icons:\n");
+	fprintf(fs, "			{\n");
+	fprintf(fs, "				primary: 'ui-icon-help'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "			text: false\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	).click(function(){\n");
+	fprintf(fs, "		$('#dialog').dialog('open');\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#rebootBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#rebootBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReboot(%d);\n", id);
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#configBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-tag'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#configBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnConfig(%d);\n", id);
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
 	fprintf(fs, "</script>\n");
-	fprintf(fs, "</head>\n<body>\n<blockquote>\n<form>\n\n");
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>CLT Management</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
-
-	fprintf(fs, "<br>Through this page, you can complete the CLT configuration management.\n");
-	fprintf(fs, "<br>-- Please click the 'profile' image if you want to view or modify CLT's profile.\n");	
-	fprintf(fs, "<br>-- You can click the 'reload' button to force the profile re-loaded to the CLT.</br>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
 	fprintf(fs, "<br>\n");
-	fprintf(fs, "<br>\n");
-
-	fprintf(fs, "<table border=1 cellpadding=3 cellspacing=0>\n");	
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=50>Index</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=140>MAC Address</td>\n");	
-	fprintf(fs, "		<td class='hd' align='center' width=120>Max Stations</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=220>Firmware Version</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=60>Status</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=60>Profile</td>\n");
-	fprintf(fs, "	</tr>\n");
-	for( i=1; i<=MAX_CLT_AMOUNT_LIMIT; i++ )
-	{
-		if( dbsGetClt(dbsdev, i, &clt) != CMM_SUCCESS )
-		{
-			/* Get CNU failed, exit */
-			break;
-		}
-		else
-		{
-			if( clt.col_row_sts == 0 )
-			{
-				/* CNU column unused, get next */ 
-				continue;
-			}
-			else
-			{
-				iCount++;
-				fprintf(fs, "	<tr>\n");
-				fprintf(fs, "		<td align='center'>%d</td>\n", clt.id);
-				fprintf(fs, "		<td align='center'>%s</td>\n", clt.col_mac);
-				fprintf(fs, "		<td align='center'>%d</td>\n", clt.col_maxStas);
-				fprintf(fs, "		<td align='center'>%s</td>\n", clt.col_swVersion);				
-				fprintf(fs, "		<td align='center'><IMG src='true.png' width='14' height='15'></td>\n");
-				fprintf(fs, "		<td align='center'><IMG src='ico_Editor.gif' width=16 height=16 onclick='cltAction(0,%d)'></td>\n", clt.id);
-				fprintf(fs, "	</tr>\n");
-			}
-		}
-	}
-	if( 0 == iCount )
-	{
-		/* No CNU to Show */
-		fprintf(fs, "<tr>\n<td align='center' colspan=7>** No CLT discovered ! **</td>\n</tr>\n");
-	}
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>CLT Information</b></td></tr>\n");
 	fprintf(fs, "</table>\n");
-	
-	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='location.href=\"cltManagement.cmd\"' value='Refresh'>\n");
-	if( 0 != iCount )
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<div id='accordion'>\n");
+	fprintf(fs, "	<h3>Show CLT Information</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<table border=0 cellpadding=3 cellspacing=0>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td width=280>Index:</td>\n");
+	fprintf(fs, "				<td width=200>CLT/%d</td>\n", id);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>MAC Address:</td>\n");
+	fprintf(fs, "				<td>%s</td>\n", clt.col_mac);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Status:</td>\n");
+	if( 0 == clt.col_row_sts )
 	{
-		fprintf(fs, "	<input type='button' class='btn2L' value='Reboot' onclick='cltAction(1,%d)'>\n", clt.id);
-		fprintf(fs, "	<input type='button' class='btn2L' value='Reload' onclick='cltAction(2,%d)'>\n", clt.id);
+		fprintf(fs, "				<td><img src='suppress.png'></td>\n");
 	}
-	fprintf(fs, "</p>\n");
+	else
+	{
+		fprintf(fs, "				<td><img src='%s'></td>\n", clt.col_sts?"true.png":"net_down.gif");
+	}
 	
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>MAX CNUs:</td>\n");
+	fprintf(fs, "				<td>%d</td>\n", clt.col_maxStas);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Online CNUs</td>\n");
+	fprintf(fs, "				<td>%d</td>\n", clt.col_numStas);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Chipset:</td>\n");
+	fprintf(fs, "				<td>AR7410</td> \n");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Firmware Version:</td>\n");
+	fprintf(fs, "				<td>ar7400-v7.1.1-1-X-FINAL</td> \n");
+	fprintf(fs, "			</tr>	\n");
+	fprintf(fs, "		</table>\n");
+	fprintf(fs, "		<br>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='returnBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='rebootBtn'>Reboot</button>\n");
+	fprintf(fs, "	<button id='configBtn'>Configuration</button>\n");
+	fprintf(fs, "	<button id='opener'>Help</button>\n");
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "<div id='dialog' title='Help Information'>\n");
+	fprintf(fs, "	<br>1. Click \"Reboot\" button if you want to reset clt module. </br>\n");
+	fprintf(fs, "	<br>2. Click \"Configuration\" button to show or modify clt settings.</br>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
 	fflush(fs);	
 }
 
@@ -2247,178 +3138,456 @@ void cgiCltMgmt(char *query, FILE *fs)
 void cgiCnuMgmt(char *query, FILE *fs)
 {
 	int i=0;
+	int isCnuSupported = BOOL_TRUE;	
 	int iCount = 0;
-	st_dbsCnu cnu;
 
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
-	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
-	fprintf(fs, "<script language='javascript'>\n");
-	fprintf(fs, "function cnuAction(opt, cnuid){\n");
-	fprintf(fs, "	if( opt == 0 ){var loc = 'editCnuPro.cmd?cnuid=';}\n");
-	fprintf(fs, "	else if( opt == 1 ) {\n");
-	fprintf(fs, "		var loc = 'cnuReboot.cgi?cnuid=';\n");
-	fprintf(fs, "		if(!confirm('Are you sure to reboot the device right now?')) return;\n");
-	fprintf(fs, "	}\n");
-	fprintf(fs, "	else if( opt == 2 ) {\n");
-	fprintf(fs, "		var loc = 'cnuReload.cgi?cnuid=';\n");
-	fprintf(fs, "		if(!confirm('Are you sure that you want to reload the profile from CBAT to the CNU device?')) return;\n");
-	fprintf(fs, "	}\n");
-	fprintf(fs, "	else if( opt == 3 ) {\n");
-	fprintf(fs, "		var loc = 'cnuDelete.cgi?cnuid=';\n");
-	fprintf(fs, "		if(!confirm('The CNU will be deleted from the topology. Are you sure?')) return;\n");
-	fprintf(fs, "	}\n");
-	fprintf(fs, "	else if( opt == 4 ) {var loc = 'cnuPermit.cgi?cnuid=';}\n");
-	fprintf(fs, "	else if( opt == 5 ) {var loc = 'cnuUndoPermit.cgi?cnuid=';}\n");
-	fprintf(fs, "	else {var loc = 'editCnuPro.cmd?cnuid=';}\n");
+	
+	int id = 0;
+	int cltid = 0;
+	int cnuid = 0;
+	st_dbsCnu cnu;
+	st_dbsProfile profile;
+	char action[IFC_LARGE_LEN];
+
+	cgiGetValueByName(query, "cnuid", action);
+	id = atoi(action);
+
+	cltid = (id-1)/MAX_CNUS_PER_CLT+1;
+	cnuid = (id-1)%MAX_CNUS_PER_CLT+1;
+
+	dbsGetCnu(dbsdev, id, &cnu);
+	dbsGetProfile(dbsdev, id, &profile);
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'/>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'/>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>	\n");
+	fprintf(fs, "function btnReturn(){\n");
+	fprintf(fs, "	location.href = 'previewTopology.cgi';\n");
+	fprintf(fs, "}\n");
+	if(CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
+	{
+		fprintf(fs, "function btnPermit(cnuid, permition){\n");
+		fprintf(fs, "	var loc;\n");
+		fprintf(fs, "	if(0==permition)\n");
+		fprintf(fs, "	{\n");
+		fprintf(fs, "		loc = 'cnuUndoPermit.cgi?cnuid=';\n");
+		fprintf(fs, "	}\n");
+		fprintf(fs, "	else\n");
+		fprintf(fs, "	{\n");
+		fprintf(fs, "		loc = 'cnuPermit.cgi?cnuid=';\n");
+		fprintf(fs, "	}\n");
+		fprintf(fs, "	loc += cnuid;\n");
+		fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+		fprintf(fs, "	//alert(code);\n");
+		fprintf(fs, "	eval(code);\n");
+		fprintf(fs, "}\n");
+		fprintf(fs, "function btnReload(cnuid){\n");
+		fprintf(fs, "	var loc = 'cnuReload.cgi?cnuid=';\n");
+		fprintf(fs, "	loc += cnuid;\n");
+		fprintf(fs, "	if(!confirm('Are you sure that you want to reload the profile from CBAT to the CNU device?')) return;\n");
+		fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+		fprintf(fs, "	//alert(code);\n");
+		fprintf(fs, "	eval(code);\n");
+		fprintf(fs, "}\n");
+	}
+	fprintf(fs, "function btnReboot(cnuid){\n");
+	fprintf(fs, "	var loc = 'cnuReboot.cgi?cnuid=';\n");
 	fprintf(fs, "	loc += cnuid;\n");
+	fprintf(fs, "	if(!confirm('Are you sure to reboot the device right now?')) return;\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
-	fprintf(fs, "function btnNewCnu(){\n");
-	fprintf(fs, "	window.location='wecNewCnu.html';\n");
-	fprintf(fs, "}\n");
-	fprintf(fs, "</script>\n");
-	fprintf(fs, "</head>\n<body>\n<blockquote>\n<form>\n\n");
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>CNU Management</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
-
-	fprintf(fs, "<br>Through this page, you can complete the user service and configuration management, such as: new/delete CNUs,\n");
-	fprintf(fs, "<br>change user business license status, view/modify user profile and so on...\n");
-	fprintf(fs, "<br>-- Please click the 'profile' image if you want to view or modify user's profile.\n");
-	fprintf(fs, "<br>-- Please click 'permit'/'undo-permit' button if you want to change the user business license status.\n");
-	fprintf(fs, "<br>-- You can click the 'reload' button to force the profile re-loaded to the cnu equipment.\n");
-	fprintf(fs, "<br>-- And you can delete a CNU from the topology through the 'delete' image.\n");
-	fprintf(fs, "<br>Notice: Prohibited to delete online users.</br>\n");
-	fprintf(fs, "<br>\n");
-	fprintf(fs, "<br>\n");
-
-	fprintf(fs, "<table border=1 cellpadding=3 cellspacing=0>\n");	
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=40>Index</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=130>MAC Address</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=90>Model</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=70>Permition</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=50>Profile</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=220>Management</td>\n");
-	fprintf(fs, "		<td class='hd' align='center' width=50>Delete</td>\n");
-	fprintf(fs, "	</tr>\n");
-	for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
+	if( 0 == cnu.col_sts )
 	{
-		if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
+		//you can delete this cnu if cnu is off-line
+		fprintf(fs, "function btnDelete(cnuid){\n");
+		fprintf(fs, "	var loc = 'cnuDelete.cgi?cnuid=';\n");
+		fprintf(fs, "	loc += cnuid;\n");
+		fprintf(fs, "	if(!confirm('The CNU will be deleted from the topology. Are you sure?')) return;\n");
+		fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+		fprintf(fs, "	//alert(code);\n");
+		fprintf(fs, "	eval(code);\n");
+		fprintf(fs, "}\n");
+		//you cannot config off-line e4 cnu
+		fprintf(fs, "function btnConfig(cnuid, modType){\n");
+		fprintf(fs, "	if(0==modType){\n");
+		fprintf(fs, "		var loc = 'editCnuPro.cmd?cnuid=' + cnuid;\n");
+		fprintf(fs, "		var code = 'location=\"' + loc + '\"';\n");
+		fprintf(fs, "		//alert(code);\n");
+		fprintf(fs, "		eval(code);\n");
+		fprintf(fs, "	}\n");
+		fprintf(fs, "	else{\n");
+		fprintf(fs, "		var msg = 'Warnning: you cannot config this cnu because it is off line !';\n");
+		fprintf(fs, "		alert(msg);\n");
+		fprintf(fs, "	}\n");
+		fprintf(fs, "}\n");
+	}
+	else
+	{
+		//you can not delete this cnu if cnu is online
+		fprintf(fs, "function btnDelete(cnuid){\n");
+		fprintf(fs, "	var msg = 'Warnning: prohibit to delete online cnu !';\n");
+		fprintf(fs, "	alert(msg);\n");		
+		fprintf(fs, "}\n");
+		//you can config online cnu
+		fprintf(fs, "function btnConfig(cnuid, modType){\n");
+		fprintf(fs, "	var loc;\n");
+		fprintf(fs, "	if(0==modType)\n");
+		fprintf(fs, "		loc = 'editCnuPro.cmd?cnuid=' + cnuid;\n");
+		fprintf(fs, "	else\n");
+		fprintf(fs, "		loc = 'rtl8306eConfig.cgi?cnuid=' + cnuid;	\n");
+		fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+		fprintf(fs, "	//alert(code);\n");
+		fprintf(fs, "	eval(code);\n");
+		fprintf(fs, "}\n");
+	}	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#dialog').dialog({\n");
+	fprintf(fs, "		autoOpen: false,\n");
+	fprintf(fs, "		width:605,\n");
+	fprintf(fs, "		show:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'blind',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "		hide:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: 'explode',\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	});	\n");
+	fprintf(fs, "	$('#opener').button(\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			icons:\n");
+	fprintf(fs, "			{\n");
+	fprintf(fs, "				primary: 'ui-icon-help'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "			text: false\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	).click(function(){\n");
+	fprintf(fs, "		$('#dialog').dialog('open');\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#returnBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	if(CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
+	{
+		fprintf(fs, "	$('#permitBtn').button({\n");
+		fprintf(fs, "			icons: {\n");
+		fprintf(fs, "				primary: 'ui-icon-person'\n");
+		fprintf(fs, "			},\n");
+		fprintf(fs, "	});\n");
+		fprintf(fs, "	$('#permitBtn').button().click(function(event){\n");
+		fprintf(fs, "		event.preventDefault();\n");
+		fprintf(fs, "		btnPermit(%d, %d);\n", id, cnu.col_auth?0:1);
+		fprintf(fs, "	});\n");
+		fprintf(fs, "	$('#reloadBtn').button({\n");
+		fprintf(fs, "			icons: {\n");
+		fprintf(fs, "				primary: 'ui-icon-extlink'\n");
+		fprintf(fs, "			},\n");
+		fprintf(fs, "	});\n");
+		fprintf(fs, "	$('#reloadBtn').button().click(function(event){\n");
+		fprintf(fs, "		event.preventDefault();\n");
+		fprintf(fs, "		btnReload(%d);\n", id);
+		fprintf(fs, "	});\n");
+	}
+	fprintf(fs, "	$('#rebootBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#rebootBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReboot(%d);\n", id);
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#configBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-tag'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#configBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnConfig(%d, %d);\n", id, boardapi_getCnuSwitchType(cnu.col_model));
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#delBtn').button({\n");
+	fprintf(fs, "			icons: {\n");
+	fprintf(fs, "				primary: 'ui-icon-trash'\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#delBtn').button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnDelete(%d);\n", id);
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>CNU Information</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<br><br>\n");
+	fprintf(fs, "<div id='accordion'>\n");
+	fprintf(fs, "	<h3>Show CNU Information</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<table border=0 cellpadding=3 cellspacing=0>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td width=280>Index:</td>\n");
+	fprintf(fs, "				<td width=200>CNU/%d/%d</td>\n", cltid, cnuid);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Device Model:</td>\n");
+	fprintf(fs, "				<td>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>MAC Address:</td>\n");
+	fprintf(fs, "				<td>%s</td>\n", cnu.col_mac);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Profile ID:</td>\n");
+	fprintf(fs, "				<td>%d</td>\n", id);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Additional PIB ID:</td>\n");
+	fprintf(fs, "				<td>%d</td>\n", profile.col_base);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Profile Status:</td>\n");
+	fprintf(fs, "				<td>%s</td> \n", profile.col_row_sts?"Enable":"Disable");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Profile Running:</td>\n");
+	fprintf(fs, "				<td>%s</td> \n", boardapi_getCnuSwitchType(cnu.col_model)?"No":"Yes");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Permition:</td>\n");
+	fprintf(fs, "				<td>%s</td>\n", cnu.col_auth?"Yes":"No");
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Phy Layer RX/TX Raw Rate:</td>\n");
+	fprintf(fs, "				<td>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+	fprintf(fs, "			</tr>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td>Status:</td>\n");
+	fprintf(fs, "				<td>%s</td>\n", cnu.col_sts?"Online":"Off line");
+	fprintf(fs, "			</tr>	\n");	
+	if(boardapi_isAr7400Device(cnu.col_model))
+	{
+		fprintf(fs, "			<tr>\n");
+		fprintf(fs, "				<td>Chipset:</td>\n");
+		fprintf(fs, "				<td>AR741x</td> \n");
+		fprintf(fs, "			</tr>\n");
+		fprintf(fs, "			<tr>\n");
+		fprintf(fs, "				<td>Firmware Version:</td>\n");
+		fprintf(fs, "				<td>AR7400-v7.1.1-1-X-FINAL</td>\n");
+		fprintf(fs, "			</tr>\n");
+	}
+	else if(boardapi_isAr6400Device(cnu.col_model))
+	{
+		fprintf(fs, "			<tr>\n");
+		fprintf(fs, "				<td>Chipset:</td>\n");
+		fprintf(fs, "				<td>AR6400</td> \n");
+		fprintf(fs, "			</tr>\n");
+		fprintf(fs, "			<tr>\n");
+		fprintf(fs, "				<td>Firmware Version:</td>\n");
+		fprintf(fs, "				<td>INT6000-v4.1.0-0-2-X-FINAL</td>\n");
+		fprintf(fs, "			</tr>\n");
+	}
+	else
+	{
+		fprintf(fs, "			<tr>\n");
+		fprintf(fs, "				<td>Chipset:</td>\n");
+		fprintf(fs, "				<td>Unknown</td> \n");
+		fprintf(fs, "			</tr>\n");
+		fprintf(fs, "			<tr>\n");
+		fprintf(fs, "				<td>Firmware Version:</td>\n");
+		fprintf(fs, "				<td>Unknown</td>\n");
+		fprintf(fs, "			</tr>\n");
+	}	
+	fprintf(fs, "		</table>\n");
+	fprintf(fs, "		<br>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id=returnBtn>Return</button>\n");
+	if(CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
+	{
+		if(cnu.col_auth)
 		{
-			/*Read CNU Error, Exit*/
-			break;
+			fprintf(fs, "	<button id=permitBtn>Undo-Permit</button>\n");
 		}
 		else
 		{
-			if( cnu.col_row_sts == 0 )
-			{
-				/*CNU column unused, get next*/
-				continue;
-			}
-			else
-			{
-				iCount++;
-				fprintf(fs, "	<tr>\n");
-				fprintf(fs, "		<td align='center'>1/%d</td>\n", cnu.id);
-				fprintf(fs, "		<td align='center'>%s</td>\n", cnu.col_mac);
-				fprintf(fs, "		<td align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
-				fprintf(fs, "		<td align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
-				fprintf(fs, "		<td align='center'><IMG src='ico_Editor.gif' width=16 height=16 onclick='cnuAction(0,%d)'></td>\n", cnu.id);
-				fprintf(fs, "		<td>\n");
-				fprintf(fs, "			<input type='button' class='btn1Tbd' value='Reboot' onclick='cnuAction(1,%d)'>\n", cnu.id);
-				fprintf(fs, "			<input type='button' class='btn2Tbd' value='Reload' onclick='cnuAction(2,%d)'>\n", cnu.id);
-				if(cnu.col_auth)
-				{
-					fprintf(fs, "			<input type='button' class='btn5L' value='Undo-Permit' onclick='cnuAction(5,%d)'>\n", cnu.id);
-				}
-				else
-				{
-					fprintf(fs, "			<input type='button' class='btn2L' value='Permit' onclick='cnuAction(4,%d)'>\n", cnu.id);
-				}
-				
-				fprintf(fs, "		</td>\n");
-				fprintf(fs, "		<td align='center'><IMG src='delete.gif' width=12 height=12 onclick='cnuAction(3,%d)'></td>\n", cnu.id);
-				fprintf(fs, "	</tr>\n");
-			}
+			fprintf(fs, "	<button id=permitBtn>Permit</button>\n");
 		}
-	}
-	if( 0 == iCount )
-	{
-		/*No CNU to show*/
-		fprintf(fs, "<tr>\n<td align='center' colspan=7>** No user discovered ! **</td>\n</tr>\n");
-	}
-	fprintf(fs, "</table>\n");
-	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='location.href=\"previewCnus.cgi\"' value='Refresh'>\n");
-	fprintf(fs, "	<input type='button' class='btn8L' onClick='btnNewCnu()' value='Create New CNU'>\n");
+		fprintf(fs, "	<button id=reloadBtn>Reload</button>\n");
+	}	
+	fprintf(fs, "	<button id=rebootBtn>Reboot</button>\n");
+	fprintf(fs, "	<button id=delBtn>Delete</button>\n");
+	fprintf(fs, "	<button id=configBtn>Configuration</button>\n");
+	fprintf(fs, "	<button id=opener>Help</button>\n");
 	fprintf(fs, "</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "<div id='dialog' title='Help Information'>\n");
+	fprintf(fs, "Through this page, you can complete the user service and configuration management, such as: new/delete CNUs,\n");
+	fprintf(fs, "change user business license status, view/modify user profile and so on...<br><br>\n");
+	fprintf(fs, "-- Please click the 'profile' image if you want to view or modify user's profile. <br>		\n");
+	fprintf(fs, "-- Please click 'permit'/'undo-permit' button if you want to change the user business license status. <br>\n");
+	fprintf(fs, "-- You can click the 'reload' button to force the profile re-loaded to the cnu equipment.<br>\n");
+	fprintf(fs, "-- And you can delete a CNU from the topology through the 'delete' image. <br>\n");
+	fprintf(fs, "<br><b>Note: </b>Prohibited to delete online users.</br>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+
 	fflush(fs);	
 }
 
 void cgiLinkDiag(char *query, FILE *fs) 
 {
 	int i=0;
+	//int n = 0;
+	int cltid = 0;
+	int cnuid = 0;
 	//int iCount = 0;
 	st_dbsCnu cnu;
 
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
-	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
 	fprintf(fs, "<script language='javascript'>\n");
-	fprintf(fs, "function wecLinkDiag(){\n");
+	fprintf(fs, "function btnRefresh()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	location.href = \"previewLinkDiag.cgi\";\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function wecLinkDiag()\n");
+	fprintf(fs, "{\n");
 	fprintf(fs, "	var loc = 'wecLinkDiag.cgi?';\n");
-	fprintf(fs, "	with (document.forms[0]){\n");
-	fprintf(fs, "		if( cnuDev.selectedIndex == 0 ){\n");
-	fprintf(fs, "			alert('Please select a CNU.');\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		if( fangxiang.selectedIndex == 0 ){\n");
-	fprintf(fs, "			alert('Please select the target direction.');\n");
-	fprintf(fs, "			return;\n");
-	fprintf(fs, "		}\n");
-	fprintf(fs, "		loc += 'cnuid=' + cnuDev.value;\n");
-	fprintf(fs, "		loc += '&diagDir=' + fangxiang.selectedIndex;\n");
+	fprintf(fs, "	if( $(\"#cnuDev\").val() == 0 )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		alert('Please select a CNU.');\n");
+	fprintf(fs, "		return;\n");
 	fprintf(fs, "	}\n");
+	fprintf(fs, "	if( $(\"#fangxiang\").val() == 0 )\n");
+	fprintf(fs, "	{\n");
+	fprintf(fs, "		alert('Please select the target direction.');\n");
+	fprintf(fs, "		return;\n");
+	fprintf(fs, "	}\n");
+	fprintf(fs, "	loc += 'cnuid=' + $(\"#cnuDev\").val();\n");
+	fprintf(fs, "	loc += '&diagDir=' + $(\"#fangxiang\").val();\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	$(\"#accordion\").accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: \"content\" \n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( \"#dialog\" ).dialog({\n");
+	fprintf(fs, "		autoOpen: false,\n");
+	fprintf(fs, "		width:450,\n");
+	fprintf(fs, "		show:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: \"blind\",\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "		hide:\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			effect: \"explode\",\n");
+	fprintf(fs, "			duration: 1000\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( \"#refreshBtn\" ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#comBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-lightbulb'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( \"#comBtn\" ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		wecLinkDiag();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( \"#opener\" ).button(\n");
+	fprintf(fs, "		{\n");
+	fprintf(fs, "			icons:\n");
+	fprintf(fs, "			{\n");
+	fprintf(fs, "				primary: \"ui-icon-help\"\n");
+	fprintf(fs, "			},\n");
+	fprintf(fs, "			text: false\n");
+	fprintf(fs, "		}\n");
+	fprintf(fs, "	).click(function(){\n");
+	fprintf(fs, "		$( \"#dialog\" ).dialog( \"open\" );\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
 	fprintf(fs, "</script>\n");
-	fprintf(fs, "</head>\n<body>\n<blockquote>\n<form>\n");
-
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Link Diagnosis</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Through this page, you can complete the diagnosis of the physical link status of the end-users.\n");
-	fprintf(fs, "<br>You can diagnose the user's uplink or downlink physical link status respectively. Please select a CNU from the devices list\n");
-	fprintf(fs, "<br>and select the target direction, then click the 'Begin Diagnostics' button to start diagnostic tests.</br>\n");
-	fprintf(fs, "<br><br>\n");
-
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='diagret' width=300>Do Link Diagnostics</td>\n");
-	fprintf(fs, "		<td class='diagret' width=260>&nbsp;</td>\n");
-	fprintf(fs, "	</tr>\n");
-	fprintf(fs, "	<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>\n");	
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='diagdata'>CNU Device List:</td>\n");
-	fprintf(fs, "		<td class='diagdata'>\n");
-	fprintf(fs, "			<select name='cnuDev'>\n");
-	fprintf(fs, "				<option value='0' selected='selected'>Please select a device\n");
-
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "		<tr><td class='maintitle'><b>Link Diagnosis</b></td></tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>  \n");
+	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<div id=\"accordion\">\n");
+	fprintf(fs, "		<h3>Do Link Diagnostics</h3>\n");
+	fprintf(fs, "		<div>\n");
+	fprintf(fs, "			<br>\n");
+	fprintf(fs, "			<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata' width=300>CNU Device List:</td>\n");
+	fprintf(fs, "					<td class='diagdata' width=260>\n");
+	fprintf(fs, "						<select id='cnuDev'>\n");
+	fprintf(fs, "							<option value=0 selected='selected'>Please select a device</option>\n");
 	for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
 	{
+		cltid = (i-1)/MAX_CNUS_PER_CLT+1;
+		cnuid = (i-1)%MAX_CNUS_PER_CLT+1;
 		if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
 		{
 			/* Read CNU failed, exit */
@@ -2436,261 +3605,389 @@ void cgiLinkDiag(char *query, FILE *fs)
 				//iCount++;
 				if( DEV_STS_ONLINE == cnu.col_sts )
 				{
-					fprintf(fs, "			<option value='%d'>CNU/1/%d: [%s]\n", cnu.id, cnu.id, cnu.col_mac);
+					//n = i/MAX_CNUS_PER_CLT+1;
+					fprintf(fs, "							<option value='%d'>CNU/%d/%d: [%s]</option>\n", i, cltid, cnuid, cnu.col_mac);
 				}
 			}
 		}
 	}
-	fprintf(fs, "			</select>\n");
-	fprintf(fs, "		</td>\n");
-	fprintf(fs, "	</tr>\n");
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='diagdata'>Target Direction:</td>\n");
-	fprintf(fs, "		<td class='diagdata'>\n");
-	fprintf(fs, "			<select name='fangxiang'>\n");
-	fprintf(fs, "				<option value=0 selected='selected'>Undetermined\n");
-	fprintf(fs, "				<option value=1>uplink\n");
-	fprintf(fs, "				<option value=2>downlink\n");
-	fprintf(fs, "			</select>\n");
-	fprintf(fs, "		</td>\n");
-	fprintf(fs, "	</tr>\n");
-	fprintf(fs, "	<tr><td class='diagdata' colspan=2>&nbsp;</td></tr>\n");
-	fprintf(fs, "	<tr><td class='listend' colspan=2></td></tr>\n");
-	fprintf(fs, "</table>\n");
-	fprintf(fs, "<br><b>Note:</b> Only online CNUs can be diagnosed correctly.</br>\n");	
-	fprintf(fs, "<br><br>\n");
-	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<input type='button' class='btn2L' onClick='location.href=\"previewLinkDiag.cgi\"' value='Refresh'>\n");
-	fprintf(fs, "	<input type='button' class='btn8L' onClick='wecLinkDiag()' value='Begin Diagnostics'>\n");
-	fprintf(fs, "</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "						</select>\n");
+	fprintf(fs, "					</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Target Direction:</td>\n");
+	fprintf(fs, "					<td class='diagdata'>\n");
+	fprintf(fs, "						<select id='fangxiang'>\n");
+	fprintf(fs, "							<option value=0 selected='selected'>Undetermined</option>\n");
+	fprintf(fs, "							<option value=1>uplink</option>\n");
+	fprintf(fs, "							<option value=2>downlink</option>\n");
+	fprintf(fs, "						</select>\n");
+	fprintf(fs, "					</td>\n");
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "			</table>\n");
+	fprintf(fs, "			<br>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id=refreshBtn>Refresh</button>\n");
+	fprintf(fs, "		<button id=comBtn>Begin Diagnostics</button>\n");
+	fprintf(fs, "		<button id=opener>Help</button>\n");
+	fprintf(fs, "	</p>\n");
+	fprintf(fs, "	<div id=dialog title='Help Information'>\n");
+	fprintf(fs, "		Through this page, you can complete the diagnosis of the physical link status of the end-users.\n");
+	fprintf(fs, "		You can diagnose the user's uplink or downlink physical link status respectively. \n");
+	fprintf(fs, "		Please select a CNU from the devices list and select the target direction, \n");
+	fprintf(fs, "		then click the 'Begin Diagnostics' button to start diagnostic tests.</br>\n");
+	fprintf(fs, "		<br>\n");
+	fprintf(fs, "		Note: Only online CNUs can be diagnosed correctly.</br></br>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
 	fflush(fs);
 }
 
 void cgiLinkDiagResult(char *query, FILE *fs)
 {
-	writePageHeader(fs);
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Link Diagnosis</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Through this page, you can view the diagnostic results.</br>\n<br><br>\n");
+	int cltid = 0;
+   	int cnuid = 0;
+
+	cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT+1;
+	cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT+1;
 	
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	
-	fprintf(fs, "	<tr>\n");
-	fprintf(fs, "		<td class='diagret' width=350>Diagnostic conclusions</td>\n");
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+	fprintf(fs, "function btnReturn()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	location.href = 'previewLinkDiag.cgi';\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#retBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "		<tr><td class='maintitle'><b>Link Diagnosis</b></td></tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width='100%'> \n");
+	fprintf(fs, "		<tr><td class='mainline' width='100%'></td></tr> \n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<div id='accordion'>\n");
+	fprintf(fs, "		<h3>Link Diagnostic Results</h3>\n");
+	fprintf(fs, "		<div>\n");
+	fprintf(fs, "			<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata' width=350>Link Diagnostic Status:</td>\n");
 	if( CMM_SUCCESS == glbWebVar.diagResult )
 	{
-		fprintf(fs, "		<td class='diagret' width=200><font color='green'>Success</font></td>\n");
+		fprintf(fs, "					<td class='diagdata' width=200><font color='green'>Success</font></td>\n");
 	}
 	else
 	{
-		fprintf(fs, "		<td class='diagret' width=200><font color='red'>Failed</font></td>\n");
+		fprintf(fs, "					<td class='diagdata' width=200><font color='red'>Failed</font></td>\n");
 	}
-	fprintf(fs, "		<td class='diagret' width=50>&nbsp;</td>\n");
-	fprintf(fs, "	</tr>\n");
-
-	fprintf(fs, "	<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");	
-
+	fprintf(fs, "				</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>Index:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>CNU/1/%d</td>\n", glbWebVar.cnuid);
+	fprintf(fs, "		<td class='diagdata'>CNU/%d/%d</td>\n", cltid, cnuid);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>MAC Address:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.diagCnuMac);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.diagCnuMac);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>TEI:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%d</td>\n", glbWebVar.diagCnuTei);
+	fprintf(fs, "		<td class='diagdata'>%d</td>\n", glbWebVar.diagCnuTei);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>Device Model:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", boardapi_getDeviceModelStr(glbWebVar.diagCnuModel));
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", boardapi_getDeviceModelStr(glbWebVar.diagCnuModel));
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>Target Direction:</td>\n");
 	if( 1 == glbWebVar.diagDir )
 	{
-		fprintf(fs, "		<td class='diagdata' colspan=2>TX(uplink)</td>\n");
+		fprintf(fs, "		<td class='diagdata'>TX(uplink)</td>\n");
 	}
 	else if( 2 == glbWebVar.diagDir )
 	{
-		fprintf(fs, "		<td class='diagdata' colspan=2>RX(downlink)</td>\n");
+		fprintf(fs, "		<td class='diagdata'>RX(downlink)</td>\n");
 	}
 	else
 	{
-		fprintf(fs, "		<td class='diagdata' colspan=2>Undetermined</td>\n");
+		fprintf(fs, "		<td class='diagdata'>Undetermined</td>\n");
 	}
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>CCo MAC Address:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.ccoMac);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.ccoMac);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>CCo NID:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.ccoNid);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.ccoNid);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>CCo SNID:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%d</td>\n", glbWebVar.ccoSnid);
+	fprintf(fs, "		<td class='diagdata'>%d</td>\n", glbWebVar.ccoSnid);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>CCo TEI:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%d</td>\n", glbWebVar.ccoTei);
+	fprintf(fs, "		<td class='diagdata'>%d</td>\n", glbWebVar.ccoTei);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>RX Rate:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%d Mbps</td>\n", glbWebVar.diagCnuRxRate);
+	fprintf(fs, "		<td class='diagdata'>%d Mbps</td>\n", glbWebVar.diagCnuRxRate);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>TX Rate:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%d Mbps</td>\n", glbWebVar.diagCnuTxRate);
+	fprintf(fs, "		<td class='diagdata'>%d Mbps</td>\n", glbWebVar.diagCnuTxRate);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>Avg. Bits/Carrier:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.bitCarrier);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.bitCarrier);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>Avg. Attenuation/Carrier:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%d dB</td>\n", glbWebVar.diagCnuAtten);
+	fprintf(fs, "		<td class='diagdata'>%d dB</td>\n", glbWebVar.diagCnuAtten);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>Bridged MAC Address:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.bridgedMac);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.bridgedMac);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>MPDUs Transmitted & Acknowledged:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.MPDU_ACKD);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.MPDU_ACKD);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>MPDUs Transmitted & Collided:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.MPDU_COLL);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.MPDU_COLL);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>MPDUs Transmitted & Failed:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.MPDU_FAIL);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.MPDU_FAIL);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>PBs Transmitted Successfully:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.PBS_PASS);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.PBS_PASS);
 	fprintf(fs, "	</tr>\n");
 	fprintf(fs, "	<tr>\n");
 	fprintf(fs, "		<td class='diagdata'>PBs Transmitted Unsuccessfully:</td>\n");
-	fprintf(fs, "		<td class='diagdata' colspan=2>%s</td>\n", glbWebVar.PBS_FAIL);
+	fprintf(fs, "		<td class='diagdata'>%s</td>\n", glbWebVar.PBS_FAIL);
 	fprintf(fs, "	</tr>\n");
-
-	fprintf(fs, "	<tr>\n<td class='diagdata' colspan=3>&nbsp;</td>\n</tr>\n");
-	
-	fprintf(fs, "	<tr>\n<td class='listend' colspan=3></td>\n</tr>\n");
-	
 	fprintf(fs, "</table>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id=retBtn>Return</button>\n");
+	fprintf(fs, "	</p>\n");
 	
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"previewLinkDiag.cgi\"' value='Return'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
 }
 
 void cgiTopologyView(char *query, FILE *fs) 
 {
 	int i=0;
+	int j = 0;
+	int n = 0;
 	int iCount = 0;
 	st_dbsClt clt;
 	st_dbsCnu cnu;
 	char logmsg[256]={0};
 
-	writePageHeader(fs);
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
 
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Topology</b></td>\n</tr>\n</table>\n");
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	location.href = 'previewTopology.cgi';\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function btnNewCnu(){\n");
+	fprintf(fs, "	window.location='wecNewCnu.html';\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#newCnuBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-person'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#newCnuBtn').click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnNewCnu();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>Topology</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	
+	fprintf(fs, "<br>Display the EoC network topology</br>\n<br><br>\n");	
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Display the EoC network topology</br>\n<br><br>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='diagret' align='center' width=60>Index</td>\n");
-	fprintf(fs, "<td class='diagret' align='center' width=160>MAC Address</td>\n");
+	fprintf(fs, "<td class='diagret' align='center' width=80>Index</td>\n");
+	fprintf(fs, "<td class='diagret' align='center' width=150>MAC Address</td>\n");
 	fprintf(fs, "<td class='diagret' align='center' width=120>Model</td>\n");
 	fprintf(fs, "<td class='diagret' align='center' width=80>Permition</td>\n");
-	fprintf(fs, "<td class='diagret' align='center' width=120>RX/TX</td>\n");
+	fprintf(fs, "<td class='diagret' align='center' width=90>RX/TX</td>\n");
 	fprintf(fs, "<td class='diagret' align='center' width=60>Status</td>\n");
-	fprintf(fs, "<td class='diagret' align='center' width=100>Profile</td>\n</tr>\n</table>\n<br>\n");
+	fprintf(fs, "<td class='diagret' align='center' width=60>Show</td>\n</tr>\n");
+	fprintf(fs, "<tr>\n<td colspan=7>&nbsp;</td>\n</tr>\n");
 
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-	if( dbsGetClt(dbsdev, 1, &clt) == CMM_SUCCESS )
-	{
-		fprintf(fs, "<tr>\n");
-		fprintf(fs, "<td class='clt' align='center' width=60>1</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=160>[%s]</td>\n", clt.col_mac);
-		fprintf(fs, "<td class='clt' align='center' width=120>CLT</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=80>--</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=120>--</td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=60><IMG src='true.png' width='14' height='15'></td>\n");
-		fprintf(fs, "<td class='clt' align='center' width=100><img src='show.gif' width=16 height=16 onclick='window.location=\"cltProfile.cmd?viewid=1\"'></td>\n");
-		fprintf(fs, "<tr>\n");
-		for( i=1; i<=MAX_CNU_AMOUNT_LIMIT; i++ )
+
+	for( i=1; i<=MAX_CLT_AMOUNT_LIMIT; i++ )
+	{	
+		if( CMM_SUCCESS == dbsGetClt(dbsdev, i, &clt) )
 		{
-			if( dbsGetCnu(dbsdev, i, &cnu) != CMM_SUCCESS )
+			/* no clt present in this port */
+			if( 0 == clt.col_row_sts )
 			{
-				break;
+				fprintf(fs, "<tr>\n");
+				fprintf(fs, "<td class='clt' align='center'>CLT/%d</td>\n", i);
+				fprintf(fs, "<td class='clt' align='center'><img src='help.gif'></td>\n");
+				fprintf(fs, "<td class='clt' align='center'>CLT</td>\n");
+				fprintf(fs, "<td class='clt' align='center'>--</td>\n");
+				fprintf(fs, "<td class='clt' align='center'>--</td>\n");
+				fprintf(fs, "<td class='clt' align='center'><IMG src='suppress.png'></td>\n");
+				fprintf(fs, "<td class='clt' align='center'><img src='show.gif'></td>\n");
+				fprintf(fs, "<tr>\n");
 			}
 			else
 			{
-				if( cnu.col_row_sts == 0 )
+				iCount = 0;
+				
+				fprintf(fs, "<tr>\n");
+				fprintf(fs, "<td class='clt' align='center'>CLT/%d</td>\n", i);
+				fprintf(fs, "<td class='clt' align='center'>[%s]</td>\n", clt.col_mac);
+				fprintf(fs, "<td class='clt' align='center'>CLT</td>\n");
+				fprintf(fs, "<td class='clt' align='center'>--</td>\n");
+				fprintf(fs, "<td class='clt' align='center'>--</td>\n");
+				fprintf(fs, "<td class='clt' align='center'><IMG src='%s'></td>\n", clt.col_sts?"true.png":"net_down.gif");
+				fprintf(fs, "<td class='clt' align='center'>\n");
+				fprintf(fs, "<img src='show.gif' style='cursor:pointer' onclick='window.location=\"cltManagement.cmd?cltid=%d\"'>\n", i);
+				fprintf(fs, "</td>\n");
+				fprintf(fs, "<tr>\n");
+				for( j=1; j<=MAX_CNUS_PER_CLT; j++ )
 				{
-					/**/
-					continue;
-				}
-				else
-				{
-					iCount++;
-					if( (iCount % 2) == 0 )
+					n = (i-1)*MAX_CNUS_PER_CLT+j;
+					if( dbsGetCnu(dbsdev, n, &cnu) != CMM_SUCCESS )
 					{
-						/**/
-						fprintf(fs, "<tr>\n");
-						fprintf(fs, "<td class='cnub' align='center'>1/%d</td>\n", cnu.id);
-						fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
-						fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
-						fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
-						fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
-						fprintf(fs, "<td class='cnub' align='center'><IMG src='%s' width=16 height=16></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
-						fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' width=16 height=16 onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", cnu.id);
-						fprintf(fs, "</tr>\n");
+						break;
 					}
 					else
 					{
-						/**/
-						fprintf(fs, "<tr>\n");
-						fprintf(fs, "<td class='cnua' align='center'>1/%d</td>\n", cnu.id);
-						fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
-						fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
-						fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
-						fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
-						fprintf(fs, "<td class='cnua' align='center'><IMG src='%s' width=16 height=16></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
-						//fprintf(fs, "<td class='cnua' align='center'><a href='cnuProfile.cmd?viewid=%d'><font color=blue>Show</font></a></td>\n", cnu.id);
-						fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' width=16 height=16 onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", cnu.id);
-						fprintf(fs, "</tr>\n");
+						if( cnu.col_row_sts == 0 )
+						{
+							/**/
+							continue;
+						}
+						else
+						{
+							
+							iCount++;
+							if( (iCount % 2) == 0 )
+							{
+								/**/
+								fprintf(fs, "<tr>\n");
+								fprintf(fs, "<td class='cnub' align='center'>CNU/%d/%d</td>\n", i, j);
+								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
+								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
+								fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+								fprintf(fs, "<td class='cnub' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+								//fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+								fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
+								fprintf(fs, "</tr>\n");
+							}
+							else
+							{
+								/**/
+								fprintf(fs, "<tr>\n");
+								fprintf(fs, "<td class='cnua' align='center'>CNU/%d/%d</td>\n", i, j);
+								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
+								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"Yes":"No");
+								fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+								fprintf(fs, "<td class='cnua' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+								//fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+								fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
+								fprintf(fs, "</tr>\n");
+							}
+						}
 					}
 				}
-			}
+			}			
 		}
-		if( iCount == 0 )
+		else
 		{
 			/**/
-			fprintf(fs, "<tr>\n<td class='cnua' align='center' colspan=7>** No CNU discovered ! **</td>\n</tr>\n");
+			fprintf(fs, "<tr>\n<td class='clt' align='center' width=700>** System Error **</td>\n<tr>\n");
+			strcpy(logmsg, "show topology");
+			http2dbs_writeOptlog(-1, logmsg);
 		}
-	}
-	else
-	{
-		/**/
-		fprintf(fs, "<tr>\n<td class='clt' align='center' width=700>** System Error, Please retry ! **</td>\n<tr>\n");
-		strcpy(logmsg, "show topology");
-		http2dbs_writeOptlog(-1, logmsg);
-	}
-	fprintf(fs, "</table>\n");
-	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=700></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"previewTopology.cgi\"' value='Refresh'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	}	
+	fprintf(fs, "<tr>\n<td colspan=7>&nbsp;</td>\n</tr>\n");
+	fprintf(fs, "<tr>\n<td class='listend' colspan=7></td>\n</tr>\n");
+	fprintf(fs, "</table>\n");	
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='refreshBtn'>Refresh</button>\n");
+	fprintf(fs, "	<button id='newCnuBtn'>Create New CNU</button>\n");
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
 }
 
@@ -2702,12 +3999,61 @@ void cgiOptlogViewByMid(char *query, FILE *fs, int mid)
 	struct tm *tim;
 	char timenow[32] = {0};
 
-	writePageHeader(fs);
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
 
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Operating Log</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	window.location.reload();\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function btnReturn()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	location.href = 'wecOptlog.html';\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#retBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>Operating Log</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	
 	fprintf(fs, "<br>Display operating logs in the table list bellow [Filter condition=%s]:</br>\n<br><br>\n", boardapi_getModNameStr(mid));
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
 	fprintf(fs, "<td class='diagret' width=160>Time</td>\n");
@@ -2758,9 +4104,11 @@ void cgiOptlogViewByMid(char *query, FILE *fs, int mid)
 	fprintf(fs, "</table>\n");
 	
 	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=760></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"wecOptlog.html\"' value='Return'>\n");
-	fprintf(fs, "<input type='button' class='btn2L' onClick='window.location.reload()' value='Refresh'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='retBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='refreshBtn'>Refresh</button>\n");	
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
 }
 
@@ -2772,12 +4120,61 @@ void cgiOptlogViewByStatus(char *query, FILE *fs, int status)
 	struct tm *tim;
 	char timenow[32] = {0};
 
-	writePageHeader(fs);
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
 
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Operating Log</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	window.location.reload();\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function btnReturn()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	location.href = 'wecOptlog.html';\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#retBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>Operating Log</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	
 	fprintf(fs, "<br>Display operating logs in the table list bellow [Filter condition=%s]:</br>\n<br><br>\n", status?"Failed":"Success");
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
 	fprintf(fs, "<td class='diagret' width=160>Time</td>\n");
@@ -2828,9 +4225,130 @@ void cgiOptlogViewByStatus(char *query, FILE *fs, int status)
 	fprintf(fs, "</table>\n");
 	
 	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=760></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"wecOptlog.html\"' value='Return'>\n");
-	fprintf(fs, "<input type='button' class='btn2L' onClick='window.location.reload()' value='Refresh'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='retBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='refreshBtn'>Refresh</button>\n");	
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "</blockquote>\n</body>\n</html>\n");
+	fflush(fs);
+}
+
+void cgiOptlogViewAll(char *query, FILE *fs)
+{   
+	int i=0;
+	int logCount = 0;
+	st_dbsOptlog st_log;
+	struct tm *tim;
+	char timenow[32] = {0};
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	window.location.reload();\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function btnReturn()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	location.href = 'wecOptlog.html';\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#retBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>Operating Log</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	
+	fprintf(fs, "<br>Display operating logs in the table list bellow [Filter condition=All]:</br>\n<br><br>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
+	fprintf(fs, "<td class='diagret' width=160>Time</td>\n");
+	fprintf(fs, "<td class='diagret' width=100>Operator</td>\n");
+	fprintf(fs, "<td class='diagret' width=100>Resulte</td>\n");
+	fprintf(fs, "<td class='diagret' width=400>Log Information</td>\n</tr>\n</table>\n<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=2>\n");
+   
+	// write body
+	for( i=1; i<=512; i++ )
+	{
+		if( http2dbs_getOptlog(i, &st_log) == CMM_SUCCESS )
+		{
+			logCount++;
+			tim = localtime((const time_t *)&st_log.time);
+			sprintf(timenow,"%4d-%02d-%02d %02d:%02d",tim->tm_year+1900,tim->tm_mon+1,
+			tim->tm_mday, tim->tm_hour, tim->tm_min
+			);
+			if( st_log.result == 0 )
+			{
+				fprintf(fs, "<tr>\n");
+				fprintf(fs, "<td class='diagdata' width=158>%s</td>\n", timenow);
+				fprintf(fs, "<td class='diagdata' width=98>%s</td>\n", boardapi_getModNameStr(st_log.who));
+				fprintf(fs, "<td class='diagdata' width=98>SUCCESS</td>\n");
+				fprintf(fs, "<td class='diagdata' width=398>%s</td>\n</tr>\n", st_log.cmd);
+			}
+			else
+			{
+				fprintf(fs, "<tr>\n");
+				fprintf(fs, "<td class='logfailed' width=158>%s</td>\n", timenow);
+				fprintf(fs, "<td class='logfailed' width=98>%s</td>\n", boardapi_getModNameStr(st_log.who));
+				fprintf(fs, "<td class='logfailed' width=98>FAILED</td>\n");
+				fprintf(fs, "<td class='logfailed' width=398>%s</td>\n</tr>\n", st_log.cmd);
+			}
+		}
+		else
+		{
+			break;
+		}
+	}
+	if(logCount == 0 )
+	{
+		fprintf(fs, "<tr>\n<td class='diagdata' colspan=4>No operating log to list</td>\n</tr>\n");
+	}
+	
+	fprintf(fs, "</table>\n");
+	
+	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=760></td>\n</tr>\n</table>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='retBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='refreshBtn'>Refresh</button>\n");	
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
 }
 
@@ -2842,12 +4360,61 @@ void cgiSyslogViewByLevel(char *query, FILE *fs, int level)
 	struct tm *tim;
 	char timenow[32] = {0};
 
-	writePageHeader(fs);
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	window.location.reload();\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function btnReturn()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	location.href = 'wecSyslog.html';\n");
+	fprintf(fs, "}\n");
 	
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>System Log</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-   	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#retBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>System Log</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	
 	switch(level)
 	{
 		case DBS_LOG_EMERG:
@@ -3005,11 +4572,189 @@ void cgiSyslogViewByLevel(char *query, FILE *fs, int level)
 	fprintf(fs, "</table>\n");
 	
 	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=770></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"wecSyslog.html\"' value='Return'>\n");
-	fprintf(fs, "<input type='button' class='btn2L' onClick='window.location.reload()' value='Refresh'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='retBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='refreshBtn'>Refresh</button>\n");	
+	fprintf(fs, "</p>\n");	
+	fprintf(fs, "</blockquote>\n</body>\n</html>\n");
 	
 	fflush(fs);
+}
+
+void writePopErrorPage(FILE *fs)
+{
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+
+	fprintf(fs, "function btnClose(){\n");
+	fprintf(fs, "	window.close();\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#closeBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-circle-close'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#closeBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnClose();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");	
+	fprintf(fs, "<br>\n");	
+	fprintf(fs, "<div id='accordion'>\n");
+	fprintf(fs, "	<h3>System Message</h3>\n");
+	fprintf(fs, "	<div>\n");
+	fprintf(fs, "		<br>\n");
+	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "				<td class='diagdata' width=250>Operating Status</td>\n");
+	fprintf(fs, "				<td class='diagdata' width=150><b><font color=red>Failed</font></b></td>\n");
+	fprintf(fs, "			<tr>\n");
+	fprintf(fs, "		</table>\n");
+	fprintf(fs, "		<br>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "</div>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id=closeBtn>Close</button>\n");
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "</body>\n</html>\n");
+	fflush(fs);	
+}
+
+void cgiAlarmlogDetailView(char *query, FILE *fs) 
+{
+	char action[IFC_LARGE_LEN];
+	int id = 0;
+	int alarmLevel = 0;
+	st_dbsAlarmlog st_log;
+	struct tm *tim;
+	char timenow[32] = {0};
+
+	cgiGetValueByName(query, "viewid", action);
+	id = atoi(action);
+
+	if( http2dbs_getAlarmlog(id, &st_log) != CMM_SUCCESS )
+	{
+		writePopErrorPage(fs);
+		return;
+	}
+
+	tim = localtime((const time_t *)&st_log.realTime);
+	sprintf(timenow,"%4d-%02d-%02d %02d:%02d",tim->tm_year+1900,tim->tm_mon+1,
+		tim->tm_mday, tim->tm_hour, tim->tm_min
+	);
+	alarmLevel = boardapi_getAlarmLevel(&st_log);
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+	
+	fprintf(fs, "function btnClose(){\n");
+	fprintf(fs, "	window.close();\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#accordion').accordion({\n");
+	fprintf(fs, "		collapsible: true,\n");
+	fprintf(fs, "		heightStyle: 'content'\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#closeBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-circle-close'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#closeBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnClose();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	//fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<div id='accordion'>\n");
+	fprintf(fs, "		<h3>Show Alarm Detail</h3>\n");
+	fprintf(fs, "		<div>\n");
+	fprintf(fs, "			<table border=0 cellpadding=0 cellspacing=0>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata' width=150>Serial Number</td>\n");
+	fprintf(fs, "					<td class='diagdata' width=300>%d</td>\n", st_log.serialFlow);
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Real Time</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%s</td>\n", timenow);
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Alarm Code</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%d</td>\n", st_log.alarmCode);
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Alarm OID</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%s</td>\n", st_log.oid);
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Alarm Level</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%s</td>\n", boardapi_getAlarmLevelStr(alarmLevel));
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Agent Host MAC</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%s</td>\n", st_log.cbatMac);
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Alarm Node</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%d.%d</td>\n", st_log.cltId, st_log.cnuId);
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Alarm Type</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%s</td>\n", boardapi_getAlarmTypeStr(st_log.alarmType));
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Parameter Value</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%d</td>\n", st_log.alarmValue);	
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "				<tr>\n");
+	fprintf(fs, "					<td class='diagdata'>Trap Information</td>\n");
+	fprintf(fs, "					<td class='diagdata'>%s</td>\n", st_log.trap_info);
+	fprintf(fs, "				</tr>\n");
+	fprintf(fs, "			</table>\n");
+	fprintf(fs, "		</div>\n");
+	fprintf(fs, "	</div>\n");
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id='closeBtn'>Close</button>\n");
+	fprintf(fs, "	</p>\n");	
+	//fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n</html>\n");
+	fflush(fs);	
 }
 
 void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
@@ -3021,12 +4766,61 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 	struct tm *tim;
 	char timenow[32] = {0};
 
-	writePageHeader(fs);
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script language='javascript'>\n");
+
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	window.location.reload();\n");
+	fprintf(fs, "}\n");
+
+	fprintf(fs, "function btnReturn()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	location.href = 'wecAlarmlog.html';\n");
+	fprintf(fs, "}\n");
 	
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Alarm Log</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-   	fprintf(fs, "<td class='mainline' width=900></td>\n</tr>\n</table>\n");
+	fprintf(fs, "$(function(){\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#retBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-carat-1-w'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#retBtn' ).button().click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnReturn();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "<br>\n");
+	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
+	fprintf(fs, "	<tr><td class='maintitle'><b>Alarm Log</b></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0 width='100%'>\n");
+	fprintf(fs, "	<tr><td class='mainline' width='100%'></td></tr>\n");
+	fprintf(fs, "</table>\n");
+	
 	switch(level)
 	{
 		case DBS_LOG_EMERG:
@@ -3077,13 +4871,13 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 	}	
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
 	
-	fprintf(fs, "<td class='diagret' width=80>ID</td>\n");
-	fprintf(fs, "<td class='diagret' width=60>Code</td>\n");
-	fprintf(fs, "<td class='diagret' width=150>Time</td>\n");
-	fprintf(fs, "<td class='diagret' width=50>Node</td>\n");
-	fprintf(fs, "<td class='diagret' width=100>Alarm Type</td>\n");
-	fprintf(fs, "<td class='diagret' width=60>Value</td>\n");
-	fprintf(fs, "<td class='diagret' width=400>Trap Information</td>\n</tr>\n</table>\n<br>\n");
+	fprintf(fs, "<td class='diagret' width=80 align='center'>ID</td>\n");
+	fprintf(fs, "<td class='diagret' width=60 align='center'>Code</td>\n");
+	fprintf(fs, "<td class='diagret' width=150 align='center'>Time</td>\n");
+	fprintf(fs, "<td class='diagret' width=50 align='center'>Node</td>\n");
+	fprintf(fs, "<td class='diagret' width=100 align='center'>Alarm Type</td>\n");
+	fprintf(fs, "<td class='diagret' width=60 align='center'>Value</td>\n");
+	fprintf(fs, "<td class='diagret' width=400 align='center'>Trap Information</td>\n</tr>\n</table>\n<br>\n");
 
 	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=2>\n");
 	/*loop insert log here*/
@@ -3116,7 +4910,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='logemg' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='logemg' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='logemg' width=148>%s</td>\n", timenow);
@@ -3130,7 +4924,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='logalert' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='logalert' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='logalert' width=148>%s</td>\n", timenow);
@@ -3144,7 +4938,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='logcrt' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='logcrt' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='logcrt' width=148>%s</td>\n", timenow);
@@ -3158,7 +4952,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='logerr' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='logerr' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='logerr' width=148>%s</td>\n", timenow);
@@ -3172,7 +4966,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='logwarn' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='logwarn' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='logwarn' width=148>%s</td>\n", timenow);
@@ -3186,7 +4980,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='lognotice' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='lognotice' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='lognotice' width=148>%s</td>\n", timenow);
@@ -3200,7 +4994,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='loginfo' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='loginfo' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='loginfo' width=148>%s</td>\n", timenow);
@@ -3215,7 +5009,7 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 				{
 					fprintf(fs, "<tr>\n");
 					fprintf(fs, "<td class='logdbg' width=78>\n");
-					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=370'); return false\">\n", st_log.serialFlow);
+					fprintf(fs, "<a href='alarmlogDetail.cmd?viewid=%d' onclick= \"window.open(this.href, 'AlarmLog', 'menubar=yes,resizable=yes,scrollbars=yes,titlebar=yes,toolbar=no,width=520,height=350'); return false\">\n", st_log.serialFlow);
 					fprintf(fs, "<font color=blue>%d</font></a></td>\n", st_log.serialFlow);
 					fprintf(fs, "<td class='logdbg' width=58>%d</td>\n", st_log.alarmCode);
 					fprintf(fs, "<td class='logdbg' width=148>%s</td>\n", timenow);
@@ -3238,122 +5032,12 @@ void cgiAlarmlogViewByLevel(char *query, FILE *fs, int level)
 	}
 	fprintf(fs, "</table>\n");
 	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=900></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"wecAlarmlog.html\"' value='Return'>\n");
-	fprintf(fs, "<input type='button' class='btn2L' onClick='window.location.reload()' value='Refresh'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "<p>\n");
+	fprintf(fs, "	<button id='retBtn'>Return</button>\n");
+	fprintf(fs, "	<button id='refreshBtn'>Refresh</button>\n");	
+	fprintf(fs, "</p>\n");
+	fprintf(fs, "</blockquote>\n</body>\n</html>\n");
 	fflush(fs);
-}
-
-void cgiAlarmlogDetailView(char *query, FILE *fs) 
-{
-	char action[IFC_LARGE_LEN];
-	int id = 0;
-	int alarmLevel = 0;
-	st_dbsAlarmlog st_log;
-	struct tm *tim;
-	char timenow[32] = {0};
-
-	cgiGetValueByName(query, "viewid", action);
-	id = atoi(action);
-
-	if( http2dbs_getAlarmlog(id, &st_log) != CMM_SUCCESS )
-	{
-		writePopErrorPage(fs);
-		return;
-	}
-
-	tim = localtime((const time_t *)&st_log.realTime);
-	sprintf(timenow,"%4d-%02d-%02d %02d:%02d",tim->tm_year+1900,tim->tm_mon+1,
-		tim->tm_mday, tim->tm_hour, tim->tm_min
-	);
-	alarmLevel = boardapi_getAlarmLevel(&st_log);
-	
-	writePageHeader(fs);
-	
-	fprintf(fs, "<br><table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");	
-	fprintf(fs, "<td class='diagret' width=150>Item</td>\n");
-	fprintf(fs, "<td class='diagret' width=300>Value</td>\n</tr>\n</table>\n<br>\n");	
-	
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=2>\n");
-	/*serialFlow*/
-	fprintf(fs, "<tr>\n<td class='diagdata' width=150>Serial Number</td>\n");
-	fprintf(fs, "<td class='diagdata' width=300>%d</td>\n</tr>\n", st_log.serialFlow);
-	/*realTime*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Real Time</td>\n");
-	fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", timenow);
-	/*alarmCode*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Alarm Code</td>\n");
-	fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", st_log.alarmCode);
-	/*oid*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Alarm OID</td>\n");
-	fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", st_log.oid);	
-	/*alarm level*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Alarm Level</td>\n");
-	switch(alarmLevel)
-	{
-		case DBS_LOG_EMERG:
-		{
-			fprintf(fs, "<td class='diagdata'>Emergency</td>\n</tr>\n");
-			break;
-		}
-		case DBS_LOG_ALERT:
-		{
-			fprintf(fs, "<td class='diagdata'>Alert</td>\n</tr>\n");
-			break;
-		}
-		case DBS_LOG_CRIT:
-		{
-			fprintf(fs, "<td class='diagdata'>Cratical</td>\n</tr>\n");
-			break;
-		}
-		case DBS_LOG_ERR:
-		{
-			fprintf(fs, "<td class='diagdata'>Error</td>\n</tr>\n");
-			break;
-		}
-		case DBS_LOG_WARNING:
-		{
-			fprintf(fs, "<td class='diagdata'>Warnning</td>\n</tr>\n");
-			break;
-		}
-		case DBS_LOG_NOTICE:
-		{
-			fprintf(fs, "<td class='diagdata'>Notice</td>\n</tr>\n");
-			break;
-		}
-		case DBS_LOG_INFO:
-		{
-			fprintf(fs, "<td class='diagdata'>Informational</td>\n</tr>\n");
-			break;
-		}
-		default:
-		{
-			fprintf(fs, "<td class='diagdata'>Debugging</td>\n</tr>\n");
-			break;
-		}
-	}		
-	/*cbatMac*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Agent Host MAC</td>\n");
-	fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", st_log.cbatMac);
-	/*cltId.cnuId*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Alarm Node</td>\n");
-	fprintf(fs, "<td class='diagdata'>%d.%d</td>\n</tr>\n", st_log.cltId, st_log.cnuId);
-	/*alarmType*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Alarm Type</td>\n");
-	fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", boardapi_getAlarmTypeStr(st_log.alarmType));
-	/*alarmValue*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Parameter Value</td>\n");
-	fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", st_log.alarmValue);	
-	/*trap_info*/
-	fprintf(fs, "<tr>\n<td class='diagdata'>Trap Information</td>\n");
-	fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", st_log.trap_info);
-
-	fprintf(fs, "</table>\n");
-	fprintf(fs, "<br>\n<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n<td class='listend' width=450></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<p>\n<input type='button' class='btn2L' onClick='window.close()' value='Close'>\n</p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
-	fflush(fs);
-	
 }
 
 void cgiOptlogView(char *query, FILE *fs) 

@@ -61,6 +61,43 @@ char * boardapi_getMacAddress(void)
 }
 
 /********************************************************************************************
+*	函数名称:boardapi_isValidUnicastMacb
+*	函数功能:判断是否为有效的单播MAC
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+int boardapi_isValidUnicastMacb(uint8_t *bin)
+{
+	uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	uint8_t MB[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
+	uint8_t MC[6] = {0x00,0xb0,0x52,0x00,0x00,0x01};
+	
+	if( NULL == bin )
+	{
+		return BOOL_FALSE;
+	}
+	/* 不允许00:00:00:00:00:00 */
+	else if( memcmp(bin, MA, 6) == 0 )
+	{
+		return BOOL_FALSE;
+	}
+	/* 不允许FF:FF:FF:FF:FF:FF */
+	else if( memcmp(bin, MB, 6) == 0 )
+	{
+		return BOOL_FALSE;
+	}
+	/* 不允许00:b0:52:00:00:01 */
+	else if( memcmp(bin, MC, 6) == 0 )
+	{
+		return BOOL_FALSE;
+	}
+	else
+	{
+		return BOOL_TRUE;
+	}
+}
+
+/********************************************************************************************
 *	函数名称:boardapi_macs2b
 *	函数功能:将字符串形式的MAC地址转换为6位二进制格式
 *	作者:frank
@@ -135,11 +172,28 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC_3501I_C22:
 		{
-			return "WEC-3501I C22";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 6402";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3501I C22";
+				
+			}			
 		}
 		case WEC_3501I_S220:
 		{
-			return "WEC-3501I S220";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 6401";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3501I S220";				
+			}
 		}
 		case WEC_3501I_S60:
 		{
@@ -179,11 +233,29 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC_604:
 		{
-			return "WEC-3702I C4";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 64";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3702I C4";			
+			}			
 		}
 		case WEC9720EK_C22:
 		{
-			return "WEC9720EK C22";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 7402";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MO350-2G";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC9720EK C22";
+			}			
 		}
 		case WEC9720EK_E31:
 		{
@@ -195,11 +267,27 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC9720EK_S220:
 		{
-			return "WEC9720EK S220";
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MI350-2G";
+				default:
+					return "WEC9720EK S220";
+			}			
 		}
 		case WEC9720EK_SD220:
 		{
-			return "WEC9720EK SD220";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 7401";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MI350D-2G";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC9720EK SD220";
+			}			
 		}
 		case WEC701_C2:
 		{
@@ -207,7 +295,17 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC701_C4:
 		{
-			return "WEC701 C4";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 74";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-S100-4F";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC701 C4";
+			}			
 		}
 		case WEC_3501I_XD25:
 		{
@@ -215,7 +313,17 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC9720EK_XD25:
 		{
-			return "WEC9720EK XD25";
+			switch(CUSTOM_LOGO_ID)
+			{				
+				case CUSTOM_LOGO_PX:
+					return "PX 7402";
+				case CUSTOM_LOGO_ALCOTEL:
+					return "EOC-MO350D-2G";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC9720EK XD25";
+			}			
 		}
 		case WR1004JL:
 		{
@@ -225,11 +333,70 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		{
 			return "WR1004SJL";
 		}
+		case WEC_3702I_E4:
+		{
+			return "WEC-3702I E4";
+		}
+		case WEC701_E4:
+		{
+			return "WEC701 E4";
+		}
 		default:
 		{
 			return "UNKNOWN";
 		}
 	}
+}
+
+/********************************************************************************************
+*	函数名称:boardapi_getCltStandardStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getCltStandardStr(void)
+{
+	const char *pStandardStr = NULL;
+
+	
+	switch(CUSTOM_LOGO_ID)
+	{				
+		case CUSTOM_LOGO_PX:
+			pStandardStr = "AR7400";
+			break;
+		case CUSTOM_LOGO_DEMO:
+		case CUSTOM_LOGO_PREVAIL:
+		default:
+			pStandardStr = "AR7410";
+			break;
+	}
+	return pStandardStr;	
+}
+
+/********************************************************************************************
+*	函数名称:boardapi_getMenufactoryStr
+*	函数功能:get clt serial type
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+const char *boardapi_getMenufactoryStr(void)
+{
+	const char *pMenufactoryStr = NULL;
+
+	
+	switch(CUSTOM_LOGO_ID)
+	{				
+		case CUSTOM_LOGO_PX:
+			pMenufactoryStr = "PX";
+			break;
+		case CUSTOM_LOGO_PREVAIL:
+			pMenufactoryStr = "Prevail";
+			break;
+		default:
+			pMenufactoryStr = " ";
+			break;
+	}
+	return pMenufactoryStr;	
 }
 
 /********************************************************************************************
@@ -265,6 +432,12 @@ const char *boardapi_getCnuHfid(uint32_t devType)
 		case WEC701_C4:
 			user_HFID = "WEC701-C4";
 			break;
+		case WEC_3702I_E4:
+			user_HFID = "WEC-3702I-E4";
+			break;
+		case WEC701_E4:
+			user_HFID = "WEC701-E4";
+			break;
 		default :
 			user_HFID = "Intellon Enabled Product";
 			break;
@@ -288,6 +461,58 @@ int boardapi_isCnuSupported(uint32_t DevType)
 		case WEC_604:		/* WEC-3702I C4 */
 		case WEC701_C2:		/* WEC701 C2 */
 		case WEC701_C4:		/* WEC701 C4 */
+		{
+			return BOOL_TRUE;
+		}		
+		default:
+			return BOOL_FALSE;
+	}
+}
+
+int boardapi_getCnuSwitchType(uint32_t DevType)
+{
+	switch(DevType)
+	{
+		case WEC_3702I:		/* WEC-3702I L2 */
+		case WEC_3703I:		/* WEC-3702I L3 */
+		case WEC_602:		/* WEC-3702I C2 */
+		case WEC_604:		/* WEC-3702I C4 */
+		case WEC701_C2:		/* WEC701 C2 */
+		case WEC701_C4:		/* WEC701 C4 */
+		{
+			return CNU_SWITCH_TYPE_AR8236;
+		}		
+		default:
+		{
+			return CNU_SWITCH_TYPE_RTL8306E;
+		}
+	}
+}
+
+int boardapi_isAr7400Device(uint32_t DevType)
+{
+	switch(DevType)
+	{
+		case WEC701_M0:
+		case WEC701_C2:
+		case WEC701_C4:
+		case WEC701_E4:
+		{
+			return BOOL_TRUE;
+		}		
+		default:
+			return BOOL_FALSE;
+	}
+}
+
+int boardapi_isAr6400Device(uint32_t DevType)
+{
+	switch(DevType)
+	{
+		case WEC_3702I:		/* WEC-3702I L2 */
+		case WEC_3703I:		/* WEC-3702I L3 */
+		case WEC_602:		/* WEC-3702I C2 */
+		case WEC_604:		/* WEC-3702I C4 */
 		{
 			return BOOL_TRUE;
 		}		
@@ -503,6 +728,14 @@ int boardapi_mapDevModel(int model)
 		{
 			return 41;
 		}
+		case WEC_3702I_E4:
+		{
+			return 42;
+		}
+		case WEC701_E4:
+		{
+			return 43;
+		}
 		default:
 		{
 			return 256;
@@ -612,6 +845,14 @@ int boardapi_umapDevModel(int model)
 		{
 			return WEC701_C4;
 		}
+		case 42:
+		{
+			return WEC_3702I_E4;
+		}
+		case 43:
+		{
+			return WEC701_E4;
+		}
 		default:
 		{
 			return WEC_INVALID;
@@ -681,7 +922,11 @@ int boardapi_getAlarmLevelByCode(uint32_t alarmCode)
 		case 200908:		/* 物理层速率告警*/				
 		case 200923:		/* can not find clt */
 		{
+#ifdef CFG_USE_PLATFORM_WR1004SJL 
+			return DBS_LOG_NOTICE;
+#else
 			return DBS_LOG_EMERG;
+#endif
 		}
 		/*DBS_LOG_ALERT*/
 		case 200904:		/* CBAT管理CPU负载过高告警以及恢复*/
@@ -736,6 +981,51 @@ int boardapi_getAlarmLevelByCode(uint32_t alarmCode)
 }
 
 /********************************************************************************************
+*	函数名称:boardapi_getAlarmLevelStr
+*	函数功能:获取字符串表示的告警等级
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+char * boardapi_getAlarmLevelStr(uint16_t alarmLevel)
+{
+	switch(alarmLevel)
+	{
+		case DBS_LOG_EMERG:
+		{
+			return "Emergency";
+		}
+		case DBS_LOG_ALERT:
+		{
+			return "Alert";
+		}
+		case DBS_LOG_CRIT:
+		{
+			return "Cratical";
+		}
+		case DBS_LOG_ERR:
+		{
+			return "Error";
+		}
+		case DBS_LOG_WARNING:
+		{
+			return "Warnning";
+		}
+		case DBS_LOG_NOTICE:
+		{
+			return "Notice";
+		}
+		case DBS_LOG_INFO:
+		{
+			return "Informational";
+		}
+		default:
+		{
+			return "Debugging";
+		}
+	}
+}
+
+/********************************************************************************************
 *	函数名称:boardapi_getAlarmLevel
 *	函数功能:根据告警码获取该告警的等级
 *	作者:frank
@@ -779,7 +1069,11 @@ int boardapi_getAlarmLevel(st_dbsAlarmlog *alarm)
 		case 200908:		/* 物理层速率告警*/				
 		case 200923:		/* can not find clt */
 		{
+#ifdef CFG_USE_PLATFORM_WR1004SJL 
+			return DBS_LOG_NOTICE;
+#else
 			return DBS_LOG_EMERG;
+#endif		
 		}
 		/*DBS_LOG_ALERT*/
 		case 200904:		/* CBAT管理CPU负载过高告警以及恢复*/
@@ -855,3 +1149,81 @@ int boardapi_setMTParameters(stMTmsgInfo *para)
 		return nvm_set_mt_parameters(para);
 	}	
 } 
+
+/********************************************************************************************
+*	函数名称:boardapi_getCltDsdtPortid
+*	函数功能:根据CLT索引号找到其对应的交换端口
+*	作者:frank
+*	时间:2013-08-19
+*********************************************************************************************/
+uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
+{	
+#ifdef CFG_USE_PLATFORM_WEC9720EK_C22
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_S220
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK_XD25
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004SJL
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		case 2:
+		{
+			return PORT_CABLE2_PORT_ID;
+		}
+		case 3:
+		{
+			return PORT_CABLE3_PORT_ID;
+		}
+		case 4:
+		{
+			return PORT_CABLE4_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+}  
+  

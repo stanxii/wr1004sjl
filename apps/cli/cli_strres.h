@@ -286,6 +286,14 @@
 						HELP_FMT "ar8236-phy read phy <phyad> register <regad>"  \
 						HELP_FMT "ar8236-phy write <regvalue> phy <phyad> register <regad>"
 
+#define CMDHELP_GLB_CNU_SWITCH            HELP_FUN "Read or write cnu switch register value from MDIO interface." \
+						HELP_SPC "phyad	: the internal phy address. range of 0~6."\
+						HELP_SPC "regad	: the internal register address. range of 0~32."\
+						HELP_SPC "pageid	: the internal page address. range of 0~3."\
+						HELP_SPC "regvalue	: the register value to be written. range of 0x0000~0xFFFF."\
+						HELP_FMT "cnu-switch read phy <phyad> register <regad> page <pageid>"  \
+						HELP_FMT "cnu-switch write <regvalue> phy <phyad> register <regad> page <pageid>"
+
 #define CMDHELP_GLB_MME_MDIO            HELP_FUN "Read or write phy register value from MDIO interface." \
 						HELP_SPC "phyad	: the internal phy address. range of 0x0~0xf."\
 						HELP_SPC "regad	: the internal phy register address. range of 0x0~0xFF."\
@@ -514,6 +522,10 @@
 /* dsdt-port-mirror 的帮助信息 */
 #define CMDHELP_GLB_DSDT_PORT_MIRROR            HELP_FUN "Enable port mirroring on MV88E6171R." \
 						HELP_FMT "dsdt-port-mirror from p6 to p0"
+
+/* dsdt-mac-binding 的帮助信息 */
+#define CMDHELP_GLB_DSDT_MAC_BIND            HELP_FUN "Binding a mac address to switch port static." \
+						HELP_FMT "dsdt-binding mac-address 01-02-03-04-05-06 to p0~p6"
 /******************************************************************************
  *                                 END                                        *
  ******************************************************************************/

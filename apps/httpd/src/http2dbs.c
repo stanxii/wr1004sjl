@@ -99,9 +99,8 @@ int http2dbs_doCltDecapSettings(PWEB_NTWK_VAR pWebVar)
 	}
 }
 
-int http2dbs_doCltQosSettings(PWEB_NTWK_VAR pWebVar)
+int http2dbs_doCltQosEnable(PWEB_NTWK_VAR pWebVar)
 {
-	//int flag = 0;
 	st_dbsCltConf row;
 
 	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, pWebVar->cltid, &row) )
@@ -109,11 +108,78 @@ int http2dbs_doCltQosSettings(PWEB_NTWK_VAR pWebVar)
 		return CMM_FAILED;
 	}
 
-	/* ½ûÓÃQoS */
-	if( 0 == pWebVar->col_tbaPriSts )
+	if( row.col_tbaPriSts != pWebVar->col_tbaPriSts )
 	{
-		row.col_tbaPriSts = 0;
-		
+		row.col_tbaPriSts = pWebVar->col_tbaPriSts;
+		return dbsUpdateCltconf(dbsdev, pWebVar->cltid, &row);
+	}
+
+	return CMM_SUCCESS;
+}
+
+
+int http2dbs_doCltQosSettings(PWEB_NTWK_VAR pWebVar)
+{
+	//int flag = 0;
+	st_dbsCltConf row;
+
+	if( (1==pWebVar->col_cosPriSts)&&(1==pWebVar->col_tosPriSts) )
+	{
+		return CMM_FAILED;
+	}
+
+	if( CMM_SUCCESS != dbsGetCltconf(dbsdev, pWebVar->cltid, &row) )
+	{
+		return CMM_FAILED;
+	}
+
+	if( 1 == pWebVar->col_cosPriSts )
+	{
+		//row.col_tbaPriSts = 1;		
+		row.col_cosPriSts = 1;
+		row.col_cos0pri = pWebVar->col_cos0pri;
+		row.col_cos1pri = pWebVar->col_cos1pri;
+		row.col_cos2pri = pWebVar->col_cos2pri;
+		row.col_cos3pri = pWebVar->col_cos3pri;
+		row.col_cos4pri = pWebVar->col_cos4pri;
+		row.col_cos5pri = pWebVar->col_cos5pri;
+		row.col_cos6pri = pWebVar->col_cos6pri;
+		row.col_cos7pri = pWebVar->col_cos7pri;
+		row.col_tosPriSts = 0;
+		row.col_tos0pri = 1;
+		row.col_tos1pri = 0;
+		row.col_tos2pri = 0;
+		row.col_tos3pri = 1;
+		row.col_tos4pri = 2;
+		row.col_tos5pri = 2;
+		row.col_tos6pri = 3;
+		row.col_tos7pri = 3;
+	}
+	else if( 1 == pWebVar->col_tosPriSts )
+	{
+		//row.col_tbaPriSts = 1;
+		row.col_cosPriSts = 0;
+		row.col_cos0pri = 1;
+		row.col_cos1pri = 0;
+		row.col_cos2pri = 0;
+		row.col_cos3pri = 1;
+		row.col_cos4pri = 2;
+		row.col_cos5pri = 2;
+		row.col_cos6pri = 3;
+		row.col_cos7pri = 3;		
+		row.col_tosPriSts = 1;
+		row.col_tos0pri = pWebVar->col_tos0pri;
+		row.col_tos1pri = pWebVar->col_tos1pri;
+		row.col_tos2pri = pWebVar->col_tos2pri;
+		row.col_tos3pri = pWebVar->col_tos3pri;
+		row.col_tos4pri = pWebVar->col_tos4pri;
+		row.col_tos5pri = pWebVar->col_tos5pri;
+		row.col_tos6pri = pWebVar->col_tos6pri;
+		row.col_tos7pri = pWebVar->col_tos7pri;			
+	}
+	else
+	{
+		//row.col_tbaPriSts = 0;		
 		row.col_cosPriSts = 1;
 		row.col_cos0pri = 1;
 		row.col_cos1pri = 0;
@@ -133,81 +199,6 @@ int http2dbs_doCltQosSettings(PWEB_NTWK_VAR pWebVar)
 		row.col_tos5pri = 2;
 		row.col_tos6pri = 3;
 		row.col_tos7pri = 3;
-	}
-	else
-	{
-		if( 1 == pWebVar->col_cosPriSts )
-		{
-			row.col_tbaPriSts = 1;
-		
-			row.col_cosPriSts = 1;
-			row.col_cos0pri = pWebVar->col_cos0pri;
-			row.col_cos1pri = pWebVar->col_cos1pri;
-			row.col_cos2pri = pWebVar->col_cos2pri;
-			row.col_cos3pri = pWebVar->col_cos3pri;
-			row.col_cos4pri = pWebVar->col_cos4pri;
-			row.col_cos5pri = pWebVar->col_cos5pri;
-			row.col_cos6pri = pWebVar->col_cos6pri;
-			row.col_cos7pri = pWebVar->col_cos7pri;
-
-			row.col_tosPriSts = 0;
-			row.col_tos0pri = 1;
-			row.col_tos1pri = 0;
-			row.col_tos2pri = 0;
-			row.col_tos3pri = 1;
-			row.col_tos4pri = 2;
-			row.col_tos5pri = 2;
-			row.col_tos6pri = 3;
-			row.col_tos7pri = 3;
-		}
-		else if( 1 == pWebVar->col_tosPriSts )
-		{
-			row.col_tbaPriSts = 1;
-
-			row.col_cosPriSts = 0;
-			row.col_cos0pri = 1;
-			row.col_cos1pri = 0;
-			row.col_cos2pri = 0;
-			row.col_cos3pri = 1;
-			row.col_cos4pri = 2;
-			row.col_cos5pri = 2;
-			row.col_cos6pri = 3;
-			row.col_cos7pri = 3;
-		
-			row.col_tosPriSts = 1;
-			row.col_tos0pri = pWebVar->col_tos0pri;
-			row.col_tos1pri = pWebVar->col_tos1pri;
-			row.col_tos2pri = pWebVar->col_tos2pri;
-			row.col_tos3pri = pWebVar->col_tos3pri;
-			row.col_tos4pri = pWebVar->col_tos4pri;
-			row.col_tos5pri = pWebVar->col_tos5pri;
-			row.col_tos6pri = pWebVar->col_tos6pri;
-			row.col_tos7pri = pWebVar->col_tos7pri;			
-		}
-		else
-		{
-			row.col_tbaPriSts = 0;
-		
-			row.col_cosPriSts = 1;
-			row.col_cos0pri = 1;
-			row.col_cos1pri = 0;
-			row.col_cos2pri = 0;
-			row.col_cos3pri = 1;
-			row.col_cos4pri = 2;
-			row.col_cos5pri = 2;
-			row.col_cos6pri = 3;
-			row.col_cos7pri = 3;
-
-			row.col_tosPriSts = 0;
-			row.col_tos0pri = 1;
-			row.col_tos1pri = 0;
-			row.col_tos2pri = 0;
-			row.col_tos3pri = 1;
-			row.col_tos4pri = 2;
-			row.col_tos5pri = 2;
-			row.col_tos6pri = 3;
-			row.col_tos7pri = 3;
-		}
 	}
 
 	return dbsUpdateCltconf(dbsdev, pWebVar->cltid, &row);
@@ -260,7 +251,7 @@ int http2dbs_getDevModel(char *varValue)
 
 int http2dbs_getEocType(char *varValue)
 {
-	strcpy(varValue, "AR7410");
+	strcpy(varValue, boardapi_getCltStandardStr());
 	return CMM_SUCCESS;
 }
 

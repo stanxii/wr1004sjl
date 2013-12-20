@@ -647,6 +647,101 @@ int cli2cmm_readAr8236Phy(T_szAr8236Phy *szAr8236Phy)
 }
 
 /********************************************************************************************
+*	函数名称:cli2cmm_writeAr8236Phy
+*	函数功能:获取AR8236寄存器值
+*********************************************************************************************/
+int cli2cmm_writeAr8236Phy(T_szAr8236Phy *szAr8236Phy)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_AR8236_PHY_REG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(T_szAr8236Phy);
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	memcpy(req->BUF, szAr8236Phy, req->HEADER.ulBodyLength);
+
+	return __cli2cmm_comm(buf, len);
+}
+
+/********************************************************************************************
+*	函数名称:cli2cmm_readCnuSwitchRegister
+*	函数功能:获取AR8236寄存器值
+*********************************************************************************************/
+int cli2cmm_readCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	T_szSwRtl8306eConfig *ack_data = (T_szSwRtl8306eConfig *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_READ;
+	req->HEADER.ulBodyLength = sizeof(T_szSwRtl8306eConfig);
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	memcpy(req->BUF, rtl8306eSettings, req->HEADER.ulBodyLength);
+
+	if( CMM_SUCCESS == __cli2cmm_comm(buf, len) )
+	{
+		rtl8306eSettings->mdioInfo.value = ack_data->mdioInfo.value;
+		return CMM_SUCCESS;
+	}	
+	return CMM_FAILED;
+}
+
+/********************************************************************************************
+*	函数名称:cli2cmm_writeCnuSwitchRegister
+*	函数功能:获取AR8236寄存器值
+*********************************************************************************************/
+int cli2cmm_writeCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_WRITE;
+	req->HEADER.ulBodyLength = sizeof(T_szSwRtl8306eConfig);
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	memcpy(req->BUF, rtl8306eSettings, req->HEADER.ulBodyLength);
+
+	return __cli2cmm_comm(buf, len);
+}
+
+
+/********************************************************************************************
 *	函数名称:cli2cmm_mdioReadPhy
 *	函数功能:获取外接PHY寄存器值
 *********************************************************************************************/
@@ -776,35 +871,6 @@ int cli2cmm_getRgmiiTimingDelay(st_dsdtRgmiiTimingDelay *pdelay)
 		return CMM_SUCCESS;
 	}	
 	return CMM_FAILED;
-}
-
-/********************************************************************************************
-*	函数名称:cli2cmm_writeAr8236Phy
-*	函数功能:获取AR8236寄存器值
-*********************************************************************************************/
-int cli2cmm_writeAr8236Phy(T_szAr8236Phy *szAr8236Phy)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-
-	req->HEADER.usSrcMID = MID_CLI;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_AR8236_PHY_REG_WRITE;
-	req->HEADER.ulBodyLength = sizeof(T_szAr8236Phy);
-	req->HEADER.fragment = 0;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-	if( len > MAX_UDP_SIZE )
-	{
-		IO_Print("\r\n\r\n	Memery Error !");
-		return CMM_FAILED;
-	}
-
-	memcpy(req->BUF, szAr8236Phy, req->HEADER.ulBodyLength);
-
-	return __cli2cmm_comm(buf, len);
 }
 
 int cli2cmm_shutdownConfig(st_dbsProfile *profile)
@@ -1204,6 +1270,30 @@ int cli2cmm_DoPortMirroring(st_dsdtPortMirroring *pMirrorInfo)
 	}
 
 	memcpy(req->BUF, pMirrorInfo, req->HEADER.ulBodyLength);
+
+	return __cli2cmm_comm(buf, len);
+}
+
+int cli2cmm_DoDsdtMacBinding(stDsdtMacBinding *macBindingInfo)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_DSDT_MAC_BINDING;
+	req->HEADER.ulBodyLength = sizeof(stDsdtMacBinding);
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	memcpy(req->BUF, macBindingInfo, req->HEADER.ulBodyLength);
 
 	return __cli2cmm_comm(buf, len);
 }

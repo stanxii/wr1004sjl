@@ -97,13 +97,150 @@ static int match_one( const char* pattern, int patternlen, const char* string );
 static int handle_request(struct in_addr clntAddr);
 static int early_auth(int fd, struct in_addr clntAddr);
 
+struct cgi_do_file_list cgi_do_file_table[] = 
+{
+	{ "/webs/css/redmond/jquery-ui-1.10.3.custom.min.css", 0, NULL },
+	{ "/webs/css/redmond/demos.css", 0, NULL },	
+	{ "/webs/css/redmond/images/animated-overlay.gif", 0, NULL },
+	{ "/webs/css/redmond/images/ui-bg_flat_0_aaaaaa_40x100.png", 0, NULL },	
+	{ "/webs/css/redmond/images/ui-bg_flat_55_fbec88_40x100.png", 0, NULL },	
+	{ "/webs/css/redmond/images/ui-bg_glass_75_d0e5f5_1x400.png", 0, NULL },	
+	{ "/webs/css/redmond/images/ui-bg_glass_85_dfeffc_1x400.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-bg_glass_95_fef1ec_1x400.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-bg_gloss-wave_55_5c9ccc_500x100.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-bg_inset-hard_100_f5f8f9_1x100.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-bg_inset-hard_100_fcfdfd_1x100.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-icons_217bc0_256x240.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-icons_2e83ff_256x240.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-icons_469bdd_256x240.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-icons_6da8d5_256x240.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-icons_cd0a0a_256x240.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-icons_d8e7f3_256x240.png", 0, NULL },
+	{ "/webs/css/redmond/images/ui-icons_f9bd01_256x240.png", 0, NULL },	
+	{ "/webs/js/jquery-1.9.1.js", 0, NULL },
+	{ "/webs/js/jquery-ui-1.10.3.custom.min.js", 0, NULL },	
+	{ "/webs/util.js", 0, NULL },
+	{ "/webs/stylemain.css", 0, NULL },
+	{ "/webs/colors.css", 0, NULL },
+	{ "/webs/favicon.ico", 0, NULL },
+	{ "/webs/logo_corp.gif", 0, NULL },
+	{ "/webs/delete.gif", 0, NULL },
+	{ "/webs/footer.html", 0, NULL },
+	{ "/webs/frmload.gif", 0, NULL },
+	{ "/webs/help.gif", 0, NULL },
+	{ "/webs/ico_Editor.gif", 0, NULL },
+	{ "/webs/index.html", 0, NULL },
+	{ "/webs/info.html", 0, NULL },
+	{ "/webs/logo.html", 0, NULL },
+	{ "/webs/main.html", 0, NULL },
+	{ "/webs/menu.html", 0, NULL },
+	{ "/webs/menuBcm.js", 0, NULL },
+	{ "/webs/menuTitle.js", 0, NULL },
+	{ "/webs/menuTree.js", 0, NULL },
+	{ "/webs/net_down.gif", 0, NULL },
+	{ "/webs/net_up.gif", 0, NULL },
+	{ "/webs/show.gif", 0, NULL },
+	{ "/webs/suppress.png", 0, NULL },
+	{ "/webs/true.png", 0, NULL },
+	{ "/webs/upload.html", 0, NULL },
+	{ "/webs/uploadinfo.html", 0, NULL },
+	{ "/webs/util.js", 0, NULL },
+	{ "/webs/wait.gif", 0, NULL },
+	{ "/webs/wecAlarmlog.html", 0, NULL },
+	{ "/webs/wecCliUsers.html", 0, NULL },
+	{ "/webs/wecNewCnu.html", 0, NULL },
+	{ "/webs/wecOptResult2.html", 0, NULL },
+	{ "/webs/wecOptlog.html", 0, NULL },
+	{ "/webs/wecPortPropety.html", 0, NULL },
+	{ "/webs/wecPortStas.html", 0, NULL },
+	{ "/webs/wecPreView.html", 0, NULL },
+	{ "/webs/wecReboot.html", 0, NULL },
+	{ "/webs/wecRebootInfo.html", 0, NULL },
+	{ "/webs/wecRestoreDefault.html", 0, NULL },
+	{ "/webs/wecRestoreInfo.html", 0, NULL },
+	{ "/webs/wecSaveDb.html", 0, NULL },
+	{ "/webs/wecSnmpCfg.html", 0, NULL },
+	{ "/webs/wecSyslog.html", 0, NULL },
+	{ "/webs/wecWebUsers.html", 0, NULL },
+	{ "/webs/wecWlistCtrl.html", 0, NULL },	
+	{ NULL, 0, NULL }
+};
+
+void cgi_do_file_table_free(void)
+{
+	struct cgi_do_file_list *handler;
+	for (handler = &cgi_do_file_table[0]; handler->path; handler++)
+	{
+		handler->len = 0;
+		if(NULL != handler->data)
+		{
+			free(handler->data);
+			handler->data = NULL;
+		}
+	}
+}
+
+void cgi_do_file_table_init(void)
+{
+	FILE *fp;
+	size_t malloc_total = 0;
+	struct cgi_do_file_list *handler;
+	
+	for (handler = &cgi_do_file_table[0]; handler->path; handler++)
+	{
+		if( access(handler->path, 0) )
+		{
+			fprintf(stderr, "WARNNING: can not find %s\n", handler->path);
+			continue;
+		}
+		if (!(fp = fopen(handler->path, "r")))
+		{
+			fprintf(stderr, "WARNNING: can not open %s\n", handler->path);
+			continue;
+		}
+		
+		fseek(fp, 0L, SEEK_END);
+		handler->len = ftell(fp);
+		if( handler->len == 0)
+		{
+			fprintf(stderr, "WARNNING: file %s length = 0\n", handler->path);
+			fclose(fp);
+			continue;
+		}
+		
+		handler->data = malloc(handler->len);
+		if( NULL == handler->data)
+		{
+			fprintf(stderr, "WARNNING: init_cgi_do_file_table malloc error\n");
+			handler->len = 0;
+			fclose(fp);
+			continue;
+		}
+		fseek(fp, 0L, SEEK_SET);
+		if (fread (handler->data, 1, handler->len, fp) != handler->len)
+		{			
+			fprintf(stderr, "WARNNING: fread file %s error\n", handler->path);
+			handler->len = 0;
+			free(handler->data);
+			handler->data = NULL;
+			fclose(fp);
+			continue;
+		}
+		malloc_total += handler->len;
+		fclose(fp);
+	}
+
+	fprintf(stderr, "INFO: init_cgi_do_file_table %ul Byte\n", malloc_total);
+}
+
+#if 0
 // used in syscall.c for web remote upload
 static char gIfName[32];
 char *getIfName(void)
 {
     return gIfName;
 }
-
+#endif
 
 // defined in upload.c
 //extern void sigUserCfgUpdate(char *xmlFileName);
@@ -133,6 +270,48 @@ initialize_listen_socket( usockaddr* usaP )
         perror( "setsockopt" );
         return -1;
     }
+	
+#if 0
+	int tcp_size = 0;
+	socklen_t optlen;
+	tcp_size = 256 * 1024;
+	optlen = sizeof(tcp_size);
+	if( setsockopt(listen_fd,SOL_SOCKET,SO_RCVBUF, (char *)&tcp_size, optlen) < 0 )
+	{
+		perror( "\nERROR: setsockopt[SO_RCVBUF]\n" );
+		return -1;
+	}
+	optlen = sizeof(tcp_size);
+	if( getsockopt(listen_fd, SOL_SOCKET, SO_RCVBUF, &tcp_size, &optlen) < 0 )
+	{
+		perror( "\nERROR: getsockopt[SO_RCVBUF]\n" );
+		return -1;
+	}
+	else
+	{
+		printf("\nINDO: SO_RCVBUF = %d Byte\n", tcp_size);
+	}
+
+	tcp_size = 128 * 1024;
+	optlen = sizeof(tcp_size);
+	if( setsockopt(listen_fd,SOL_SOCKET,SO_SNDBUF, (char *)&tcp_size, optlen) < 0 )
+	{
+		perror( "\nERROR: setsockopt[SO_SNDBUF]\n" );
+		return -1;
+	}
+	optlen = sizeof(tcp_size);
+	if( getsockopt(listen_fd, SOL_SOCKET, SO_SNDBUF, &tcp_size, &optlen) < 0 )
+	{
+		perror( "\nERROR: getsockopt[SO_SNDBUF]\n" );
+		return -1;
+	}
+	else
+	{
+		printf("\nINDO: SO_SNDBUF = %d Byte\n", tcp_size);
+	}
+#endif	
+
+	
     if ( bind( listen_fd, &usaP->sa, sizeof(struct sockaddr_in) ) < 0 )
     {
         perror( "bind" );
@@ -146,7 +325,7 @@ initialize_listen_socket( usockaddr* usaP )
     return listen_fd;
 }
 
-
+#if 0
 static int initialize_api_socket( usockaddr* usaP )
 {
     int api_fd;
@@ -164,7 +343,7 @@ static int initialize_api_socket( usockaddr* usaP )
 
     return api_fd;
 }
-
+#endif
 
 /* modify from original (PT) */
 
@@ -411,14 +590,38 @@ match_one( const char* pattern, int patternlen, const char* string )
 void
 do_file(char *path, FILE *stream)
 {
-    FILE *fp;
-    int c;
-
-    if (!(fp = fopen(path, "r")))
-        return;
-    while ((c = getc(fp)) != EOF)
-        fputc(c, stream);
-    fclose(fp);
+	FILE *fp;
+	int c;
+	size_t len = 0;
+	char * p = NULL;
+	struct cgi_do_file_list *handler;
+	
+	for (handler = &cgi_do_file_table[0]; handler->path; handler++)
+	{
+		if( strcmp(handler->path, path) == 0 )
+		{
+			if(( 0 != handler->len ) && ( NULL != handler->data ) )
+			{
+				//find
+				len = handler->len;
+				p = (char *)handler->data;
+				while(len--)
+				{
+					fputc(*p++, stream);
+				}
+				//fwrite(handler->data, handler->len, 1, stream);
+				fflush(stream);
+				return;
+			}
+		}
+	}
+	
+	fprintf(stderr, "do_file(%s)\n", path);
+	if (!(fp = fopen(path, "r")))
+		return;
+	while ((c = getc(fp)) != EOF)
+		fputc(c, stream);
+	fclose(fp);
 }
 
 static int
@@ -597,17 +800,15 @@ handle_request(struct in_addr clntAddr)
         }
     }
 
-    if (!handler->pattern)
-        send_error( 404, "Not Found", (char*) 0, "File not found." );
+	if (!handler->pattern)
+	{
+		fprintf(stderr, "filename = %s\n", filename);
+		send_error( 404, "Not Found", (char*) 0, "File not found." );
+		return WEB_STS_OK;
+	}        
 
     if ( strcmp(file, "wecRebootInfo.cgi") == 0 )
-        return WEB_STS_REBOOT;
-    else if ( strncmp(file, "ppppasswordinfo.cgi", strlen("ppppasswordinfo.cgi")) == 0 ) {
-        printf("app: New PPP user name and password saved.  Rebooting to retry PPP login...\n");
-        return WEB_STS_REBOOT;
-    }
-    if ( strncmp(file, "qosqueue.cmd?action=savReboot", strlen("qosqueue.cmd?action=savReboot")) == 0 )
-        return WEB_STS_REBOOT;
+        return WEB_STS_REBOOT;  
     else if ( strcmp(file, "restoreinfo.cgi") == 0 )
         return WEB_STS_RESTORE;
     else
@@ -638,7 +839,8 @@ void sigChldHandler(int sig)
 int main(void)
 {
     usockaddr usa;
-    int listen_fd, api_fd;
+    //int listen_fd, api_fd;
+    int listen_fd;
     int conn_fd;
     socklen_t sz = sizeof(usa);
     FILE *pid_fp;
@@ -667,16 +869,19 @@ int main(void)
         fprintf(stderr, "can't bind to any address\n" );
         exit(errno);
     }
-    
+
+#if 0    
     /* Initialize socket API socket */
     if ((api_fd = initialize_api_socket(&usa)) < 0) {
         fprintf(stderr, "api socket error\n" );
         exit(errno);
     }
+#endif
 
     http2dbs_init();
     http2cmm_init();
     httpd2sysmonitor_init();
+    cgi_do_file_table_init();
 	
     //sysSetMonitorFd(listen_fd);
 
@@ -691,6 +896,7 @@ int main(void)
 	 http2dbs_destroy();
 	 http2cmm_destroy();
 	 httpd2sysmonitor_destroy();
+	 cgi_do_file_table_free();
         return errno;
     }
     fprintf(pid_fp, "%d\n", getpid());
@@ -703,11 +909,10 @@ int main(void)
     /* Loop forever handling requests */
     for (;;) {
         FD_ZERO(&rset);
-        FD_SET(api_fd,&rset);
+        //FD_SET(api_fd,&rset);
         FD_SET(listen_fd,&rset);
         FD_ZERO(&errset);
-        FD_SET(listen_fd,&errset);
-	 
+        FD_SET(listen_fd,&errset);	 
 
         nready = select(sizeof(int)*8,&rset,NULL,&errset,NULL);
         
@@ -725,7 +930,6 @@ int main(void)
             perror("select");
         }
 
-
         if ( FD_ISSET(listen_fd,&rset)) {
             if ((conn_fd = accept(listen_fd, &usa.sa, &sz)) < 0) {
                 perror("accept");
@@ -734,15 +938,18 @@ int main(void)
 		  http2dbs_destroy();
 		  http2cmm_destroy();
 		  httpd2sysmonitor_destroy();
+		  cgi_do_file_table_free();
                 return errno;
             }
 
-            tv.tv_sec=1;
+            tv.tv_sec=10;
             tv.tv_usec=0;
             setsockopt(conn_fd,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(tv));
+#if 0
             // get the interface name..
             gIfName[0] = '\0';
             bcmGetIntfNameSocket(conn_fd, gIfName);
+#endif
             retFlag = early_auth(conn_fd, usa.sa_in.sin_addr);
             if ( retFlag != 0) {
                 close(conn_fd);   // go away
@@ -755,6 +962,7 @@ int main(void)
 		  http2dbs_destroy();
 		  http2cmm_destroy();
 		  httpd2sysmonitor_destroy();
+		  cgi_do_file_table_free();
                 return errno;
             }
             retFlag = handle_request(usa.sa_in.sin_addr);
@@ -804,6 +1012,7 @@ int main(void)
 			http2cmm_destroy();
 			httpd2sysmonitor_destroy();
 			http2dbs_destroy();
+			cgi_do_file_table_free();
 			return WEB_STS_OK;
 		  }
             } 
@@ -820,6 +1029,7 @@ int main(void)
     http2dbs_destroy();
     http2cmm_destroy();
     httpd2sysmonitor_destroy();
+    cgi_do_file_table_free();
 	
     return WEB_STS_OK;
 }

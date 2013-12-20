@@ -41,6 +41,16 @@
 #define FIRMWARE_MD5_DOWNLOADS_PATH "/var/downloads/firmware.img.md5"
 
 //#define WEC3502I_SOCKET_UN_ENABLE 1
+/********************************************************/
+enum
+{
+	CUSTOM_LOGO_DEMO = 0,
+	CUSTOM_LOGO_PREVAIL,
+	CUSTOM_LOGO_PX,
+	CUSTOM_LOGO_ALCOTEL
+};
+#define CUSTOM_LOGO_ID CUSTOM_LOGO_DEMO
+/********************************************************/
 
 /********************************************************/
 /* define __AT30TK175STK__ to enable temperature sensor driver */
@@ -54,7 +64,7 @@
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.0-cr6"
+#define SYSINFO_APP_VERSION		"v1.3.6.2-cr5"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -76,8 +86,9 @@
 /********************************************************/
 #define MAX_ROW                                   512     /*操作日志最大存储数量*/
 #define ALARM_MAX_ROW                      256     /*告警日志最大存储数量*/
-#define MMEAD_MAX_CNU_NUM		64
-#define MAX_CNU_AMOUNT_LIMIT		64
+#define MAX_CNUS_PER_CLT			64		/* max cnus per clt supported */
+#define MMEAD_MAX_CNU_NUM		MAX_CNUS_PER_CLT
+#define MAX_CNU_AMOUNT_LIMIT		(MAX_CNUS_PER_CLT*MAX_CLT_AMOUNT_LIMIT)
 #define MAX_CNU_PORTLIMIT			4		/*cnu port max num*/
 #define MAX_CNU_AMOUNTLIMIT		2		/*the amount limitation of cnu ports*/
 #define MAX_SQL_LEN 				512		/*sql 字符串长度*/
@@ -90,6 +101,7 @@
 /********************************************************/
 #define MAX_MME_SIZE    				1500
 #define MAX_UDP_SIZE    				1472
+#define MAX_BODY_SIZE				1280
 /********************************************************/
 
 /********************************************************/
@@ -186,6 +198,15 @@ enum
 	DEV_OTHER
 };
 
+enum
+{
+	CNU_SWITCH_TYPE_AR8236 = 0,
+	CNU_SWITCH_TYPE_RTL8306E = 1,
+
+	CNU_SWITCH_TYPE_OTHER
+};
+
+
 /*定义告警类型*/
 enum
 {
@@ -256,6 +277,8 @@ enum
 	WEC9720EK_XD25,	/* du channel */
 	WR1004JL,			/* 2*clt + 1*onu module */
 	WR1004SJL,			/* 4*clt + 1*onu module */
+	WEC_3702I_E4,		/* cnu ar6400+rtl8306e */
+	WEC701_E4,			/* cnu ar7411+rtl8306e */
 
 	/* 请在中间增加其他枚举定义 */
 	WEC_INVALID = 0xFE,
@@ -364,6 +387,14 @@ enum
 	CMM_SYSMONITOR_LED_CONTROL,
 	CMM_MME_MDIO_READ,			/* read  PHY register by mme*/
 	CMM_MME_MDIO_WRITE,			/* write  PHY register by mme*/
+	CMM_ADD_ATHEROS_ADDR,		/* 100 */
+	CMM_DEL_ATHEROS_ADDR,		/* delete atheros multicast address from cable port */
+	CMM_GET_CLT_PORT_LINK_STS,	/* get clt port link status to check if there is a clt connected to the switch port */
+	CMM_CNU_SWITCH_READ,			/* read cnu switch register*/
+	CMM_CNU_SWITCH_WRITE,		/* write cnu switch register*/
+	CMM_CNU_SWITCH_CONFIG_READ, /* read rtl8306e configs */
+	CMM_CNU_SWITCH_CONFIG_WRITE,/* write rtl8306e configs */
+	CMM_DSDT_MAC_BINDING,
 	
 	/* 请在中间增加其他枚举定义 */
 	
@@ -462,6 +493,14 @@ enum
 	MMEAD_AUTHORIZATION_USER,			/* 授权CNU用户端口*/
 	MMEAD_LINK_DIAG,
 	MMEAD_GET_TOPOLOGY_STATS,
+	MMEAD_GET_FREQUENCY_BAND_SELECTION,
+	MMEAD_SET_FREQUENCY_BAND_SELECTION,
+	MMEAD_GET_TX_GAIN,
+	MMEAD_SET_TX_GAIN,
+	MMEAD_MDIO_READ,			/* read register by mme*/
+	MMEAD_MDIO_WRITE,			/* write register by mme*/
+	MMEAD_GET_RTL8306E_CONFIG,	/* get rtl8306e configuration from cnu by mme mdio */
+	MMEAD_WRITE_MOD,				/* write mod */
 	
 	/* 请在中间增加其他枚举定义 */
 
@@ -1439,6 +1478,166 @@ typedef struct
 	uint16_t dest;
 }st_dsdtPortMirroring;
 
+////////////////////////////////////////////////////////
+typedef struct
+{
+	uint16_t pvid;
+	uint8_t admit_control;
+	uint8_t egress_mode;
+}st_PortVlanInfo;
+
+typedef struct
+{
+	uint8_t vlan_enable;
+	uint8_t vlan_tag_aware;
+	uint8_t ingress_filter;
+	uint8_t g_admit_control;
+	st_PortVlanInfo vlan_port[6];
+	
+}st_cnuSwitchVlanConfig;
+
+typedef struct
+{
+	uint8_t bandwidth_control_enable;
+	uint16_t bandwidth_value;	
+}st_portRxBandwidthInfo;
+
+typedef struct
+{
+	uint8_t bandwidth_control_enable;
+	uint16_t bandwidth_value;	
+}st_portTxBandwidthInfo;
+
+typedef struct
+{
+	uint8_t g_rx_bandwidth_control_enable;
+	uint8_t g_tx_bandwidth_control_enable;
+	st_portRxBandwidthInfo rxPort[6];
+	st_portTxBandwidthInfo txPort[6];
+	
+}st_cnuSwitchBandwidthConfig;
+
+typedef struct
+{
+	/********************************************************
+	* 1: Enable loop detection function
+	* 0: Disable loop detection function
+	*********************************************************/
+	uint8_t status;
+
+	/********************************************************
+	* This bit should be set to 1 when loop detection function is enabled.
+	*********************************************************/
+	uint8_t ldmethod;
+
+	/********************************************************
+	* Loop detection Timer. 
+	* The loop detection packets are transmitted in every LDTIMER.
+	* 00: original 3~5 min
+	* 01: 100s
+	* 10: 10s
+	* 11:1s
+	*********************************************************/
+	uint8_t ldtime;
+
+	/********************************************************
+	* Blink frequency of loop detection. 
+	* 1: 880 msec.
+	* 0: 440 msec
+	*********************************************************/
+	uint8_t ldbckfrq;
+
+	/********************************************************
+	* Loop detection status clearance. 
+	* 1: clear all loop status
+	* 0: do not effect
+	*********************************************************/
+	uint8_t ldsclr;
+
+	/********************************************************
+	* Select buzzer type. 
+	* 1: passive buzzer
+	* 0: active buzzer
+	*********************************************************/
+	uint8_t pabuzzer;
+
+	/************************************************************************
+	* Enable tagged loop frame. 
+	* 1: enable tagged loop frame, the tagged loop frame will be treated as loop frame
+	* 0: disable tagged loop frame, the tagged loop frame will not be treated as loop frame
+	************************************************************************/
+	uint8_t entaglf;
+	
+	/********************************************************
+	* The initial value of the loop frame TTL field. 
+	* The maximum value is 16(LPTTL_INIT[3:0]=4'b0000), 
+	* and the minimum value is 1(LPTTL_INIT[3:0]=4'b0001).
+	*********************************************************/
+	uint8_t lpttlinit;
+
+	/********************************************************
+	* Loop Frame Priority assignment. 
+	* The 2-bit value is the  priority assigned to the Loop Frame
+	*********************************************************/
+	uint8_t lpfpri;
+
+	/********************************************************
+	* Enable Loop Frame Priority
+	* 1: Enable Loop Frame Priority
+	* 0: Disable Loop Frame Priority
+	* When the loop frame priority is disabled, it will never effect. 
+	* The priority of the packet is determined by other rules.
+	*********************************************************/
+	uint8_t enlpfpri;
+
+	/******************************************************************************
+	* Disable filtering Loop Frame in storm filter. 
+	* 1: disable filtering loop frame. Loop frame will never be counted into any storm and be filtered
+	* 0: Enable filtering loop frame. Treat the loop frame as a normal broadcast
+	*******************************************************************************/
+	uint8_t disfltlf;
+
+	/********************************************************
+	* Enable TTL of loop frame
+	* 1: Enable TTL of loop frame
+	* 0: Disable TTL of loop frame
+	*********************************************************/
+	uint8_t enlpttl;
+
+	/* switch source mac address*/
+	uint8_t sid[6];
+	
+	/********************************************************
+	* port loop status
+	* 1: A loop has been detected on port x
+	* 0: No loop exists on port x
+	*********************************************************/
+	uint8_t port_loop_status[6];
+}st_cnuSwitchLoopDetect;
+
+typedef struct
+{
+	st_cnuSwitchVlanConfig vlanConfig;
+	st_cnuSwitchBandwidthConfig bandwidthConfig;
+	st_cnuSwitchLoopDetect loopDetect;
+}st_rtl8306eSettings;
+
+typedef struct
+{
+	/* 标示该行数据是否有效 */
+	uint8_t	flag;	
+	/* PHY Address */
+	uint8_t	phy;	
+	/* Register Address */
+	uint8_t	reg;	
+	/* page Address */
+	uint8_t	page;	
+	/* Register value */
+	uint16_t	value;	
+}RTL_REGISTER_DESIGN;
+
+////////////////////////////////////////////////////////
+
 #if 0
 /* 数据表基本信息字段*/
 typedef struct
@@ -1490,6 +1689,14 @@ typedef struct
 	uint32_t reg;
 	uint32_t value;
 }T_szMdioSw;
+
+typedef struct
+{
+	uint32_t phy;
+	uint32_t reg;
+	uint32_t page;
+	uint32_t value;
+}T_szMdioRtl8306e;
 
 /*==============================================================*/
 
@@ -1636,6 +1843,13 @@ typedef struct
 
 typedef struct
 {
+	uint8_t FBSTATUS;
+	uint16_t START_BAND;
+	uint16_t STOP_BAND;	
+}T_MMEAD_FBS;
+
+typedef struct
+{
 	uint16_t MODULE_ID;
 	uint16_t MODULE_SUB_ID;
 	uint32_t LENGTH;
@@ -1766,6 +1980,14 @@ typedef struct
 	uint32_t cnu;	/* CNU的索引号，从1开始计算*/
 	T_szMdioSw mdioReg;
 }T_szAr8236Reg;
+
+/* CLI进行RTL8306E 寄存器操作时与CMM通讯的接口*/
+typedef struct
+{
+	uint32_t clt;	/* CLT的索引号，从1开始计算*/
+	uint32_t cnu;	/* CNU的索引号，从1开始计算*/
+	T_szMdioRtl8306e mdioInfo;
+}T_szSwRtl8306eConfig;
 
 /* CLI进行set vlan 操作时与CMM通讯的接口*/
 typedef struct
@@ -1991,7 +2213,7 @@ typedef struct
 
 typedef struct
 {
-	T_CLT_INFO tb_clt;
+	T_CLT_INFO tb_clt[MAX_CLT_AMOUNT_LIMIT];
 	T_CNU_INFO tb_cnu[MAX_CNU_AMOUNT_LIMIT];
 }T_TOPOLOGY_INFO;
 
@@ -2546,11 +2768,26 @@ stTmUserInfo;
 
 typedef struct
 {
+	stTmUserInfo node;
+	st_rtl8306eSettings rtl8306eConfig;
+}
+rtl8306eWriteInfo;
+
+typedef struct
+{
 	uint32_t clt;	/* CLT的索引号，从1开始计算*/
 	uint32_t cnu;	/* CNU的索引号，从1开始计算*/
 	uint32_t event;
 }
 stRegEvent;
+
+typedef struct
+{
+	uint32_t portid;
+	uint32_t dbNum;
+	uint8_t mac[6];
+}
+stDsdtMacBinding;
 
 #if 0
 typedef struct

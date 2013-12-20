@@ -236,7 +236,7 @@ GT_STATUS dsdtStart(int cpuPort)
 		return GT_FAIL;
 	}
 
-	printf("QuarterDeck has been started\n");
+	//printf("QuarterDeck has been started\n");
 
 	return GT_OK;
 }
@@ -252,7 +252,7 @@ int __find_dbnum_by_vid(uint32_t vid)
 	if((status = gvtuGetEntryFirst(dev,&vtuEntry)) != GT_OK)
 	{
 		/* if can not find vid in the VTU, return DBNum = 0 */
-		printf("can not find vid in the vtu\n");
+		printf("#can not find vid in the vtu\n");
 		return 0;
 	}
 	else
@@ -268,7 +268,7 @@ int __find_dbnum_by_vid(uint32_t vid)
 		if((status = gvtuGetEntryNext(dev,&vtuEntry)) != GT_OK)
 		{
 			/* if can not find vid in the VTU, return DBNum = 0 */
-			printf("can not find vid in the vtu\n");
+			printf("$can not find vid in the vtu\n");
 			return 0;
 		}		
 		if( vtuEntry.vid == vid )
@@ -559,6 +559,13 @@ int cmm2dsdt_clearPortCounters(void)
 		printf("gstatsFlushAll returned failed.\n");
 		return CMM_FAILED;
 	}
+	if((status = gprtClearAllCtr(dev)) != GT_OK)
+	{
+		//Why call gprtClearAllCtr return failed???
+		//printf("gprtClearAllCtr returned failed.\n");
+		//return CMM_FAILED;
+		return GT_OK;
+	}
 	return GT_OK;
 }
 
@@ -608,6 +615,7 @@ int cmm2dsdt_getPortAllCounters(int port, T_CMM_PORT_STATS_INFO *stats)
 int cmm2dsdt_debugPrintPortAllCounters(int port)
 {
 	GT_STATS_COUNTER_SET3 statsCounterSet;
+	GT_PORT_STAT2 ctr2;
 	
 	if( gstatsGetPortAllCounters3(dev, port, &statsCounterSet) != GT_OK )
 	{
@@ -650,7 +658,21 @@ int cmm2dsdt_debugPrintPortAllCounters(int port)
 		printf("\r\n  InMACRcvErr:	%u", statsCounterSet.InMACRcvErr);
 		printf("\r\n  InFCSErr:	%u", statsCounterSet.InFCSErr);
 		printf("\r\n  Collisions:	%u", statsCounterSet.Collisions);
-		printf("\r\n  Late:	%u\n", statsCounterSet.Late);
+		printf("\r\n  Late:	%u", statsCounterSet.Late);
+		
+		//return CMM_SUCCESS;
+	}
+	if( gprtGetPortCtr2(dev, port, &ctr2) != GT_OK )
+	{
+		printf("gprtGetPortCtr2 returned failed.\n");
+		return CMM_FAILED;
+	}
+	else
+	{
+		printf("\r\n  inDiscardLo:	%u", ctr2.inDiscardLo);
+		printf("\r\n  inDiscardHi:		%u", ctr2.inDiscardHi);
+		printf("\r\n  inFiltered:	%u", ctr2.inFiltered);
+		printf("\r\n  outFiltered:	%u\n", ctr2.outFiltered);		
 		
 		return CMM_SUCCESS;
 	}
@@ -660,8 +682,12 @@ int cmm2dsdt_debugPrintPortAllCounters(int port)
 int cmm2dsdt_getPortLinkStatus(int port)
 {
 	GT_BOOL status;
-	
-	if( gprtGetLinkState(dev, port, &status) != GT_OK )
+
+	if( PORT_CABLE_PORT_NULL == port)
+	{
+		return 0;
+	}
+	else if( gprtGetLinkState(dev, port, &status) != GT_OK )
 	{
 		return 0;
 	}
@@ -847,6 +873,57 @@ int cmm2dsdt_mgmtVlanInit(void)
 	}
 }
 
+int cmm2dsdt_addAtherosMulticastAddress2Port(int portid)
+{
+	st_dbsNetwork networkinfo;
+	int status;
+	GT_ATU_ENTRY macEntry;	
+
+	macEntry.macAddr.arEther[0] = 0x00;
+	macEntry.macAddr.arEther[1] = 0xb0;
+	macEntry.macAddr.arEther[2] = 0x52;
+	macEntry.macAddr.arEther[3] = 0x00;
+	macEntry.macAddr.arEther[4] = 0x00;
+	macEntry.macAddr.arEther[5] = 0x01;
+
+	macEntry.portVec = (1 << portid);
+	macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
+                                any other priority determined by the frame's data. This value is
+                                meaningful only if the device does not support extended priority
+                                information such as MAC Queue Priority and MAC Frame Priority */
+	macEntry.exPrio.macQPri = 0;    /* If device doesnot support MAC Queue Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.macFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.useMacFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.entryState.ucEntryState = GT_UC_STATIC;
+                                /* This address is locked and will not be aged out.
+                                Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
+	macEntry.trunkMember = GT_FALSE;
+								
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = __find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+
+	/* Add the MAC Address */
+	return gfdbAddMacEntry(dev,&macEntry);
+}
+
 int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void)
 {
 	st_dbsNetwork networkinfo;
@@ -923,6 +1000,87 @@ int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void)
 	}
 
 	return GT_OK;
+}
+
+int cmm2dsdt_delAtherosMulticastAddressFromAtu(void)
+{
+	int status;
+	st_dbsNetwork networkinfo;	
+	GT_ATU_ENTRY macEntry;	
+
+	macEntry.macAddr.arEther[0] = 0x00;
+	macEntry.macAddr.arEther[1] = 0xb0;
+	macEntry.macAddr.arEther[2] = 0x52;
+	macEntry.macAddr.arEther[3] = 0x00;
+	macEntry.macAddr.arEther[4] = 0x00;
+	macEntry.macAddr.arEther[5] = 0x01;
+								
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = __find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+
+	/* Delete the MAC Address from ATU */
+	return gfdbDelAtuEntry(dev, &macEntry);
+}
+
+int cmm2dsdt_bindingMacAddress(stDsdtMacBinding *macBindingInfo)
+{
+	st_dbsNetwork networkinfo;
+	int status;
+	GT_ATU_ENTRY macEntry;
+
+	memcpy(macEntry.macAddr.arEther, macBindingInfo->mac, 6);
+
+	macEntry.portVec = (1 << macBindingInfo->portid);
+	macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
+                                any other priority determined by the frame's data. This value is
+                                meaningful only if the device does not support extended priority
+                                information such as MAC Queue Priority and MAC Frame Priority */
+	macEntry.exPrio.macQPri = 0;    /* If device doesnot support MAC Queue Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.macFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.exPrio.useMacFPri = 0;    /* If device doesnot support MAC Frame Priority override, 
+                                    this field is ignored. */
+	macEntry.entryState.ucEntryState = GT_UC_STATIC;
+                                /* This address is locked and will not be aged out.
+                                Refer to GT_ATU_UC_STATE in msApiDefs.h for other option. */
+	macEntry.trunkMember = GT_FALSE;
+								
+	/* get mgmt-vlan status */
+	if( CMM_SUCCESS != dbsGetNetwork(dbsdev, 1, &networkinfo) )
+	{
+		printf("dbsGetNetwork return Failed\n");
+		return GT_FAIL;
+	}
+
+	if( networkinfo.col_mvlan_sts )
+	{
+		/*if mgmt-vlan is enabled: find vid in the VTU */
+		macEntry.DBNum = __find_dbnum_by_vid(networkinfo.col_mvlan_id);	
+	}
+	else
+	{
+		/*if mgmt-vlan is disabled: add 00:b0:52:00:00:01 to DBNum 0*/
+		macEntry.DBNum = 0;
+	}
+
+	/* Add the MAC Address */
+	return gfdbAddMacEntry(dev,&macEntry);
 }
 
 int cmm2dsdt_init(void)
