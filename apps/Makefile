@@ -25,6 +25,7 @@ ROOTFSDIR = ${ROOTDIR}/apps/rootfs
 UBIFSIMG = ubifs.bin
 
 apps = sqlite
+apps += DSDT_3.0
 apps += busybox
 apps += mtd-utils
 apps += rtl8306e
