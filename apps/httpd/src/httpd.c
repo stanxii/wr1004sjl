@@ -636,122 +636,146 @@ early_auth(int fd, struct in_addr clntAddr)
 static int
 handle_request(struct in_addr clntAddr)
 {
-    char line[10000], method[10000], path[10000], protocol[10000], authorization[10000];
-    char filename[10000], *query;
-    char *cp;
-    char *file;
-    int len, i;
-    struct mime_handler *handler;
-    int cl = 0;
-    char boundary[32];
-    int upload_type = 0;
-    char *extra_header = 0;
-    char host[256];
-    //char addr[32];
-    int no_auth = 0;
+	char line[10000], method[10000], path[10000], protocol[10000], authorization[10000];
+	char filename[10000], *query;
+	char *cp;
+	char *file;
+	int len, i;
+	struct mime_handler *handler;
+	int cl = 0;
+	char boundary[32];
+	int upload_type = 0;
+	char *extra_header = 0;
+	char host[256];
+	//char addr[32];
+	int no_auth = 0;
+	int icount = 0;
 
-    /* Initialize the request variables. */
-    strcpy(authorization, "");
+	/* Initialize the request variables. */
+	strcpy(authorization, "");
 
-    /* Parse the first line of the request. */
-  if (fgets (line, sizeof (line), conn_fp) == (char *) 0)
-    {
-        send_error( 400, "Bad Request", (char*) 0, "No request found." );
-        return WEB_STS_ERROR;
-    }
-    if ( sscanf( line, "%[^ ] %[^ ] %[^ ]", method, path, protocol ) != 3 ) {
-        send_error( 400, "Bad Request", (char*) 0, "Can't parse request." );
-        return WEB_STS_ERROR;
-    }
+	/* Parse the first line of the request. */
+	while (fgets (line, sizeof (line), conn_fp) == (char *) 0)
+	{
+		//send_error( 400, "Bad Request", (char*) 0, "No request found." );
+		// return WEB_STS_ERROR;		
+		if(icount>5)
+		{
+			send_error( 400, "Bad Request", (char*) 0, "No request found." );
+			return WEB_STS_ERROR;
+		}
+		icount++;
+		//fprintf(stderr, "\nfgets no request found, continue[%d].", icount);
+		//fflush(stderr);
+		usleep(500000);
+		continue;
+	}
+  
+	if ( sscanf( line, "%[^ ] %[^ ] %[^ ]", method, path, protocol ) != 3 )
+	{
+		send_error( 400, "Bad Request", (char*) 0, "Can't parse request." );
+		return WEB_STS_ERROR;
+	}
 
-    /* Parse the rest of the request headers. */
-  while (fgets (line, sizeof (line), conn_fp) != (char *) 0)
-    {
-        if ( strcmp( line, "\n" ) == 0 || strcmp( line, "\r\n" ) == 0 )
-            break;
-        else if ( strncasecmp( line, "Authorization:", 14 ) == 0 ) {
-            cp = &line[14];
-            cp += strspn( cp, " \t" );
-            strncpy(authorization, cp, sizeof(authorization));
-        }
-        else if ((cp = strstr(line, "Content-Length:")) != NULL) {
-            cp += strlen("Content-Length: ");
-            cl = atoi(cp);
-        }
-        else if ((cp = strstr(line, "Referer:")) != NULL) {
-            // search for 'upload.html' or 'updatesettings.html' to see where upload from 
-            if ((cp = strstr(line, "upload.")) != NULL)
-                upload_type = WEB_UPLOAD_IMAGE;
-            else if ((cp = strstr(line, "updatesettings.")) != NULL)
-                upload_type = WEB_UPLOAD_SETTINGS;
-        }
-        else if ((cp = strstr(line, "boundary="))) {
-            for( cp = cp + 9; *cp && *cp != '\r' && *cp != '\n'; cp++ );
-            *cp = '\0';
-            strncpy(boundary, &cp[9], sizeof(boundary));
-        }
-        else if ((cp = strstr(line, "Host:")) != NULL) {
-           char *cp2;
-           cp += strlen("Host: ");
-           if( (cp2 = strstr(cp, "\r\n")) != NULL )
-              *cp2 = '\0';
-           else
-              if( (cp2 = strstr(cp, "\n")) != NULL )
-                 *cp2 = '\0';
-           strncpy( host, cp, sizeof(host) );
-        }
-    }
-    /* modify from original (PT) */
-    /* support post for software upgrade */
-    if ( strcasecmp( method, "post" ) == 0 ) {
-        if ( strcasecmp( path, "/upload.cgi" ) == 0 || strcasecmp( path, "/uploadsettings.cgi" ) == 0 )
-	 {
-		return (do_upload_pre(conn_fp, cl, upload_type));
-	 }
-	 else if ( strstr(path, ".json") != NULL )
-	 {
-		return do_json(path, conn_fp, cl);
-	 }
-    }
-    /* end modify */
+	/* Parse the rest of the request headers. */
+	while (fgets (line, sizeof (line), conn_fp) != (char *) 0)
+	{
+		if ( strcmp( line, "\n" ) == 0 || strcmp( line, "\r\n" ) == 0 )
+			break;
+		else if ( strncasecmp( line, "Authorization:", 14 ) == 0 )
+		{
+			cp = &line[14];
+			cp += strspn( cp, " \t" );
+			strncpy(authorization, cp, sizeof(authorization));
+		}
+		else if ((cp = strstr(line, "Content-Length:")) != NULL)
+		{
+			cp += strlen("Content-Length: ");
+			cl = atoi(cp);
+		}
+		else if ((cp = strstr(line, "Referer:")) != NULL)
+		{
+			// search for 'upload.html' or 'updatesettings.html' to see where upload from 
+			if ((cp = strstr(line, "upload.")) != NULL)
+				upload_type = WEB_UPLOAD_IMAGE;
+			else if ((cp = strstr(line, "updatesettings.")) != NULL)
+				upload_type = WEB_UPLOAD_SETTINGS;
+		}
+		else if ((cp = strstr(line, "boundary=")))
+		{
+			for( cp = cp + 9; *cp && *cp != '\r' && *cp != '\n'; cp++ );
+			*cp = '\0';
+			strncpy(boundary, &cp[9], sizeof(boundary));
+		}
+		else if ((cp = strstr(line, "Host:")) != NULL)
+		{
+			char *cp2;
+			cp += strlen("Host: ");
+			if( (cp2 = strstr(cp, "\r\n")) != NULL )
+				*cp2 = '\0';
+			else
+				if( (cp2 = strstr(cp, "\n")) != NULL )
+				*cp2 = '\0';
+			strncpy( host, cp, sizeof(host) );
+		}
+	}
+	/* modify from original (PT) */
+	/* support post for software upgrade */
+	if ( strcasecmp( method, "post" ) == 0 )
+	{
+		if ( strcasecmp( path, "/upload.cgi" ) == 0 || strcasecmp( path, "/uploadsettings.cgi" ) == 0 )
+		{
+			return (do_upload_pre(conn_fp, cl, upload_type));
+		}
+		else if ( strstr(path, ".json") != NULL )
+		{
+			return do_json(path, conn_fp, cl);
+		}
+	}
+	/* end modify */
 
-    if ( strcasecmp( method, "get" ) != 0 && strcasecmp(method, "post") != 0 ) {
-        send_error( 501, "Not Implemented", (char*) 0, "That method is not implemented." );
-        return WEB_STS_ERROR;
-    }
-    if ( path[0] != '/' ) {
-        send_error( 400, "Bad Request", (char*) 0, "Bad filename." );
-        return WEB_STS_ERROR;
-    }
-    file = &(path[1]);
-    len = strlen( file );
-    if ( file[0] == '/' || strcmp( file, ".." ) == 0 || strncmp( file, "../", 3 ) == 0 || strstr( file, "/../" ) != (char*) 0 || strcmp( &(file[len-3]), "/.." ) == 0 ) {
-        send_error( 400, "Bad Request", (char*) 0, "Illegal filename." );
-        return WEB_STS_ERROR;
-    }
+	if ( strcasecmp( method, "get" ) != 0 && strcasecmp(method, "post") != 0 )
+	{
+		send_error( 501, "Not Implemented", (char*) 0, "That method is not implemented." );
+		return WEB_STS_ERROR;
+	}
+	if ( path[0] != '/' )
+	{
+		send_error( 400, "Bad Request", (char*) 0, "Bad filename." );
+		return WEB_STS_ERROR;
+	}
+	file = &(path[1]);
+	len = strlen( file );
+	if ( file[0] == '/' || strcmp( file, ".." ) == 0 || strncmp( file, "../", 3 ) == 0 || strstr( file, "/../" ) != (char*) 0 || strcmp( &(file[len-3]), "/.." ) == 0 )
+	{
+		send_error( 400, "Bad Request", (char*) 0, "Illegal filename." );
+		return WEB_STS_ERROR;
+	}
 
-    if( strstr(file, "ppppassword") )
-        no_auth = 1;       
+	if( strstr(file, "ppppassword") )
+		no_auth = 1;       
 
-    if ( file[0] == '\0' || file[len-1] == '/' )
+	if ( file[0] == '\0' || file[len-1] == '/' )
 #ifdef WEB_POPUP
-        (void) snprintf( &file[len], sizeof(path) - len - 1, "index.html" );
+		(void) snprintf( &file[len], sizeof(path) - len - 1, "index.html" );
 #else
-        (void) snprintf( &file[len], sizeof(path) - len - 1, "main.html" );
+		(void) snprintf( &file[len], sizeof(path) - len - 1, "main.html" );
 #endif
-    path[sizeof(path) - 1] = '\0';
-    /* modify from original (PT) */
-    /* extract filename from file which has the following format
-    filename?query. For ex: example.cgi?foo=1&bar=2 */
-    if ( (query = strstr(file, "?")) != NULL ) {
-        for ( i = 0, cp = file; cp != query; i++, cp++ )
-            filename[i] = *cp;
-        filename[i] = '\0';
-    } else
-        strcpy(filename, file);
-    /* end modify */
+	path[sizeof(path) - 1] = '\0';
+	/* modify from original (PT) */
+	/* extract filename from file which has the following format
+	filename?query. For ex: example.cgi?foo=1&bar=2 */
+	if ( (query = strstr(file, "?")) != NULL )
+	{
+		for ( i = 0, cp = file; cp != query; i++, cp++ )
+			filename[i] = *cp;
+		filename[i] = '\0';
+	} else
+		strcpy(filename, file);
+	/* end modify */
 
-    for (handler = &mime_handlers[0]; handler->pattern; handler++) {
+	for (handler = &mime_handlers[0]; handler->pattern; handler++)
+	{
 		/* use filename to match instead of use file */
 		if (match(handler->pattern, filename)) 
 		{
@@ -764,41 +788,44 @@ handle_request(struct in_addr clntAddr)
 				}
 			}
 
+			send_headers( 200, "Ok", extra_header, handler->mime_type );
 
-            send_headers( 200, "Ok", extra_header, handler->mime_type );
+			if (handler->output)
+			{
+				/* modify from original (PT) */
+				strcpy(filename, "/webs/");
+				strcat(filename, file);
 
-            if (handler->output) {
-                /* modify from original (PT) */
-                
-                strcpy(filename, "/webs/");
-                strcat(filename, file);
-                
-                /* Handle post. Make post appears to be the same as get to handlers. (Needed by certificate UI code.)*/
-                #define FILENAME_SIZE 10000
-                if ( strcasecmp( method, "post" ) == 0 ) {
-                    int fnsize = strlen(filename);
-                    int remsize;
-                    int nread;
-                    //printf("----\n%s----\n", filename);
-                    remsize = FILENAME_SIZE - (fnsize+1) -1;
-                    nread = fread(filename+(fnsize+1), 1, remsize, conn_fp);
-                    if (nread > 0) {
-                        if (strstr(filename, "?")) {
-                            filename[fnsize]='&';
-                        }
-                        else {
-                            filename[fnsize]='?';
-                        }
-                        filename[fnsize+1+nread]=0;
-                    }
-                }
-                
-                handler->output(filename, conn_fp);
-                /* end modify */
-            }
-            break;
-        }
-    }
+				/* Handle post. Make post appears to be the same as get to handlers. (Needed by certificate UI code.)*/
+#define FILENAME_SIZE 10000
+				if ( strcasecmp( method, "post" ) == 0 )
+				{
+					int fnsize = strlen(filename);
+					int remsize;
+					int nread;
+					//printf("----\n%s----\n", filename);
+					remsize = FILENAME_SIZE - (fnsize+1) -1;
+					nread = fread(filename+(fnsize+1), 1, remsize, conn_fp);
+					if (nread > 0)
+					{
+						if (strstr(filename, "?"))
+						{
+							filename[fnsize]='&';
+						}
+						else
+						{
+							filename[fnsize]='?';
+						}
+						filename[fnsize+1+nread]=0;
+					}
+				}
+
+				handler->output(filename, conn_fp);
+			/* end modify */
+			}
+			break;
+		}
+	}
 
 	if (!handler->pattern)
 	{
@@ -807,12 +834,12 @@ handle_request(struct in_addr clntAddr)
 		return WEB_STS_OK;
 	}        
 
-    if ( strcmp(file, "wecRebootInfo.cgi") == 0 )
-        return WEB_STS_REBOOT;  
-    else if ( strcmp(file, "restoreinfo.cgi") == 0 )
-        return WEB_STS_RESTORE;
-    else
-        return WEB_STS_OK;
+	if ( strcmp(file, "wecRebootInfo.cgi") == 0 )
+		return WEB_STS_REBOOT;  
+	else if ( strcmp(file, "restoreinfo.cgi") == 0 )
+		return WEB_STS_RESTORE;
+	else
+		return WEB_STS_OK;
 }
 
 // SIGUSR1 handler
@@ -843,7 +870,7 @@ int main(void)
     int listen_fd;
     int conn_fd;
     socklen_t sz = sizeof(usa);
-    FILE *pid_fp;
+    //FILE *pid_fp;
     /* modify from original (PT) */
     int nready;
     //int done = 0;
@@ -890,7 +917,7 @@ int main(void)
     /*if (daemon(1, 1) == -1) {
     perror("daemon");
     exit(errno);
-    }*/
+    }
     if (!(pid_fp = fopen("/var/run/httpd_pid", "w"))) {
         perror("/var/run/httpd_pid");
 	 http2dbs_destroy();
@@ -900,7 +927,7 @@ int main(void)
         return errno;
     }
     fprintf(pid_fp, "%d\n", getpid());
-    fclose(pid_fp);
+    fclose(pid_fp);*/
 
     /* modify from original (PT) */
     cgiGetAllInfo();
@@ -942,8 +969,8 @@ int main(void)
                 return errno;
             }
 
-            tv.tv_sec=10;
-            tv.tv_usec=0;
+            tv.tv_sec=0;
+            tv.tv_usec=500000;
             setsockopt(conn_fd,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(tv));
 #if 0
             // get the interface name..
