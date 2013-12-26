@@ -5,6 +5,7 @@
 #include <sys/ioctl.h>
 #include <netinet/if_ether.h>
 #include <net/if.h>
+#include <assert.h>
 #include <public.h>
 #include "boardapi.h"
 
@@ -150,6 +151,35 @@ int boardapi_macs2b(const char *str, uint8_t *bin)
 	{
 		return CMM_FAILED;
 	}	
+}
+
+/********************************************************************************************
+*	函数名称:boardapi_mac2Uppercase
+*	函数功能:将字符串形式的MAC地址转换为大写形式的字符串MAC地址
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+int boardapi_mac2Uppercase(char *strmac)
+{
+	char bmac[6] = {0};
+	uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	uint8_t MB[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
+
+	assert( NULL != strmac );
+	
+	/* check if cnu mac address is valid*/
+	if( CMM_SUCCESS != boardapi_macs2b(strmac, bmac) )
+		return CMM_FAILED;
+	else if( memcmp(bmac, MA, 6) == 0 )
+		return CMM_FAILED;
+	else if( memcmp(bmac, MB, 6) == 0 )
+		return CMM_FAILED;
+	else
+		sprintf(strmac, "%02X:%02X:%02X:%02X:%02X:%02X", 
+			bmac[0], bmac[1], bmac[2], bmac[3], bmac[4], bmac[5]
+		);	
+	
+	return CMM_SUCCESS;
 }
 
 /********************************************************************************************
@@ -461,6 +491,26 @@ int boardapi_isCnuSupported(uint32_t DevType)
 		case WEC_604:		/* WEC-3702I C4 */
 		case WEC701_C2:		/* WEC701 C2 */
 		case WEC701_C4:		/* WEC701 C4 */
+		{
+			return BOOL_TRUE;
+		}		
+		default:
+			return BOOL_FALSE;
+	}
+}
+
+int boardapi_isCnuTrusted(uint32_t DevType)
+{
+	switch(DevType)
+	{
+		case WEC_3702I:		/* WEC-3702I L2 */
+		case WEC_3703I:		/* WEC-3702I L3 */
+		case WEC_602:		/* WEC-3702I C2 */
+		case WEC_604:		/* WEC-3702I C4 */
+		case WEC701_C2:		/* WEC701 C2 */
+		case WEC701_C4:		/* WEC701 C4 */
+		case WEC_3702I_E4:	/* WEC-3702I E4 */
+		case WEC701_E4:		/* WEC701 E4 */
 		{
 			return BOOL_TRUE;
 		}		

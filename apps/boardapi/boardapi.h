@@ -40,6 +40,14 @@ int boardapi_isValidUnicastMacb(uint8_t *bin);
 int boardapi_macs2b(const char *str, uint8_t *bin);
 
 /********************************************************************************************
+*	函数名称:boardapi_mac2Uppercase
+*	函数功能:将字符串形式的MAC地址转换为大写形式的字符串MAC地址
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
+int boardapi_mac2Uppercase(char *strmac);
+
+/********************************************************************************************
 *	函数名称:boardapi_getDeviceModelStr
 *	函数功能:获取字符串表示的设备型号
 *	作者:frank
@@ -89,6 +97,7 @@ int boardapi_isCnuSupported(uint32_t DevType);
 int boardapi_isAr6400Device(uint32_t DevType);
 int boardapi_isAr7400Device(uint32_t DevType);
 int boardapi_getCnuSwitchType(uint32_t DevType);
+int boardapi_isCnuTrusted(uint32_t DevType);
 
 /********************************************************************************************
 *	函数名称:boardapi_mapDevModel
