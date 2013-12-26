@@ -203,9 +203,9 @@ int db_delete_cnu(int cltid, int cnuid)
 {
 	int rid = (cltid-1)*MAX_CNUS_PER_CLT+cnuid;
 	
-	if( 0 == dbsDestroyRowCnu(dbsdev, rid) )
+	if( CMM_SUCCESS == dbsDestroyRowCnu(dbsdev, rid) )
 	{
-		if( 0 == dbsDestroyRowProfile(dbsdev, rid) )
+		if( CMM_SUCCESS == dbsDestroyRowProfile(dbsdev, rid) )
 		{
 			return CMM_SUCCESS;
 		}

@@ -25,6 +25,16 @@
 
 extern uint8_t OSA[6];
 
+uint8_t QCA_MADDR[6] = 
+{
+	0x00,
+	0xb0,
+	0x52,
+	0x00,
+	0x00,
+	0x01 
+};
+
 int MME_Atheros_MsgGetDeviceInfo(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_DEV_INFO *pDevInfo);
 
 /********************************************************************************************
@@ -96,10 +106,14 @@ static int readpacket
 static int mme_tx(T_MME_SK_HANDLE *MME_SK, uint8_t *buffer, int buffersize)
 {
 	int sendn = 0;
+	struct header_eth *header = NULL;
 	
 	if( buffersize > 0 )
 	{
 		assert( NULL != buffer );
+		header = (struct header_eth *)(buffer);
+		
+		memcpy(MME_SK->peer, header->ODA, 6);
 		
 		/* 打印发送的数据报文*/
 		mmead_debug_printf("\n<==== MMEAD SEND MME:\n");
@@ -127,11 +141,27 @@ static int mme_rx
 {
 	int ret=0;
 	long packetsize;
-	header_cnf *p = NULL;
+	header_cnf *p = NULL;	
 
 	while ( (packetsize = readpacket(MME_SK, MMtype, buffer, buffersize, msg_len)) > 0)	
 	{
-		p = (header_cnf *)buffer;
+		p = (header_cnf *)buffer;		
+
+		if( memcmp(MME_SK->peer, QCA_MADDR, 6) != 0 )
+		{			
+			if( memcmp(p->ethernet.OSA, MME_SK->peer, 6) != 0 )
+			{
+				mmead_debug_printf("\nPeer not match, continue !\n");
+				mmead_debug_printf("PEER[%02x:%02x:%02x:%02x:%02x:%02x], OSA[%02x:%02x:%02x:%02x:%02x:%02x]\n", 
+					MME_SK->peer[0], MME_SK->peer[1], MME_SK->peer[2], 
+					MME_SK->peer[3], MME_SK->peer[4], MME_SK->peer[5], 
+					p->ethernet.OSA[0], p->ethernet.OSA[1], p->ethernet.OSA[2], 
+					p->ethernet.OSA[3], p->ethernet.OSA[4], p->ethernet.OSA[5]
+				);
+				continue;
+			}		
+		}
+		
 		if( intohs(p->intellon.MMTYPE) != ( MMtype|MMTYPE_CNF ) )
 		{
 			mmead_debug_printf("MMtype not match, continue !\n");

@@ -38,6 +38,7 @@ typedef struct
 {
 	int skfd;
 	struct sockaddr_ll sockaddr;
+	uint8_t peer[6];
 }T_MME_SK_HANDLE;
 
 typedef struct

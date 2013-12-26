@@ -37,7 +37,7 @@ int __msg_reg_mmead_communicate(uint8_t *buf, uint32_t len)
 	FD_SET(sk->sk, &fdsr);
 
 	// timeout setting
-	tv.tv_sec = 1;
+	tv.tv_sec = 20;
 	tv.tv_usec = 0;
 	
 	maxsock = sk->sk;
@@ -222,13 +222,16 @@ int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist)
 
 	memcpy(buf, &h, sizeof(h));
 	//gettimeofday(&start, NULL);
-	if( CMM_SUCCESS == __msg_reg_mmead_communicate(buf, sizeof(h)) )
+	while( CMM_SUCCESS == __msg_reg_mmead_communicate(buf, sizeof(h)) )
 	{
 		/* 将数据写入plist */
 		memcpy((void *)plist, (void *)(r->BUF), sizeof(T_MMEAD_TOPOLOGY));
+		if( 0 == memcmp((const char *)ODA, (const char *)(plist->clt.Mac), 6) )
+		{
+			return CMM_SUCCESS;
+		}
 		//gettimeofday(&end, NULL);
 		//printf("\r\n====>time %d\n", (end.tv_sec * 1000 + end.tv_usec / 1000) - (start.tv_sec * 1000 + start.tv_usec / 1000));
-		return CMM_SUCCESS;
 	}
 	
 	return CMM_FAILED;

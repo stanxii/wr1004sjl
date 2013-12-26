@@ -151,6 +151,54 @@ int set_cnu_pro_sync(uint32_t clt_index, uint32_t cnu_index, BOOLEAN status)
 	}
 }
 
+int delete_cnu_entry(uint8_t mac[])
+{
+	int i = 0;
+	int j = 0;
+	int ret = CMM_SUCCESS;
+	uint8_t cnu_macb[6] = {0};
+	st_dbsCnu cnu;
+	T_TOPOLOGY_INFO *this = &topEntry;
+	
+	for( i=0; i<MAX_CLT_AMOUNT_LIMIT; i++)
+	{
+		for( j=0; j<MAX_CNUS_PER_CLT; j++ )
+		{
+			if( CMM_SUCCESS == db_get_cnu( i+1, j+1, &cnu ) )
+			{
+				boardapi_macs2b(cnu.col_mac, cnu_macb);
+				if( 0 == memcmp((const char *)mac, (const char *)(cnu_macb), 6) )
+				{
+					debug_printf("db_delete_cnu(%d, %d)\n", i+1, j+1);
+					ret += db_delete_cnu(i+1, j+1);
+				}
+				else
+				{
+					continue;
+				}
+			}
+			else
+			{
+				ret++;
+			}
+		}
+	}
+	for( i=0; i<MAX_CNU_AMOUNT_LIMIT; i++ )
+	{		
+		if( 0 == memcmp((const char *)mac, (const char *)(this->tb_cnu[i].Mac), 6) )
+		{
+			this->tb_cnu[i].DevType = 0;
+			this->tb_cnu[i].online = DEV_STS_OFFLINE;
+			this->tb_cnu[i].RxRate = 0;
+			this->tb_cnu[i].TxRate = 0;
+			this->tb_cnu[i].OnUsed = 0;
+			bzero(this->tb_cnu[i].Mac, 6);
+		}
+	}
+
+	return ret;
+}
+
 /********************************************************************************************
 *	函数名称:find_idle
 *	函数功能:从指定CLT的CNU列表中查找第一个空闲的index
@@ -937,6 +985,7 @@ void do_create_cnu(uint8_t macaddr[])
 	/* 判断是否达到用户上限*/
 	idle = find_idle(cltid);
 	inode = (cltid-1)*MAX_CNUS_PER_CLT+(idle-1);
+	
 	if( 0 == idle )
 	{		
 		/* CNU 表已满，禁止添加*/
@@ -983,6 +1032,7 @@ int try_to_add_cnu(int cltid, T_MMEAD_CNU_INFO activeCnu)
 	T_TOPOLOGY_INFO *this = &topEntry;
 
 	//printf("\n@@try_to_add_cnu\n");
+	
 	if( !boardapi_isValidUnicastMacb(activeCnu.Mac) )
 	{
 		return 0;
@@ -993,8 +1043,11 @@ int try_to_add_cnu(int cltid, T_MMEAD_CNU_INFO activeCnu)
 	{		
 		/* 发送非法设备接入告警*/
 		/* 通知告警管理模块*/
-		lllegal_cnu_register_notification(cltid, activeCnu.Mac);		
-	}
+		if( !boardapi_isCnuTrusted(activeCnu.DevType))
+		{
+			lllegal_cnu_register_notification(cltid, activeCnu.Mac);	
+		}
+	}	
 
 	/* 返回该CLT下一个可用的CNU索引*/
 	idle = find_idle(cltid);
@@ -1025,6 +1078,7 @@ int try_to_add_cnu(int cltid, T_MMEAD_CNU_INFO activeCnu)
 			activeCnu.Mac[3], activeCnu.Mac[4], activeCnu.Mac[5]
 		);
 		//memcpy((char *)(cnu.mac), (const char *)(activeCnu.Mac), 6);
+		debug_printf("try_to_add_cnu(%d, %d), mac[%s]\n", cltid, idle, cnu.col_mac);
 		cnu.col_sts = 0;		
 		/* 如果发现是超级终端则自动添加为具名用户*/
 		if( (memcmp(supCnuMac0, activeCnu.Mac, 6) == 0) || (memcmp(supCnuMac1, activeCnu.Mac, 6) == 0))
@@ -1256,7 +1310,15 @@ void do_cnu_discorver(int cltid, T_MMEAD_TOPOLOGY *plist)
 		/* 发现了一个新CNU设备*/
 		if( discover_new )
 		{
-			try_to_register_new_cun(cltid, plist->cnu[i]);
+			/* delete duplicate cnu in topEntry */
+			if( CMM_SUCCESS != delete_cnu_entry(plist->cnu[i].Mac) )
+			{
+				dbs_sys_log(dbsdev, DBS_LOG_ERR, "register_new_cun: delete_cnu_entry failed");
+			}
+			else
+			{
+				try_to_register_new_cun(cltid, plist->cnu[i]);
+			}
 		}
 	}
 }
@@ -1400,7 +1462,7 @@ void ProcessRegist(void)
 					if( cltLossTimes[i] > 5 )
 					{
 						cltLossTimes[i] = 0;
-						printf("\nProcessRegist: loss clt%d\n", cltid);
+						printf("\nProcessRegist: loss clt/%d\n", cltid);
 						ProcessTopologyChange(cltid, NULL);
 					}
 					continue;
@@ -1419,6 +1481,10 @@ void ProcessRegist(void)
 						cltLossTimes[i] = 0;
 					}
 					/* 与上一次的拓扑信息相比较，处理状态变迁的节点*/
+					debug_printf("\n\nmsg_reg_mmead_get_nelist(%02X:%02X:%02X:%02X:%02X:%02X)\n", 
+						topEntry.tb_clt[i].Mac[0], topEntry.tb_clt[i].Mac[1], topEntry.tb_clt[i].Mac[2], 
+						topEntry.tb_clt[i].Mac[3], topEntry.tb_clt[i].Mac[4], topEntry.tb_clt[i].Mac[5]
+					);
 					ProcessTopologyChange(cltid, &nelist);					
 				}
 			}
@@ -1642,8 +1708,7 @@ int init_nelib(void)
 				clt_cannot_finded_notification(i+1);				
 			}
 			else
-			{
-				printf("probe clt%d: success\n", i+1);
+			{				
 				cltdetected++;				
 				/* 在这里并不做设备上线的处理*/
 				/* 仅仅只是将CLT的MAC地址写入数据库*/				
@@ -1653,7 +1718,8 @@ int init_nelib(void)
 					topology->tb_clt[i].Mac[3], topology->tb_clt[i].Mac[4], topology->tb_clt[i].Mac[5]
 				);				
 				clt.col_row_sts = 1;		
-				db_update_clt(i+1, &clt);				
+				db_update_clt(i+1, &clt);
+				printf("probe clt/%d[%s]: success\n", i+1, clt.col_mac);
 			}
 		}
 		
