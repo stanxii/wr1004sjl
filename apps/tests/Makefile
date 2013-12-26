@@ -45,7 +45,7 @@ build:
 	$(CC) $(IFLAGS) $(DBS_INC) $(DSDT_INC) -c dsdTester.c $(CFLAGS)
 	$(CC) $(IFLAGS) $(DBS_INC) $(RTL_INC) -c rtl8306eTester.c $(CFLAGS)
 	$(CC) smi.o -o smi
-	$(CC) dbsTester.o -o dbsTester $(LDFLAGS) $(DBS_LIB)
+	$(CC) dbsTester.o -o dbsTester $(LDFLAGS) $(DBS_LIB) $(BOARDAPI_LD_FLAGS)
 	$(CC) mmeTester.o -o mmeTester $(LDFLAGS) $(DBS_LIB) $(BOARDAPI_LD_FLAGS)
 	$(CC) tmTester.o -o tmTester $(LDFLAGS) $(DBS_LIB) $(BOARDAPI_LD_FLAGS)
 	$(CC) dsdTester.o $(QD_LIB) -o dsdTester $(LDFLAGS) $(DBS_LIB)

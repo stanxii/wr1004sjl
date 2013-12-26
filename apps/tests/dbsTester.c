@@ -20,6 +20,7 @@
 
 #include <public.h>
 #include <dbsapi.h>
+#include <boardapi.h>
 
 static T_DBS_DEV_INFO *dev = NULL;
 
@@ -55,6 +56,7 @@ void dbsTester_usage(void)
 	printf("	--23: test create white-list user default profile for all cnus\n");
 	printf("	--24: test create black-list user default profile for all cnus\n");
 	printf("	--25: test destroy all (clt, cltconf, cnu, profile)\n");
+	printf("	--26: test select cnu index by mac\n");
 	
 	printf("\n\n");
 }
@@ -2734,6 +2736,40 @@ int TEST_DBS_DESTROY_CLT_CNU_INTERFACES(T_DBS_DEV_INFO *dev)
 	return 0;
 }
 
+int TEST_DBS_SELECT_CNU_BY_MAC(T_DBS_DEV_INFO *dev)
+{
+	char strmac[32] = {0};
+	stCnuNode iNode;
+	struct timeval start, end;
+
+	printf("Please input a mac address: ");
+
+	scanf("%s", strmac);
+	if( CMM_SUCCESS != boardapi_mac2Uppercase(strmac) )
+	{
+		printf("\nMAC Address is invalid\n");
+		return CMM_FAILED;
+	}	
+
+	gettimeofday( &start, NULL );
+	if( CMM_SUCCESS == dbsSelectCnuIndexByMacAddress(dev, strmac, &iNode) )
+	{
+		gettimeofday( &end, NULL );
+		printf("\nCNU is selected: [CNU/%d/%d]\n", iNode.clt, iNode.cnu);
+		printf("\nTime Used: %d Seconds %ul Microseconds\n\n", 
+			(int)(end.tv_sec - start.tv_sec),
+			(uint32_t)(end.tv_usec - start.tv_usec)
+		);
+	}
+	else
+	{
+		printf("\nCnu cannot be selected\n\n");
+	}
+	
+	return CMM_SUCCESS;
+}
+
+
 int main(int argc, char *argv[])
 {	
 	if( argc != 3 )
@@ -2868,6 +2904,9 @@ int main(int argc, char *argv[])
 				break;
 			case 25:
 				TEST_DBS_DESTROY_CLT_CNU_INTERFACES(dev);
+				break;
+			case 26:
+				TEST_DBS_SELECT_CNU_BY_MAC(dev);
 				break;
 			default:
 				dbsTester_usage();
