@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stddef.h>
+//#include <sys/time.h>
 #include <time.h>
 #include "json.h"
 //#include "parse_flags.h"
@@ -160,29 +161,6 @@ static void jsonSendAck( FILE * fs, int status, const char* jsonString )
 	}
 }
 
-/* change mac to up case, because database select is care of sting case */
-int jsonConvertMac2Uppercase(void)
-{
-	char bmac[6] = {0};
-	uint8_t MA[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
-	uint8_t MB[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
-	
-	/* check if cnu mac address is valid*/
-	if( CMM_SUCCESS != boardapi_macs2b(glbJsonVar.macAddr, bmac) )
-		return CMM_FAILED;
-	else if( memcmp(bmac, MA, 6) == 0 )
-		return CMM_FAILED;
-	else if( memcmp(bmac, MB, 6) == 0 )
-		return CMM_FAILED;
-	else
-		sprintf(glbJsonVar.macAddr, "%02X:%02X:%02X:%02X:%02X:%02X", 
-			bmac[0], bmac[1], bmac[2], bmac[3], bmac[4], bmac[5]
-		);	
-	
-	return CMM_SUCCESS;
-}
-
-
 /* check input parameters , return 0: success; else failed */
 int jsonSetCnuCheckInput(void)
 {
@@ -300,17 +278,20 @@ int jsonSetCnuProfile(FILE * fs)
 	st_dbsProfile myProfile;
 	st_rtl8306eSettings rtl8306e;
 	json_object *my_object;
+	int clt_index = 0;
+	int cnu_index = 0;
 
 	/* for debug */
 	//printf("\n-->call jsonSetCnuProfile()\n");
 	
 	/* process json set request here */
-	ret = jsonConvertMac2Uppercase();
+	ret = boardapi_mac2Uppercase(glbJsonVar.macAddr);
 	if( CMM_SUCCESS != ret )
 	{
 		printf("ERROR: jsonConvertMac2Uppercase\n");
 		goto json_ack;
 	}
+	
 	/* 1. get cnu index by input mac address */
 	ret = http2dbs_getCnuIndexByMacaddress(glbJsonVar.macAddr, &iNode);
 	if( CMM_SUCCESS != ret )
@@ -326,7 +307,7 @@ int jsonSetCnuProfile(FILE * fs)
 		ret = CMM_FAILED;
 		goto json_ack;
 	}
-
+	
 	/* 2. check input */
 	ret = jsonSetCnuCheckInput();
 	if( CMM_SUCCESS != ret )
@@ -340,7 +321,7 @@ int jsonSetCnuProfile(FILE * fs)
 	{
 		printf("ERROR: http2dbs_getCnu\n");
 		goto json_ack;
-	}
+	}	
 
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model ))
 	{
@@ -404,6 +385,7 @@ int jsonSetCnuProfile(FILE * fs)
 			ret = CMM_FAILED;
 			goto json_ack;
 		}
+		
 		/* get switch settings before write mod */
 		ret = http2cmm_getSwitchSettings(&iNode, &rtl8306e);
 		if( CMM_SUCCESS != ret )
@@ -411,6 +393,7 @@ int jsonSetCnuProfile(FILE * fs)
 			printf("ERROR: http2cmm_getSwitchSettings\n");
 			goto json_ack;
 		}
+		
 		/* modify settings */
 		rtl8306e.vlanConfig.vlan_enable = (1==glbJsonVar.cnuVlanSts)?1:0;
 		if(rtl8306e.vlanConfig.vlan_enable)
@@ -521,6 +504,7 @@ int jsonSetCnuProfile(FILE * fs)
 			printf("ERROR: http2cmm_setSwitchSettings\n");
 			goto json_ack;
 		}
+		
 	}
 
 json_ack:
@@ -532,7 +516,9 @@ json_ack:
 	json_object_put(my_object);
 
 	/* write opt-log here */
-	sprintf(strlog, "json set profile to cnu/%d/%d", iNode.clt, iNode.cnu);
+	clt_index = (iNode.cnu -1)/MAX_CNUS_PER_CLT + 1;
+	cnu_index = (iNode.cnu -1)%MAX_CNUS_PER_CLT + 1;
+	sprintf(strlog, "json set profile to cnu/%d/%d", clt_index, cnu_index);
 	http2dbs_writeOptlog(ret, strlog);
 	
 	return CMM_SUCCESS;
@@ -615,6 +601,8 @@ int jsonGetCnuProfile(FILE * fs)
 	int i = 0;
 	char strlog[128] = {0};
 	stCnuNode iNode;
+	int clt_index = 0;
+	int cnu_index = 0;
 	st_dbsProfile myProfile;
 	st_rtl8306eSettings rtl8306e;
 	st_dbsCnu cnu;
@@ -624,7 +612,7 @@ int jsonGetCnuProfile(FILE * fs)
 	//printf("\n-->call jsonGetCnuProfile()\n");
 	
 	/* process json get request here */
-	ret = jsonConvertMac2Uppercase();
+	ret = boardapi_mac2Uppercase(glbJsonVar.macAddr);
 	if( CMM_SUCCESS != ret )
 	{
 		printf("ERROR: jsonConvertMac2Uppercase\n");
@@ -742,7 +730,9 @@ json_out:
 	json_object_put(my_object);
 
 	/* write opt-log here */
-	sprintf(strlog, "json get profile from cnu/%d/%d", iNode.clt, iNode.cnu);
+	clt_index = (iNode.cnu -1)/MAX_CNUS_PER_CLT + 1;
+	cnu_index = (iNode.cnu -1)%MAX_CNUS_PER_CLT + 1;
+	sprintf(strlog, "json get profile from cnu/%d/%d", clt_index, cnu_index);
 	http2dbs_writeOptlog(ret, strlog);
 	
 	return CMM_SUCCESS;
