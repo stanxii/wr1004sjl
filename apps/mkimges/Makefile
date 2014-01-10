@@ -44,10 +44,10 @@ mkfsimg:
 	cp -a $(ROOTFSDIR) $(SAFEFSDIR)
 	rm -f $(SAFEFSDIR)/etc/rcS.d/S56mountubifs
 	rm -f $(SAFEFSDIR)/etc/rcS.d/S98configure
-	$(ROOTDIR)/tools/mkfs.ubifs -r $(SAFEFSDIR) -m 2048 -e 129024 -c 96 -D device_table -o $(UBISAFEFS)
-	$(ROOTDIR)/tools/mkfs.ubifs -r $(ROOTFSDIR) -m 2048 -e 129024 -c 80 -D device_table -o $(UBIROOTFS)
-	$(ROOTDIR)/tools/mkfs.ubifs -r $(USERFSDIR) -m 2048 -e 129024 -c 48  -o $(UBIUSERFS)
-	$(ROOTDIR)/tools/ubinize -o $(UBIFSIMG) -m 2048 -p 131072 -s 512 ./ubinize.cfg
+	$(ROOTDIR)/tools/mkfs.ubifs -r $(SAFEFSDIR) -m 2KiB -e 126KiB -c 96 -D device_table -o $(UBISAFEFS)
+	$(ROOTDIR)/tools/mkfs.ubifs -r $(ROOTFSDIR) -m 2KiB -e 126KiB -c 80 -D device_table -o $(UBIROOTFS)
+	$(ROOTDIR)/tools/mkfs.ubifs -r $(USERFSDIR) -m 2KiB -e 126KiB -c 48  -o $(UBIUSERFS)
+	$(ROOTDIR)/tools/ubinize -o $(UBIFSIMG) -m 2KiB -p 128KiB -s 512 ./ubinize.cfg
 	rm -f $(UBISAFEFS) $(UBIROOTFS) $(UBIUSERFS)
 
 mkwebimg:
