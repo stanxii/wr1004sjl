@@ -662,6 +662,26 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 			strcpy(log.cmd, "write cnu switch register");
 			break;
 		}
+		case CMM_DO_CNU_ACL_DROP_MME:
+		{
+			strcpy(log.cmd, "CMM_DO_CNU_ACL_DROP_MME");
+			break;
+		}
+		case CMM_UNDO_CNU_ACL_DROP_MME:
+		{
+			strcpy(log.cmd, "CMM_UNDO_CNU_ACL_DROP_MME");
+			break;
+		}
+		case CMM_ERASE_MOD_A:
+		{
+			strcpy(log.cmd, "CMM_ERASE_MOD_1");
+			break;
+		}
+		case CMM_ERASE_MOD_B:
+		{
+			strcpy(log.cmd, "CMM_ERASE_MOD_2");
+			break;
+		}
 		default:
 		{
 			strcpy(log.cmd, "CMM_UNKONEN_CMD");
@@ -1207,7 +1227,122 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 	}
 
 	//**************send to mmead*************//
-	opt_sts = mmead_write_rtl8306e_mod(bMac, mod, len);
+	if( CMM_SUCCESS != mmead_write_rtl8306e_mod(bMac, mod, len) )
+	{
+		opt_sts = CMM_FAILED;
+	}	
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+
+	return opt_sts;
+	
+}
+
+int CMM_ProcessCnuEraseModa(BBLOCK_QUEUE *this)
+{
+	uint32_t cnuid = 0;	
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	T_MMEAD_ERASE_MOD_REQ_INFO erase;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+
+	erase.MODULE_ID = 0x1000;
+	erase.MODULE_SUB_ID = 0;
+
+	cnuid = (req_data->clt - 1)*MAX_CNUS_PER_CLT + req_data->cnu;
+	
+	//st_rtl8306eSettings ack_data;
+	if( (req_data->clt<1)||(req_data->clt > MAX_CLT_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[00]\n");
+		opt_sts = CMM_FAILED;
+	}
+	if( (req_data->cnu<1)||(req_data->cnu > MAX_CNUS_PER_CLT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	//**************send to mmead*************//
+	if( CMM_SUCCESS != mmead_erase_mod(bMac, &erase) )
+	{
+		opt_sts = CMM_FAILED;
+	}	
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+
+	return opt_sts;
+	
+}
+
+int CMM_ProcessCnuEraseModb(BBLOCK_QUEUE *this)
+{
+	uint32_t cnuid = 0;	
+	int opt_sts = CMM_SUCCESS;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	T_MMEAD_ERASE_MOD_REQ_INFO erase;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+
+	erase.MODULE_ID = 0x1000;
+	erase.MODULE_SUB_ID = 1;
+
+	cnuid = (req_data->clt - 1)*MAX_CNUS_PER_CLT + req_data->cnu;
+	
+	//st_rtl8306eSettings ack_data;
+	if( (req_data->clt<1)||(req_data->clt > MAX_CLT_AMOUNT_LIMIT))
+	{
+		printf("\n#ERROR[00]\n");
+		opt_sts = CMM_FAILED;
+	}
+	if( (req_data->cnu<1)||(req_data->cnu > MAX_CNUS_PER_CLT))
+	{
+		printf("\n#ERROR[01]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
+	{
+		printf("\n#ERROR[02]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		printf("\n#ERROR[03]\n");
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		printf("\n#ERROR[04]\n");
+		opt_sts = CMM_FAILED;
+	}
+
+	//**************send to mmead*************//
+	if( CMM_SUCCESS != mmead_erase_mod(bMac, &erase) )
+	{
+		opt_sts = CMM_FAILED;
+	}	
 
 	/* 将处理信息发送给请求者 */
 	CMM_ProcessAck(opt_sts, this, NULL, 0);
@@ -2000,6 +2135,408 @@ int CMM_ProcessDumpCnuPib(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+uint32_t rtl8306e_cpu_port_set(uint8_t ODA[], uint8_t disable, uint8_t enTagInsert, uint8_t enTagRemove)
+{
+	uint8_t a = 0;
+	uint8_t b = 0;
+	uint8_t c = 0;
+	T_szSwRtl8306eConfig regInfo;
+
+	a = disable?1:0;
+	b = enTagInsert?1:0;
+	c = enTagRemove?1:0;
+
+	/*Enable CPU port function, Enable inserting CPU TAG, Enable removing CPU TAG */
+	regInfo.mdioInfo.phy = 2;
+	regInfo.mdioInfo.reg = 21;
+	regInfo.mdioInfo.page = 3;
+	if( CMM_SUCCESS != mmead_get_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+	
+	regInfo.mdioInfo.value = (regInfo.mdioInfo.value & 0x7FFF)  | (a << 15) | (b << 12) | (c << 11);
+	
+	return mmead_set_rtl8306e_register(ODA, &regInfo);
+	
+}
+
+uint32_t rtl8306e_igrAcl_get(uint8_t ODA[], stAclEntryInfo *entry)
+{
+	uint32_t pollcnt  ;
+	uint32_t bitValue;
+	T_szSwRtl8306eConfig regInfo;
+
+	assert( NULL != entry );
+
+	if ( entry->entryadd > 15 )
+	{
+		return CMM_FAILED;
+	}
+        
+	//printf("\nrtl8306e_igrAcl_get:\n");
+	/*trigger a command to read ACL entry*/
+	regInfo.mdioInfo.phy = 3;
+	regInfo.mdioInfo.reg = 22;
+	regInfo.mdioInfo.page = 3;
+	//rtl8306e_reg_get(3, 22, 3, &regValue);
+	if( CMM_SUCCESS != mmead_get_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+	regInfo.mdioInfo.value = (regInfo.mdioInfo.value & 0x81FF) | (0x3 << 13) | (entry->entryadd << 9);
+	//rtl8306e_reg_set(3, 22, 3, regValue);
+	if( CMM_SUCCESS != mmead_set_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+
+  	//printf("\n++++++Polling whether the command is done++++++\n");
+	/*Polling whether the command is done*/
+	for (pollcnt = 0; pollcnt < 100 ; pollcnt++) 
+	{
+		regInfo.mdioInfo.phy = 3;
+		regInfo.mdioInfo.reg = 22;
+		regInfo.mdioInfo.page = 3;
+		//rtl8306e_regbit_read(3, 22, 14, 3, &bitValue);
+		if( CMM_SUCCESS != mmead_get_rtl8306e_register(ODA, &regInfo) )
+		{
+			return CMM_FAILED;
+		}
+		else
+		{
+			bitValue = ((regInfo.mdioInfo.value >> 14) & 0x1);
+			if (!bitValue)
+				break;
+		}
+	}
+	//printf("\n++++++++++++ End Polling ++++++++++++\n");
+	if (pollcnt == 100)
+		return CMM_FAILED;
+
+	regInfo.mdioInfo.phy = 3;
+	regInfo.mdioInfo.reg = 21;
+	regInfo.mdioInfo.page = 3;
+	//rtl8306e_reg_get(3, 21, 3, &regValue);
+	if( CMM_SUCCESS != mmead_get_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+	entry->data = regInfo.mdioInfo.value;
+	
+	regInfo.mdioInfo.phy = 3;
+	regInfo.mdioInfo.reg = 22;
+	regInfo.mdioInfo.page = 3;
+	//rtl8306e_reg_get(3, 22, 3, &regValue);
+	if( CMM_SUCCESS != mmead_get_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+	entry->priority = (regInfo.mdioInfo.value  >> 7) & 0x3;
+	entry->action= (regInfo.mdioInfo.value  >> 5) & 0x3;
+	entry->phyport = (regInfo.mdioInfo.value >> 2) & 0x7;
+	entry->protocol = regInfo.mdioInfo.value & 0x3;
+
+	return CMM_SUCCESS;
+}
+
+uint32_t rtl8306e_igrAcl_set(uint8_t ODA[], stAclEntryInfo *entry)
+{
+	//uint32_t regValue;
+	uint32_t value;
+	uint32_t pollcnt  ;
+	uint32_t bitValue;
+	T_szSwRtl8306eConfig regInfo;
+
+	assert( NULL != entry );
+
+	if ((entry->entryadd > 15) || (entry->phyport > 0x7) || (entry->action > 3) ||(entry->protocol > 3) ||(entry->priority > 3))
+    	{
+		return CMM_FAILED;
+	}
+	//printf("\nrtl8306e_igrAcl_set:\n");
+  
+	/*set EtherType or TCP/UDP Ports, ACL entry access register 0*/
+	regInfo.mdioInfo.phy = 3;
+	regInfo.mdioInfo.reg = 21;
+	regInfo.mdioInfo.page = 3;
+	regInfo.mdioInfo.value = entry->data;
+	//rtl8306e_reg_write(3, 21, 3, entry->data);
+	if( CMM_SUCCESS != mmead_set_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+
+	/*set ACL entry access register 1*/
+	regInfo.mdioInfo.phy = 3;
+	regInfo.mdioInfo.reg = 22;
+	regInfo.mdioInfo.page = 3;
+	//rtl8306e_reg_read(3, 22, 3, &regValue);
+	if( CMM_SUCCESS != mmead_get_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+	value = (1 << 14) | (entry->entryadd << 9)  | (entry->priority << 7) | (entry->action << 5) | (entry->phyport << 2) | entry->protocol ;
+	regInfo.mdioInfo.value = (regInfo.mdioInfo.value & 0x8000) | value  ;
+	//rtl8306e_reg_write(3, 22, 3, regInfo.mdioInfo.value);
+	if( CMM_SUCCESS != mmead_set_rtl8306e_register(ODA, &regInfo) )
+	{
+		return CMM_FAILED;
+	}
+	//printf("\n++++++Polling whether the command is done++++++\n");
+	/*Polling whether the command is done*/
+	for (pollcnt = 0; pollcnt < 100; pollcnt++) 
+	{
+		regInfo.mdioInfo.phy = 3;
+		regInfo.mdioInfo.reg = 22;
+		regInfo.mdioInfo.page = 3;
+		//rtl8306e_regbit_read(3, 22, 14, 3, &bitValue);
+		if( CMM_SUCCESS != mmead_get_rtl8306e_register(ODA, &regInfo) )
+		{
+			return CMM_FAILED;
+		}
+		else
+		{
+			bitValue = ((regInfo.mdioInfo.value >> 14) & 0x1);
+			if (!bitValue)
+				break;
+		}		
+	}
+	//printf("\n++++++++++++ End Polling ++++++++++++\n");
+	if (pollcnt == 100)
+		return CMM_FAILED;
+
+	return CMM_SUCCESS;
+}
+
+uint32_t rtl8306e_igrAcl_add(uint8_t ODA[], stAclEntryInfo *entry)
+{
+	uint32_t entaddr;
+	uint32_t isFull ;
+	stAclEntryInfo ientry;
+
+	//printf("\nrtl8306e_igrAcl_add:\n");
+	if( NULL == entry )
+		return CMM_FAILED;
+    
+	isFull = BOOL_TRUE;
+    
+	/*if  exist an  acl entry of the same rule according by phyport, protocol,data,
+	 *only update priority and action
+	 */
+	for (entaddr = 0; entaddr < 16; entaddr ++ ) 
+	{
+		ientry.entryadd = entaddr;
+		if (rtl8306e_igrAcl_get(ODA, &ientry) != CMM_SUCCESS)
+			return CMM_FAILED;
+
+		if ((ientry.phyport == entry->phyport) && (ientry.protocol == entry->protocol) && (ientry.data == entry->data)) 
+		{
+			entry->entryadd = entaddr;
+			if (rtl8306e_igrAcl_set(ODA, entry) != CMM_SUCCESS )
+				return CMM_FAILED;
+			else
+				return CMM_SUCCESS;
+		}            
+	}    
+
+	/*if not exist the rule, find an invalid entry to write it , else return table full */
+	for (entaddr = 0; entaddr < 16; entaddr ++ )
+	{
+		ientry.entryadd = entaddr;
+		if (rtl8306e_igrAcl_get(ODA, &ientry) != CMM_SUCCESS)
+			return CMM_FAILED;
+        
+		if (ientry.phyport == 6) 
+		{
+			entry->entryadd = entaddr;
+			if (rtl8306e_igrAcl_set(ODA, entry) != CMM_SUCCESS)
+				return CMM_FAILED;
+			else 
+			{
+				isFull = BOOL_FALSE;
+				break;
+			}                        
+		}            
+	}    
+
+	if (isFull)
+		return CMM_FAILED;
+	else
+		return CMM_SUCCESS;
+}
+
+uint32_t rtl8306e_igrAcl_del(uint8_t ODA[], stAclEntryInfo *entry)
+{
+	uint32_t entaddr;
+	uint32_t isHit;
+	stAclEntryInfo ientry;
+
+	if( NULL == entry )
+		return CMM_FAILED;
+
+	//printf("\nrtl8306e_igrAcl_del:\n");
+	isHit = BOOL_FALSE;
+    
+	if (entry->phyport == 6)
+		return CMM_FAILED;
+    
+	for (entaddr = 0; entaddr < 16; entaddr++ ) 
+	{
+		ientry.entryadd = entaddr;
+		if (rtl8306e_igrAcl_get(ODA, &ientry) != CMM_SUCCESS)
+			return CMM_FAILED;
+        
+        	if ((ientry.phyport == entry->phyport) && (ientry.protocol == entry->protocol) && (ientry.data == entry->data))
+		{
+			ientry.entryadd = entaddr;
+			ientry.action = 0;
+			ientry.phyport = 6;
+			ientry.protocol = 0;
+			ientry.priority = 0;
+			ientry.data = 0;
+			if (rtl8306e_igrAcl_set(ODA, &ientry) != CMM_SUCCESS)
+				return CMM_FAILED;
+			isHit = BOOL_TRUE;
+			break;
+		}                
+	}
+
+	if (isHit)
+		return CMM_SUCCESS;
+	else
+		return CMM_SUCCESS;
+}
+
+uint32_t rtl8306e_igrAcl_init(uint8_t ODA[])
+{
+	uint32_t entaddr;
+	stAclEntryInfo entry;
+
+	//printf("\nrtl8306e_igrAcl_init:\n");
+	/*empty the acl table*/
+	for (entaddr = 0; entaddr < 16; entaddr++ ) 
+	{
+		entry.entryadd = entaddr;
+		entry.priority = 0;
+		entry.phyport = 0x6;	/*RTL8306_ACL_INVALID*/
+		entry.protocol = 0;		/*RTL8306_ACL_ETHER*/
+		entry.action = 0;		/*RTL8306_ACT_DROP*/    		
+		entry.data = 0;		
+		
+        	if ( CMM_SUCCESS != rtl8306e_igrAcl_set(ODA, &entry))
+		{
+			return CMM_FAILED;
+		}
+	}
+    
+	return CMM_SUCCESS;
+}
+
+int CMM_ProcessDoCnuAclDropMme(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	uint32_t cnuid = 0;
+	uint8_t bMac[6] = {0};
+	st_dbsCnu cnu;
+	stAclEntryInfo entry;
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+
+	cnuid = (req_data->clt - 1)*MAX_CNUS_PER_CLT + req_data->cnu;
+
+	if( (cnuid < 1) || (cnuid > MAX_CNU_AMOUNT_LIMIT))
+	{
+		opt_sts = CMM_FAILED;
+	}	
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	/*Enable CPU port function, Enable inserting CPU TAG, Enable removing CPU TAG */
+	else if( CMM_SUCCESS != rtl8306e_cpu_port_set(bMac, 0, 1, 1))
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != rtl8306e_igrAcl_init(bMac) )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else
+	{
+		entry.data = 0x88e1;	/*HomePlug av*/
+		entry.entryadd = 0;
+		entry.phyport = 7;		/*any port*/
+		entry.priority = 0;
+		entry.protocol = 0;		/*ethertype*/
+		entry.action = 0;		/*drop*/
+		opt_sts = rtl8306e_igrAcl_add(bMac, &entry);
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+
+	return opt_sts;
+}
+
+int CMM_ProcessUndoCnuAclDropMme(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	uint32_t cnuid = 0;
+	uint8_t bMac[6] = {0};
+	st_dbsCnu cnu;
+	stAclEntryInfo entry;
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+
+	cnuid = (req_data->clt - 1)*MAX_CNUS_PER_CLT + req_data->cnu;
+
+	if( (cnuid < 1) || (cnuid > MAX_CNU_AMOUNT_LIMIT))
+	{
+		opt_sts = CMM_FAILED;
+	}	
+	else if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+	{
+		opt_sts = CMM_FAILED;
+	}
+	/*Disable CPU port function, disable inserting CPU TAG, disable removing CPU TAG */
+	else if( CMM_SUCCESS != rtl8306e_cpu_port_set(bMac, 1, 0, 0))
+	{
+		opt_sts = CMM_FAILED;
+	}
+	else
+	{
+		entry.data = 0x88e1;	/*HomePlug av*/
+		//entry.entryadd = 0;
+		entry.phyport = 7;		/*any port*/
+		//entry.priority = 0;
+		entry.protocol = 0;		/*ethertype*/
+		//entry.action = 0;		/*drop*/
+		opt_sts = rtl8306e_igrAcl_del(bMac, &entry);
+	}
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, NULL, 0);
+
+	return opt_sts;
+}
+
 /********************************************************************************************
 *	函数名称:CMM_ProcessConnect
 *	函数功能:接收MACTOOL工具连接验证
@@ -2184,6 +2721,16 @@ void cmmProcessManager(void)
 				opt_sts = CMM_ProcessCnuSwitchConfigWrite(this);
 				break;
 			}
+			case CMM_ERASE_MOD_A:
+			{
+				opt_sts = CMM_ProcessCnuEraseModa(this);
+				break;
+			}
+			case CMM_ERASE_MOD_B:
+			{
+				opt_sts = CMM_ProcessCnuEraseModb(this);
+				break;
+			}
 			case CMM_CNU_SWITCH_WRITE:
 			{
 				opt_sts = CMM_ProcessCnuSwitchWrite(this);
@@ -2321,6 +2868,16 @@ void cmmProcessManager(void)
 			case CMM_GET_CLT_PORT_LINK_STS:
 			{
 				opt_sts = CMM_ProcessGetCltPortLinkSts(this);
+				break;
+			}
+			case CMM_DO_CNU_ACL_DROP_MME:
+			{
+				opt_sts = CMM_ProcessDoCnuAclDropMme(this);
+				break;
+			}
+			case CMM_UNDO_CNU_ACL_DROP_MME:
+			{
+				opt_sts = CMM_ProcessUndoCnuAclDropMme(this);
 				break;
 			}
 			case CMM_CONNET:

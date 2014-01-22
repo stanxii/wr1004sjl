@@ -8,47 +8,60 @@ RTL_REGISTER_DESIGN rtl8306e_register_table[] =
 	/*flag*/		/*phy*/		/*register*/		/*page*/	/*value*/
 	{1,		    	 0,			16,				0,			0x07FA },
 	{1,		    	 0,			18,				0,			0x7FFF },
-	{1,		    	 0,			19,				0,			0xFFFF },
-	
+	{1,		    	 0,			19,				0,			0xFFFF },	
 	{1,		    	 0,			24,				0,			0x0EDF },
 	{1,		    	 1,			24,				0,			0x0EC0 },
 	{1,		    	 2,			24,				0,			0x0EC0 },
 	{1,		    	 3,			24,				0,			0x0EC0 },
 	{1,		    	 4,			24,				0,			0x0EC0 },
-
 	{1,		    	 0,			25,				0,			0xE001 },
 	{1,		    	 1,			25,				0,			0xE000 },
 	{1,		    	 2,			25,				0,			0xE000 },
 	{1,		    	 3,			25,				0,			0xE000 },
 	{1,		    	 4,			25,				0,			0xE000 },
-
+	{1,		    	 6,			25,				0,			0xD000 },
 	{1,		    	 0,			22,				0,			0x877F },
 	{1,		    	 1,			22,				0,			0x877F },
 	{1,		    	 2,			22,				0,			0x877F },
 	{1,		    	 3,			22,				0,			0x877F },
 	{1,		    	 4,			22,				0,			0x877F },
-
 	{1,		    	 0,			31,				0,			0x0000 },
-	/*SID*/
 	{1,		    	 3,			16,				0,			0x5452 },
 	{1,		    	 3,			17,				0,			0x834C },
 	{1,		    	 3,			18,				0,			0xC005 },
-	{1,		    	 4,			23,				0,			0x0000 },	
+	{1,		    	 4,			23,				0,			0x0000 },
+	{1,		    	 0,			0,				0,			0x3100 },
+	{1,		    	 1,			0,				0,			0x3100 },
+	{1,		    	 2,			0,				0,			0x3100 },
+	{1,		    	 3,			0,				0,			0x3100 },
+	{1,		    	 4,			0,				0,			0x3100 },
+	
 	{1,		    	 6,			17,				1,			0x0000 },
+	{1,		    	 1,			30,				1,			0x0000 },
+	{1,		    	 1,			31,				1,			0x0000 },
+	{1,		    	 2,			30,				1,			0x0000 },
+	{1,		    	 2,			31,				1,			0x0000 },
+	{1,		    	 3,			30,				1,			0x0000 },
+	{1,		    	 3,			31,				1,			0x0000 },
 	
 	{1,		    	 0,			21,				2,			0x07FF },
 	{1,		    	 1,			21,				2,			0x07FF },
 	{1,		    	 2,			21,				2,			0x07FF },
 	{1,		    	 3,			21,				2,			0x07FF },
 	{1,		    	 4,			21,				2,			0x07FF },
-
 	{1,		    	 0,			18,				2,			0x07FF },
 	{1,		    	 1,			18,				2,			0x07FF },
 	{1,		    	 2,			18,				2,			0x07FF },
 	{1,		    	 3,			18,				2,			0x07FF },
 	{1,		    	 4,			18,				2,			0x07FF },
 
-	{1,		    	 0,			21,				3,			0x94CA },
+	{1,		    	 0,			21,				3,			0x94CA },	
+	{1,		    	 2,			23,				3,			0x83B1 },
+	{1,		    	 2,			21,				3,			0x8000 },
+	{1,		    	 3,			21,				3,			0x0000 },
+	{1,		    	 3,			22,				3,			0xA000 },
+	{1,		    	 0,			26,				3,			0x0000 },
+	{1,		    	 0,			27,				3,			0x0000 },
 	
 	/*********************** The End****************************/
 	{0,		    	 0,			0,				0,			0x0000 }	
@@ -621,6 +634,112 @@ uint32_t rtl8306e_setPortBandWidth(uint16_t port, uint16_t n64Kbps, uint16_t dir
 	return CMM_SUCCESS;
 }
 
+uint32_t rtl8306e_storm_filter_disable(uint8_t frameType, uint16_t disable)
+{
+	switch(frameType)
+	{
+		/* disable broadcast storm filter */
+		case 0:
+		{
+			return rtl8306e_setPhyRegBit(0, 18, 2, 0, (disable==1)?1:0 );
+		}
+		/* disable multicast storm filter */
+		case 1:
+		{
+			return rtl8306e_setPhyRegBit(2, 23, 9, 3, (disable==1)?1:0 );
+		}
+		/* disable unknown da unicast storm filter */
+		case 2:
+		{
+			return rtl8306e_setPhyRegBit(2, 23, 8, 3, (disable==1)?1:0 );
+		}
+		default:
+		{
+			return CMM_FAILED;
+		}
+	}
+	
+}
+
+uint32_t rtl8306e_set_storm_filter_type(uint16_t type)
+{
+	return rtl8306e_setPhyRegBit(6, 17, 1, 1, (type==0)?0:1 );
+}
+
+uint32_t rtl8306e_set_storm_filter_reset_source(uint16_t resetSource)
+{
+	return rtl8306e_setPhyRegBit(6, 25, 7, 0, (resetSource==0)?0:1 );
+}
+
+uint32_t rtl8306e_set_storm_filter_iteration(uint16_t iteration)
+{
+	uint16_t rdata = 0;
+	uint32_t ret = CMM_SUCCESS;
+
+	rdata = ((iteration&0x3)<<5);
+
+	ret += rtl8306e_setPhyReg(6, 25, 0, rdata);
+
+	return ret;
+}
+
+uint32_t rtl8306e_set_storm_filter_thresholt(uint16_t thresholt)
+{
+	uint32_t ret = CMM_SUCCESS;
+
+	ret += rtl8306e_setPhyReg(6, 25, 0, ((thresholt&0x3)<<8));
+	ret += rtl8306e_setPhyRegBit(6, 17, 0, 1, (((thresholt>>2)&0x1)==0)?0:1 );
+
+	return ret;
+}
+
+uint32_t rtl8306e_set_mac_limit_action(uint8_t action)
+{
+	return rtl8306e_setPhyRegBit(0, 31, 9, 0, action?1:0 );	
+}
+
+uint32_t rtl8306e_set_mac_limit_system(st_systemMacLimit *system)
+{
+	uint32_t ret = CMM_SUCCESS;
+	uint16_t rdata = 0;
+	
+	assert( NULL != system );
+
+	ret += rtl8306e_setPhyRegBit(0, 26, 11, 3, (system->enable)?1:0 );
+	
+	ret += rtl8306e_getPhyReg(0, 31, 0, &rdata);
+	ret += rtl8306e_setPhyReg(0, 31, 0, (rdata & 0x380)|((system->thresholt)&0x7f)|(((system->mport)&0x3f)<<10));
+	
+	return ret;	
+}
+
+uint32_t rtl8306e_set_mac_limit_port(uint8_t port, st_portMacLimit *portMacLimit)
+{
+	uint32_t ret = CMM_SUCCESS;
+	uint16_t rdata = 0;
+	
+	assert( NULL != portMacLimit );
+
+	if (port > 3)
+	{
+		return CMM_FAILED;
+	}
+	if (0 == port)
+	{
+		ret += rtl8306e_setPhyRegBit(0, 26, 12, 3, (portMacLimit->enable)?1:0);
+		ret += rtl8306e_getPhyReg(0, 27, 3, &rdata);
+		ret += rtl8306e_setPhyReg(0, 27, 3, (rdata & 0x7ff)|(((portMacLimit->thresholt)&0x1f)<<11));
+	}
+	else
+	{
+		ret += rtl8306e_setPhyRegBit(port, 30, 15, 1, (portMacLimit->enable)?1:0);
+		ret += rtl8306e_getPhyReg(port, 31, 1, &rdata);
+		ret += rtl8306e_setPhyReg(port, 31, 1, (rdata & 0x7ff)|(((portMacLimit->thresholt)&0x1f)<<11));
+	}
+	
+	return ret;	
+}
+
 uint32_t rtl8306e_vlan_register_prepare(st_cnuSwitchVlanConfig *vlan)
 {
 	int i = 0;
@@ -696,22 +815,154 @@ uint32_t rtl8306e_bandwidth_control_register_prepare(st_cnuSwitchBandwidthConfig
 	return ret;
 }
 
+uint32_t rtl8306e_storm_filter_register_prepare(st_cnuSwitchStormFilter *stormFilter)
+{
+	uint32_t ret = CMM_SUCCESS;
+	
+	assert( NULL != stormFilter );
+
+	ret += rtl8306e_storm_filter_disable(0, stormFilter->disable_broadcast);
+	ret += rtl8306e_storm_filter_disable(1, stormFilter->disable_multicast);
+	ret += rtl8306e_storm_filter_disable(2, stormFilter->disable_unknown);
+	ret += rtl8306e_set_storm_filter_type(stormFilter->rule);
+	ret += rtl8306e_set_storm_filter_iteration(stormFilter->iteration);
+	ret += rtl8306e_set_storm_filter_thresholt(stormFilter->thresholt);
+	ret += rtl8306e_set_storm_filter_reset_source(stormFilter->reset_source);
+
+	return ret;
+}
+
+uint32_t rtl8306e_mac_limit_register_prepare(st_cnuSwitchMacLimit *macLimit)
+{
+	int i = 0;
+	uint32_t ret = CMM_SUCCESS;
+	
+	assert( NULL != macLimit );
+
+	ret += rtl8306e_set_mac_limit_action(macLimit->action);
+	ret += rtl8306e_set_mac_limit_system(&(macLimit->system));
+	for(i=0;i<4;i++)
+	{
+		ret += rtl8306e_set_mac_limit_port(i, &(macLimit->port[i]));
+	}
+
+	return ret;
+}
+
+uint32_t rtl8306e_cpu_port_disable(uint8_t disable)
+{
+	return rtl8306e_setPhyRegBit(2, 21, 15, 3, disable?1:0 );	
+}
+
+uint32_t rtl8306e_cpu_tag_insert_enable(uint8_t enable)
+{
+	return rtl8306e_setPhyRegBit(2, 21, 12, 3, enable?1:0 );	
+}
+
+uint32_t rtl8306e_cpu_tag_remove_enable(uint8_t enable)
+{
+	return rtl8306e_setPhyRegBit(2, 21, 11, 3, enable?1:0 );	
+}
+
+uint32_t rtl8306e_acl_set(stAclEntryInfo *entry)
+{
+	uint32_t ret = CMM_SUCCESS;
+	uint16_t rdata = 0;
+	uint16_t value;
+	
+	assert( NULL != entry );
+
+	if ((entry->entryadd > 15) || (entry->phyport > 0x7) || (entry->action > 3) ||(entry->protocol > 3) ||(entry->priority > 3))
+    	{
+		return CMM_FAILED;
+	}
+	
+	ret += rtl8306e_setPhyReg(3, 21, 3, entry->data);
+
+	ret += rtl8306e_getPhyReg(3, 22, 3, &rdata);
+	value = (1<<14)|(entry->entryadd<<9)|(entry->priority<<7)| (entry->action<<5)|(entry->phyport<<2)|entry->protocol;
+	rdata = (rdata & 0x8000) |value;
+	ret += rtl8306e_setPhyReg(3, 22, 3, rdata);
+
+	return ret;
+}
+
+uint32_t rtl8306e_acl_register_prepare(void)
+{
+	int i = 0;
+	uint32_t ret = CMM_SUCCESS;
+	stAclEntryInfo entry;
+	
+	//acl drop mme by default	
+	entry.entryadd = 0;
+	entry.phyport = 7;		/*any port*/
+	entry.priority = 0;
+	entry.protocol = 0;		/*ethertype*/
+	entry.action = 0;		/*drop*/
+	entry.data = 0x88e1;	/*HomePlug av*/
+
+	ret += rtl8306e_cpu_port_disable(0);
+	ret += rtl8306e_cpu_tag_insert_enable(1);
+	ret += rtl8306e_cpu_tag_remove_enable(1);
+	ret += rtl8306e_acl_set(&entry);
+
+	return ret;
+}
+
+uint32_t rtl8306e_set_port_powerdown(uint16_t port, uint16_t powerdown)
+{	
+	uint32_t ret = 0;
+
+	if( port > 4 )
+	{
+		return CMM_FAILED;
+	}
+	
+	ret += rtl8306e_setPhyRegBit(port, 0, 11, 0, powerdown?1:0);	
+	return ret;
+}
+
+uint32_t rtl8306e_port_control_register_prepare(st_cnuSwitchPortControl *portControl)
+{
+	int i = 0;
+	uint32_t ret = CMM_SUCCESS;
+	
+	assert( NULL != portControl );
+
+	for(i=0;i<5;i++)
+	{
+		ret += rtl8306e_set_port_powerdown(i, (portControl->port[i].enable)?0:1);
+	}
+
+	return ret;
+}
+
 uint32_t rtl8306e_register_prepare(st_rtl8306eSettings *rtl8306e)
 {
 	uint32_t ret = CMM_SUCCESS;
 	st_cnuSwitchVlanConfig *vlan = NULL;
 	st_cnuSwitchBandwidthConfig *bandwidth = NULL;
 	st_cnuSwitchLoopDetect *loopDetection = NULL;
+	st_cnuSwitchStormFilter *stormFilter = NULL;
+	st_cnuSwitchMacLimit *macLimit = NULL;
+	st_cnuSwitchPortControl *portControl = NULL;
 	
 	assert( NULL != rtl8306e );
 
 	vlan = &(rtl8306e->vlanConfig);
 	bandwidth = &(rtl8306e->bandwidthConfig);
 	loopDetection = &(rtl8306e->loopDetect);
+	stormFilter = &(rtl8306e->stormFilter);
+	macLimit = &(rtl8306e->macLimit);
+	portControl = &(rtl8306e->portControl);
 
 	ret += rtl8306e_vlan_register_prepare(vlan);
 	ret += rtl8306e_bandwidth_control_register_prepare(bandwidth);
 	ret += rtl8306e_loop_detection_register_prepare(loopDetection);
+	ret += rtl8306e_storm_filter_register_prepare(stormFilter);
+	ret += rtl8306e_mac_limit_register_prepare(macLimit);
+	ret += rtl8306e_acl_register_prepare();
+	ret += rtl8306e_port_control_register_prepare(portControl);
 
 	return ret;
 }

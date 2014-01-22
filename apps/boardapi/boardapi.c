@@ -563,6 +563,7 @@ int boardapi_isAr6400Device(uint32_t DevType)
 		case WEC_3703I:		/* WEC-3702I L3 */
 		case WEC_602:		/* WEC-3702I C2 */
 		case WEC_604:		/* WEC-3702I C4 */
+		case WEC_3702I_E4:
 		{
 			return BOOL_TRUE;
 		}		

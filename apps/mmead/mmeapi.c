@@ -1421,7 +1421,8 @@ int WritePIB(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[])
 		}
 		if(xresult.validData)
 		{
-			ret = intohs(comfirm->MSTATUS);
+			//ret = intohs(comfirm->MSTATUS);
+			ret = comfirm->MSTATUS;
 			if( ret )
 			{
 				ret = CMM_MME_ERROR;
@@ -1515,7 +1516,12 @@ int FlashDevice(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[])
 	}
 	if(xresult.validData)
 	{
-		return intohs(comfirm->MSTATUS);
+		//return intohs(comfirm->MSTATUS);
+		if(comfirm->MSTATUS)
+		{
+			printf("\nFlashDevice: comfirm->MSTATUS = %d\n", comfirm->MSTATUS);
+		}
+		return comfirm->MSTATUS;
 	}	
 	else
 	{
@@ -2846,6 +2852,42 @@ int MME_Atheros_MsgDirectWriteModule(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uin
 	wr_mod_req.MODULE_SUB_ID = 0;
 	wr_mod_req.MODULE_LENGTH = len;	
 	memcpy(wr_mod_req.MODULE_DATA, mod, len);			
+	
+	if( ModuleSession(MME_SK, ODA, SessionID, &wr_mod_req) )
+	{
+		/* 失败*/
+		return CMM_MME_ERROR;
+	}
+	if( ModuleWrite(MME_SK, ODA, SessionID, &wr_mod_req) )
+	{
+		/* 失败*/
+		return CMM_MME_ERROR;
+	}
+	if( ModuleCommit(MME_SK, ODA, SessionID, &wr_mod_req) )
+	{
+		/* 失败*/
+		return CMM_MME_ERROR;
+	}
+	
+	return CMM_SUCCESS;
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgEraseModule
+*	函数功能:*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgEraseModule(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], T_MMEAD_ERASE_MOD_REQ_INFO *erase)
+{
+	uint32_t SessionID = 0x78563412;
+	T_MMEAD_WR_MOD_REQ_INFO wr_mod_req = {0};
+
+	wr_mod_req.MODULE_ID = erase->MODULE_ID;
+	wr_mod_req.MODULE_SUB_ID = erase->MODULE_SUB_ID;
+	wr_mod_req.MODULE_LENGTH = 4;
+	bzero(wr_mod_req.MODULE_DATA, 1400);		
 	
 	if( ModuleSession(MME_SK, ODA, SessionID, &wr_mod_req) )
 	{

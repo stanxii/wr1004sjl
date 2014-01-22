@@ -64,7 +64,7 @@ enum
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.2-cr10"
+#define SYSINFO_APP_VERSION		"v1.3.6.2-cr18"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -395,6 +395,10 @@ enum
 	CMM_CNU_SWITCH_CONFIG_READ, /* read rtl8306e configs */
 	CMM_CNU_SWITCH_CONFIG_WRITE,/* write rtl8306e configs */
 	CMM_DSDT_MAC_BINDING,
+	CMM_DO_CNU_ACL_DROP_MME,
+	CMM_UNDO_CNU_ACL_DROP_MME,
+	CMM_ERASE_MOD_A,				/* erase mod id=0 */
+	CMM_ERASE_MOD_B,				/* erase mod id=1 */
 	
 	/* 请在中间增加其他枚举定义 */
 	
@@ -501,6 +505,7 @@ enum
 	MMEAD_MDIO_WRITE,			/* write register by mme*/
 	MMEAD_GET_RTL8306E_CONFIG,	/* get rtl8306e configuration from cnu by mme mdio */
 	MMEAD_WRITE_MOD,				/* write mod */
+	MMEAD_ERASE_MOD,
 	
 	/* 请在中间增加其他枚举定义 */
 
@@ -1399,6 +1404,17 @@ typedef struct
 	st_nvram_mac p_nvram_mac;
 }st_nvram_info;
 
+typedef struct
+{
+	uint32_t entryadd;
+	uint32_t phyport;
+	uint32_t action;
+	uint32_t protocol;
+	uint32_t priority;
+	uint32_t data;
+}
+stAclEntryInfo;
+
 /***********************************************************************/
 typedef struct
 {
@@ -1617,9 +1633,116 @@ typedef struct
 
 typedef struct
 {
+	/********************************************************
+	* disable broadcast packet storm filter
+	* 0: enable
+	* 1: disable
+	*********************************************************/
+	uint8_t disable_broadcast;
+
+	/********************************************************
+	* disable multicast packet storm filter
+	* 0: enable
+	* 1: disable
+	*********************************************************/
+	uint8_t disable_multicast;
+
+	/********************************************************
+	* disable unknown destination unicast packet storm filter
+	* 0: enable
+	* 1: disable
+	*********************************************************/
+	uint8_t disable_unknown;
+
+	/********************************************************
+	* storm filter rules
+	* 0: type 1
+	* 1: type 2
+	*********************************************************/
+	uint8_t rule;
+
+	/********************************************************
+	* storm filter reset source
+	* 0: both timer and other kind of the packets which is different
+	*     from the filtered packet can reset storm filter
+	* 1: only timer can reset storm filter
+	*********************************************************/
+	uint8_t reset_source;
+
+	/********************************************************
+	* Storm filter timer selection
+	* 00: Storm filter timer is 800ms
+	* 01: Storm filter timer is 400ms
+	* 10: Storm filter timer is 200ms
+	* 11: Storm filter timer is 100ms
+	*********************************************************/
+	uint16_t iteration;
+
+	/********************************************************
+	* 3-bit storm trigger counter threshold
+	* 000: 64 broadcast, or multicast, or unknown DA
+	*         unicast packets will trigger storm filter if the
+	*         corresponding filters are enabled
+	* 001: 32 broadcast, or multicast, or unknown DA
+	*         unicast packets will trigger storm filter if the
+	*         corresponding filters are enabled
+	* 010: 16 broadcast, or multicast , or unknown DA
+	*         unicast packets will trigger storm filter if the
+	*         corresponding filters are enabled
+	* 011: 8 broadcast, or multicast, or unknown DA unicast
+	*         packets will trigger storm filter if the corresponding
+	*         filters are enabled
+	* 100: 128 broadcast, or multicast, or unknown DA
+	*         unicast packets will trigger storm filter if the
+	*         corresponding filters are enabled
+	* 101: 256 broadcast, or multicast, or unknown DA
+	*         unicast packets will trigger storm filter if the
+	*         corresponding filters are enabled
+	* 110~111: reserved
+	*********************************************************/
+	uint16_t thresholt;
+}st_cnuSwitchStormFilter;
+
+typedef struct
+{
+	uint8_t enable;
+	uint16_t thresholt;
+	uint16_t mport;	
+	uint16_t counter;	
+}st_systemMacLimit;
+
+typedef struct
+{
+	uint8_t enable;
+	uint16_t thresholt;	
+	uint16_t counter;	
+}st_portMacLimit;
+
+typedef struct
+{
+	uint8_t action;
+	st_systemMacLimit system;
+	st_portMacLimit port[4];
+}st_cnuSwitchMacLimit;
+
+typedef struct
+{
+	uint8_t enable;
+}st_portStatusInfo;
+
+typedef struct
+{
+	st_portStatusInfo port[5];
+}st_cnuSwitchPortControl;
+
+typedef struct
+{
 	st_cnuSwitchVlanConfig vlanConfig;
 	st_cnuSwitchBandwidthConfig bandwidthConfig;
 	st_cnuSwitchLoopDetect loopDetect;
+	st_cnuSwitchStormFilter stormFilter;
+	st_cnuSwitchMacLimit macLimit;
+	st_cnuSwitchPortControl portControl;
 }st_rtl8306eSettings;
 
 typedef struct
@@ -1872,6 +1995,12 @@ typedef struct
 	uint32_t MODULE_LENGTH;
 	uint8_t MODULE_DATA[1400];
 }T_MMEAD_WR_MOD_REQ_INFO;
+
+typedef struct
+{
+	uint16_t MODULE_ID;
+	uint16_t MODULE_SUB_ID;
+}T_MMEAD_ERASE_MOD_REQ_INFO;
 
 typedef struct
 {

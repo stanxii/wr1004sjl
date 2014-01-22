@@ -39,6 +39,7 @@ int cli2cmm_restoreDefault(void);
 int cli2cmm_upgradeApp(void);
 int cli2cmm_debug(st_ModuleDebugCtl *debug);
 int cli2cmm_Dump(uint16_t cltid, uint16_t cunid, uint16_t flag);
+int cli2cmm_do_aclDropMme(uint16_t cltid, uint16_t cnuid);
 int destroy_cli_cmm(void);
 int init_cli_cmm(void);
 

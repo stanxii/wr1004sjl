@@ -567,21 +567,36 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(filename, "rtl8306eConfigView.cmd");
 	}	
 	else if ( strstr(filename, "rtl8306eConfigRead.html") != NULL )
-	{	
+	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		ret = http2cmm_readSwitchSettings(&glbWebVar);
 		//strcpy(filename, "/webs/rtl8306eConfig.html");
 		strcpy(filename, "rtl8306eConfigView.cmd");
 		/*opt-log*/
-		strcpy(logmsg, "read cnu switch settings");
+		sprintf(logmsg, "read cnu/%d/%d switch settings", cltid, cnuid);
 		http2dbs_writeOptlog(ret, logmsg);
 	}
 	else if ( strstr(filename, "rtl8306eConfigWrite.html") != NULL )
 	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		ret = http2cmm_writeSwitchSettings(&glbWebVar);
 		//strcpy(filename, "/webs/rtl8306eConfig.html");
 		strcpy(filename, "rtl8306eConfigView.cmd");		
 		/*opt-log*/
-		strcpy(logmsg, "write cnu switch settings");
+		sprintf(logmsg, "write cnu/%d/%d switch settings", cltid, cnuid);
+		http2dbs_writeOptlog(ret, logmsg);
+	}
+	else if ( strstr(filename, "rtl8306eConfigErase.html") != NULL )
+	{	
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		ret = http2cmm_eraseSwitchSettings(&glbWebVar);
+		//strcpy(filename, "/webs/rtl8306eConfig.html");
+		strcpy(filename, "rtl8306eConfigView.cmd");
+		/*opt-log*/
+		sprintf(logmsg, "erase cnu/%d/%d switch settings", cltid, cnuid);
 		http2dbs_writeOptlog(ret, logmsg);
 	}
 	
@@ -1151,6 +1166,27 @@ CGI_ITEM CgiSetTable[] = {
 
    { "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
    { "swSwitchSid", (void *)glbWebVar.swSwitchSid, CGI_TYPE_STR },
+
+   { "swSfDisBroadcast", (void *)&glbWebVar.swSfDisBroadcast, CGI_TYPE_NUM }, 
+   { "swSfDisMulticast", (void *)&glbWebVar.swSfDisMulticast, CGI_TYPE_NUM }, 
+   { "swSfDisUnknown", (void *)&glbWebVar.swSfDisUnknown, CGI_TYPE_NUM }, 
+   { "swSfRule", (void *)&glbWebVar.swSfRule, CGI_TYPE_NUM }, 
+   { "swSfResetSrc", (void *)&glbWebVar.swSfResetSrc, CGI_TYPE_NUM }, 
+   { "swSfIteration", (void *)&glbWebVar.swSfIteration, CGI_TYPE_NUM }, 
+   { "swSfThresholt", (void *)&glbWebVar.swSfThresholt, CGI_TYPE_NUM }, 
+
+   { "swMlSysEnable", (void *)&glbWebVar.swMlSysEnable, CGI_TYPE_NUM }, 
+   { "swMlSysThresholt", (void *)&glbWebVar.swMlSysThresholt, CGI_TYPE_NUM }, 
+   { "swMlEth1Enable", (void *)&glbWebVar.swMlEth1Enable, CGI_TYPE_NUM }, 
+   { "swMlEth1Thresholt", (void *)&glbWebVar.swMlEth1Thresholt, CGI_TYPE_NUM }, 
+   { "swMlEth2Enable", (void *)&glbWebVar.swMlEth2Enable, CGI_TYPE_NUM }, 
+   { "swMlEth2Thresholt", (void *)&glbWebVar.swMlEth2Thresholt, CGI_TYPE_NUM }, 
+   { "swMlEth3Enable", (void *)&glbWebVar.swMlEth3Enable, CGI_TYPE_NUM }, 
+   { "swMlEth3Thresholt", (void *)&glbWebVar.swMlEth3Thresholt, CGI_TYPE_NUM }, 
+   { "swMlEth4Enable", (void *)&glbWebVar.swMlEth4Enable, CGI_TYPE_NUM }, 
+   { "swMlEth4Thresholt", (void *)&glbWebVar.swMlEth4Thresholt, CGI_TYPE_NUM }, 
+
+   { "cnuPermition", (void *)&glbWebVar.cnuPermition, CGI_TYPE_NUM }, 
    
    { NULL, NULL, CGI_TYPE_NONE }
 };

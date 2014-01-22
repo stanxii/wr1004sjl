@@ -431,69 +431,41 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 	}
 /* 测试的时候一般不希望下发PIB，故有此修改*/
 /****************************************************************************************/
-#if 0
+#if 1
 	if( BOOL_TRUE == cnu.col_synch )
 	{
 		refresh_signon_cnu(clt_index, cnu_index, activeCnu);
 	}
 	else
 	{
-		if( PIB_CRC == activeCnu->CRC[0] )
+		/* 通知模板管理模块自动生成该用户的MOD */
+		if( CMM_SUCCESS != tm_gen_user_mod(clt_index, cnu_index) )
 		{
-			/* 通知模板管理模块自动生成该用户的MOD */
-			if( CMM_SUCCESS != tm_gen_user_mod(clt_index, cnu_index) )
-			{
-				perror("ERROR: do_cnu_auto_config->tm_gen_user_mod !\n");
-				/* 发送CNU放弃自动配置的告警*/
-				cnu_abort_auto_config_notification(clt_index, cnu_index);
-				return;
-			}
-			/* 自动下发MOD */
-			if( CMM_SUCCESS == msg_reg_mmead_wr_user_mod(activeCnu->DevType, activeCnu->Mac) )
-			{
-				/* 发送告警*/
-				cnu_auto_config_notification(clt_index, cnu_index, cnu_index, 1, BOOL_TRUE);
-				/* 将标志位csyncStatus 置1 */
-				set_cnu_pro_sync(clt_index, cnu_index, BOOL_TRUE);
-			}
-			else
-			{
-				/* 发送告警*/
-				cnu_auto_config_notification(clt_index, cnu_index, cnu_index, 1, BOOL_FALSE);
-			}
-			/* 通知模板管理模块销毁该用户的配置*/
-			if( CMM_SUCCESS != tm_distroy_user_mod(clt_index, cnu_index) )
-			{
-				perror("ERROR: do_cnu_auto_config->tm_distroy_user_mod !\n");
-				return;
-			}
+			perror("ERROR: do_cnu_auto_config->tm_gen_user_mod !\n");
+			/* 发送CNU放弃自动配置的告警*/
+			cnu_abort_auto_config_notification(clt_index, cnu_index);
+			return;
+		}
+		/* 自动下发MOD */
+		if( CMM_SUCCESS == msg_reg_mmead_wr_user_mod(activeCnu->DevType, activeCnu->Mac) )
+		{
+			/* 发送告警*/
+			cnu_auto_config_notification(clt_index, cnu_index, cnu_index, 1, BOOL_TRUE);
+			/* 将标志位csyncStatus 置1 */
+			set_cnu_pro_sync(clt_index, cnu_index, BOOL_TRUE);
 		}
 		else
 		{
-			/* 通知模板管理模块自动生成该用户的PIB */
-			if( CMM_SUCCESS != tm_gen_user_pib(clt_index, cnu_index) )
-			{
-				perror("ERROR: do_cnu_auto_config->tm_gen_user_pib !\n");
-				return;
-			}
-			/* 自动下发PIB */
-			if( CMM_SUCCESS == msg_reg_mmead_wr_user_pib(activeCnu->DevType, activeCnu->Mac) )
-			{
-				/* 发送告警*/
-				cnu_auto_config_notification(clt_index, cnu_index, cnu_index, 0, BOOL_TRUE);
-			}
-			else
-			{
-				/* 发送告警*/
-				cnu_auto_config_notification(clt_index, cnu_index, cnu_index, 0, BOOL_FALSE);
-			}
-			/* 通知模板管理模块销毁该用户的配置*/
-			if( CMM_SUCCESS != tm_distroy_user_pib(clt_index, cnu_index) )
-			{
-				perror("ERROR: do_cnu_auto_config->tm_distroy_user_pib !\n");
-				return;
-			}	
+			/* 发送告警*/
+			cnu_auto_config_notification(clt_index, cnu_index, cnu_index, 1, BOOL_FALSE);
 		}
+		/* 通知模板管理模块销毁该用户的配置*/
+		if( CMM_SUCCESS != tm_distroy_user_mod(clt_index, cnu_index) )
+		{
+			perror("ERROR: do_cnu_auto_config->tm_distroy_user_mod !\n");
+			return;
+		}
+		
 	}
 #else
 	/* for debug */
@@ -529,14 +501,6 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 				cnu_abort_auto_config_notification(clt_index, cnu_index);
 				return;
 			}
-			/* 自动下发MOD */
-			//if( CMM_SUCCESS != tm_get_cnu_tid(clt_index, cnu_index, &tid) )
-			//{
-			//	perror("ERROR: do_cnu_auto_config->tm_get_cnu_tid !\n");
-			//	return;
-			//}
-			//printf("auto send mod(pro %d) configuration to clt %d cnu %d\n", tid, clt_index, cnu_index);
-			//printf("\r\n  auto send mod configuration to clt %d cnu %d\n", clt_index, cnu_index);
 			if( CMM_SUCCESS == msg_reg_mmead_wr_user_mod(activeCnu->DevType, activeCnu->Mac) )
 			{
 				/* 发送告警*/
@@ -573,6 +537,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 		//}
 		//printf("auto send pib(pro %d) configuration to clt %d cnu %d\n", tid, clt_index, cnu_index);
 		//printf("\r\n  auto send pib configuration to clt %d cnu %d\n", clt_index, cnu_index);
+		//FlashDevice will return failed if HFID is not the same
 		if( CMM_SUCCESS == msg_reg_mmead_wr_user_pib(activeCnu->DevType, activeCnu->Mac) )
 		{
 			/* 发送告警*/
@@ -1102,16 +1067,13 @@ int try_to_add_cnu(int cltid, T_MMEAD_CNU_INFO activeCnu)
 			cnu.col_synch = BOOL_TRUE;
 		}
 
-		if(boardapi_isCnuSupported(activeCnu.DevType))
+		if(boardapi_isAr7400Device(activeCnu.DevType))
 		{
-			if(boardapi_isAr7400Device(activeCnu.DevType))
-			{
-				strcpy(cnu.col_ver, "AR7400-v7.1.1-1-X-FINAL");
-			}
-			else
-			{
-				strcpy(cnu.col_ver, "INT6000-v4.1.0-0-2-X-FINAL");
-			}
+			strcpy(cnu.col_ver, "AR7400-v7.1.1-1-X-FINAL");
+		}
+		else if(boardapi_isAr6400Device(activeCnu.DevType))
+		{
+			strcpy(cnu.col_ver, "INT6000-v4.1.0-0-2-X-FINAL");
 		}
 		else
 		{

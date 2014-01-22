@@ -74,6 +74,7 @@ typedef struct {
    int newCnuPro;
    int cltid;
    int cnuid;
+   int cnuPermition;
    int col_macLimit;
    int col_loagTime;
    int col_reagTime;
@@ -280,6 +281,25 @@ typedef struct {
    int swEth3LoopStatus;
    int swEth4LoopStatus;
    char swSwitchSid[IFC_SMALL_LEN];
+
+   int swSfDisBroadcast;
+   int swSfDisMulticast;
+   int swSfDisUnknown;
+   int swSfRule;
+   int swSfResetSrc;
+   int swSfIteration;
+   int swSfThresholt;
+
+   int swMlSysEnable;
+   int swMlSysThresholt;
+   int swMlEth1Enable;
+   int swMlEth1Thresholt;
+   int swMlEth2Enable;
+   int swMlEth2Thresholt;
+   int swMlEth3Enable;
+   int swMlEth3Thresholt;
+   int swMlEth4Enable;
+   int swMlEth4Thresholt;
 
    int wecSysupHours;
    int wecSysupMins;

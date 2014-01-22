@@ -280,6 +280,7 @@ int jsonSetCnuProfile(FILE * fs)
 	json_object *my_object;
 	int clt_index = 0;
 	int cnu_index = 0;
+	int i = 0;
 
 	/* for debug */
 	//printf("\n-->call jsonSetCnuProfile()\n");
@@ -393,8 +394,16 @@ int jsonSetCnuProfile(FILE * fs)
 			printf("ERROR: http2cmm_getSwitchSettings\n");
 			goto json_ack;
 		}
+
+		cnu.col_auth = (1==glbJsonVar.cnuPermit)?1:0;
+		http2dbs_setCnu(iNode.cnu, &cnu);
 		
 		/* modify settings */
+		for( i=0; i<5; i++ )
+		{
+			rtl8306e.portControl.port[i].enable = (1==glbJsonVar.cnuPermit)?1:0;
+		}
+		
 		rtl8306e.vlanConfig.vlan_enable = (1==glbJsonVar.cnuVlanSts)?1:0;
 		if(rtl8306e.vlanConfig.vlan_enable)
 		{
@@ -496,7 +505,7 @@ int jsonSetCnuProfile(FILE * fs)
 			rtl8306e.bandwidthConfig.txPort[3].bandwidth_control_enable = 0;
 			rtl8306e.bandwidthConfig.txPort[4].bandwidth_control_enable = 0;
 		}		
-		cnu.col_auth = 1;
+		//cnu.col_auth = 1;
 		/* write to device */
 		ret = http2cmm_setSwitchSettings(&iNode, &rtl8306e);
 		if( CMM_SUCCESS != ret )
@@ -692,7 +701,7 @@ int jsonGetCnuProfile(FILE * fs)
 		myProfile.col_eth2tx = rtl8306e.bandwidthConfig.txPort[1].bandwidth_value*64;
 		myProfile.col_eth3tx = rtl8306e.bandwidthConfig.txPort[2].bandwidth_value*64;
 		myProfile.col_eth4tx = rtl8306e.bandwidthConfig.txPort[3].bandwidth_value*64;
-		cnu.col_auth = 1;
+		cnu.col_auth = rtl8306e.portControl.port[4].enable;
 	}
 	
 	/* 5. get parameters from myProfile and cnu to glbJsonVar */

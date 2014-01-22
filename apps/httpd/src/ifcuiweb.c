@@ -77,6 +77,16 @@ void BcmWeb_getAllInfo(PWEB_NTWK_VAR pWebVar)
 
 void BcmWeb_initRtl8306eSettings(PWEB_NTWK_VAR pWebVar)
 {
+	st_dbsCnu cnu;
+
+	dbsGetCnu(dbsdev, pWebVar->cnuid, &cnu);
+
+	pWebVar->cnuPermition = cnu.col_auth?1:0;
+	pWebVar->col_eth1sts = cnu.col_auth?1:0;
+	pWebVar->col_eth2sts = cnu.col_auth?1:0;
+	pWebVar->col_eth3sts = cnu.col_auth?1:0;
+	pWebVar->col_eth4sts = cnu.col_auth?1:0;
+	
 	pWebVar->swVlanEnable = 0;
 	pWebVar->swUplinkPortVMode = 0;
 	pWebVar->swEth1PortVMode = 0;
@@ -121,5 +131,25 @@ void BcmWeb_initRtl8306eSettings(PWEB_NTWK_VAR pWebVar)
 	pWebVar->swEth3LoopStatus = 0;
 	pWebVar->swEth4LoopStatus = 0;
 	strcpy(pWebVar->swSwitchSid, "52:54:4C:83:05:C0");
+
+	pWebVar->swSfDisBroadcast = 1;
+	pWebVar->swSfDisMulticast = 1;
+	pWebVar->swSfDisUnknown = 1;
+	pWebVar->swSfRule = 0;
+	pWebVar->swSfResetSrc = 0;
+	pWebVar->swSfIteration = 0;
+	pWebVar->swSfThresholt = 0;
+
+	//mac limit
+	pWebVar->swMlSysEnable = 0;
+	pWebVar->swMlSysThresholt = 0;
+	pWebVar->swMlEth1Enable = 0;
+	pWebVar->swMlEth1Thresholt = 0;
+	pWebVar->swMlEth2Enable = 0;
+	pWebVar->swMlEth2Thresholt = 0;
+	pWebVar->swMlEth3Enable = 0;
+	pWebVar->swMlEth3Thresholt = 0;
+	pWebVar->swMlEth4Enable = 0;
+	pWebVar->swMlEth4Thresholt = 0;
 }
 

@@ -27,6 +27,11 @@ int http2dbs_getCnu(uint16_t id, st_dbsCnu * cnu)
 	return dbsGetCnu(dbsdev, id, cnu);
 }
 
+int http2dbs_setCnu(uint16_t id, st_dbsCnu * cnu)
+{
+	return dbsUpdateCnu(dbsdev, id, cnu);
+}
+
 int http2dbs_doCltAgTimeSettings(PWEB_NTWK_VAR pWebVar)
 {
 	int flag = 0;

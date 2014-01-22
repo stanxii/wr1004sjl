@@ -220,6 +220,14 @@ ST_CLI_CMD_REG m_CliCmdPool[] =
 	{CLI_CMD_FORMAT_CNU_SWITCH,      CMDHELP_GLB_CNU_SWITCH, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_CmdCnuSwitch,      CLI_AL_ADMIN,          CTM_GLOBAL },
 
+	/* cnu acl add *//* 该命令仅在CNU 模式下可执行*/
+	{CLI_CMD_FORMAT_CNU_ACL,      CMDHELP_GLB_CNU_ACL, CLI_ML_NULL,    CLI_ML_NULL,
+	CLI_CmdCnuAclDropMme,      CLI_AL_ADMIN,          CTM_GLOBAL },
+
+	/* undo acl drop mme */
+	{CLI_CMD_FORMAT_UNDO_CNU_ACL,      CMDHELP_GLB_UNDO, CMDHELP_GLB_UNDO_CNU_ACL,    CLI_ML_NULL,
+	CLI_CmdUndoCnuAclDropMme,      CLI_AL_ADMIN,          CTM_GLOBAL },
+
 	/* MME mdio phy debug *//* 该命令仅在CLT或者CNU 模式下可执行*/
 	{CLI_CMD_FORMAT_MME_MDIO,      CMDHELP_GLB_MME_MDIO, CLI_ML_NULL,    CLI_ML_NULL,
 	CLI_CmdMmeMdio,      CLI_AL_ADMIN,          CTM_GLOBAL },
@@ -5236,6 +5244,105 @@ ULONG CLI_CmdCnuSwitch()
 	return TBS_SUCCESS;
 }
 
+/*********************************************************************/
+/* 函数功能 :CLI_CmdCnuAclDropMme 命令实现                                 */
+/*********************************************************************/
+ULONG CLI_CmdCnuAclDropMme()
+{
+	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
+	uint32_t iMode = 0;
+	uint32_t prevailMode = 0;	
+	st_dbsCnu cnu;
+
+	iMode = CLI_GetCurrentMode();
+	prevailMode = CLI_GetPrevailMode(iMode);
+
+	/* 判断模式并显示打印信息*/
+	/* 该命令只能在CNU模式下执行*/
+	if( 2 != prevailMode )
+	{
+		/* 其他模式下禁止执行该命令*/
+		IO_Print("\r\n\r\n  Incorrect command");
+		return CMM_FAILED;
+	}
+	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
+	id = CLI_GetCnuTidByMode(iMode);
+
+	/* 如果该CNU 槽位无效则禁止配置*/
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	{
+		IO_Print("\r\n\r\n  System Error !");
+		return CMM_FAILED;
+	}	
+	else if( 0 == cnu.col_row_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Interface Unreachable !");
+		return CMM_SUCCESS;
+	}
+	else if( 0 == cnu.col_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Status Unreachable !");
+		return CMM_SUCCESS;
+	}
+	else
+	{
+		cltid = (id-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (id-1)%MAX_CNUS_PER_CLT + 1;
+		return cli2cmm_do_aclDropMme(cltid, cnuid);
+	}
+}
+
+/*********************************************************************/
+/* 函数功能 :CLI_CmdUndoCnuAclDropMme 命令实现                                 */
+/*********************************************************************/
+ULONG CLI_CmdUndoCnuAclDropMme()
+{
+	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
+	uint32_t iMode = 0;
+	uint32_t prevailMode = 0;	
+	st_dbsCnu cnu;
+
+	iMode = CLI_GetCurrentMode();
+	prevailMode = CLI_GetPrevailMode(iMode);
+
+	/* 判断模式并显示打印信息*/
+	/* 该命令只能在CNU模式下执行*/
+	if( 2 != prevailMode )
+	{
+		/* 其他模式下禁止执行该命令*/
+		IO_Print("\r\n\r\n  Incorrect command");
+		return CMM_FAILED;
+	}
+	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
+	id = CLI_GetCnuTidByMode(iMode);
+
+	/* 如果该CNU 槽位无效则禁止配置*/
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	{
+		IO_Print("\r\n\r\n  System Error !");
+		return CMM_FAILED;
+	}	
+	else if( 0 == cnu.col_row_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Interface Unreachable !");
+		return CMM_SUCCESS;
+	}
+	else if( 0 == cnu.col_sts )
+	{
+		IO_Print("\r\n\r\n  CNU Status Unreachable !");
+		return CMM_SUCCESS;
+	}
+	else
+	{
+		cltid = (id-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (id-1)%MAX_CNUS_PER_CLT + 1;
+		return cli2cmm_undo_aclDropMme(cltid, cnuid);
+	}
+}
 
 /*********************************************************************/
 /* 函数功能 :CLI_CmdMmeMdio 命令实现                                 */

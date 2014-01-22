@@ -217,5 +217,19 @@ int MME_Atheros_MsgDirectWriteModule
 	uint32_t len
 );
 
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgEraseModule
+*	函数功能:*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgEraseModule
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	T_MMEAD_ERASE_MOD_REQ_INFO *erase
+);
+
 #endif
 

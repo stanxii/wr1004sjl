@@ -995,6 +995,26 @@ void MME_ProcessDirectWriteMod(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK
 }
 
 /********************************************************************************************
+*	函数名称:MME_ProcessDirectWriteMod
+*	函数功能:写参数块
+*	作者:frank
+*	时间:2013-10-27
+*********************************************************************************************/
+void MME_ProcessEraseMod(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)(this->b);
+	T_MMEAD_ERASE_MOD_REQ_INFO *erase = (T_MMEAD_ERASE_MOD_REQ_INFO *)(MMETS_REQ->body);
+	
+	MMEAD_ProcessAck
+	(
+		MME_Atheros_MsgEraseModule(MME_SK, MMETS_REQ->header.ODA, erase), 
+		this,
+		NULL, 
+		0
+	);
+}
+
+/********************************************************************************************
 *	函数名称:MME_ProcessReadModuleOperationCrc
 *	函数功能:获取CNU的自定义参数快的CRC，
 *				  并将操作结果通过消息接口发送给请求模块
@@ -1660,6 +1680,9 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 			break;
 		case MMEAD_WRITE_MOD:
 			MME_ProcessDirectWriteMod(this, MME_SK);
+			break;
+		case MMEAD_ERASE_MOD:
+			MME_ProcessEraseMod(this, MME_SK);
 			break;
 		default:
 			/* 对于不支持的消息类型应该给予应答以便让请求者知道 */

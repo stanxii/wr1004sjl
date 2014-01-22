@@ -27,7 +27,6 @@
 //#include "asicRegs.h"
 #include "rtl8306e_types.h"
 
-
 int32 smiRead(uint32 phyad, uint32 regad, uint32 * data) 
 {
 	*data = 0;
@@ -40,7 +39,6 @@ int32 smiWrite(uint32 phyad, uint32 regad, uint32 data)
 	printf("#smiWrite(0x%x, 0x%x)\n", phyad, regad); 
 	return SUCCESS;
 }
-
 
 /* Function Name:
  *      smiReadBit

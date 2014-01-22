@@ -235,6 +235,28 @@ int mmead_write_rtl8306e_mod(uint8_t ODA[], uint8_t *mod, uint32_t mod_len)
 	return __cmm_mmead_communicate(buf, len);
 }
 
+int mmead_erase_mod(uint8_t ODA[], T_MMEAD_ERASE_MOD_REQ_INFO *erase)
+{
+	int len = 0;
+	uint8_t buf[MAX_UDP_SIZE];
+	
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *MMETS_ACK = (T_MMETS_ACK_MSG *)buf;
+	
+	
+	MMETS_REQ->header.M_TYPE = 0xCC08;
+	MMETS_REQ->header.DEV_TYPE = WEC_3702I;	
+	MMETS_REQ->header.MM_TYPE = MMEAD_ERASE_MOD;
+	MMETS_REQ->header.fragment = 0;
+	MMETS_REQ->header.LEN = sizeof(T_MMEAD_ERASE_MOD_REQ_INFO);
+	memcpy(MMETS_REQ->header.ODA, ODA, 6);
+
+	memcpy(MMETS_REQ->body, erase, MMETS_REQ->header.LEN);
+
+	len = sizeof(T_MMETS_REQ_MSG) + MMETS_REQ->header.LEN;
+
+	return __cmm_mmead_communicate(buf, len);
+}
 
 int mmead_get_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo)
 {
@@ -370,7 +392,14 @@ int mmead_get_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo)
 	{
 		printf("\n#ERROR[21]\n");
 	}
-	return ret;	
+	else
+	{
+		/*
+		printf("RTL8306E read phy %d reg %d page %d:	[0x%04X]\n", 
+			pRegInfo->mdioInfo.phy, pRegInfo->mdioInfo.reg, pRegInfo->mdioInfo.page, 
+			pRegInfo->mdioInfo.value);*/
+		return ret;	
+	}	
 }
 
 int mmead_set_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo)
@@ -469,7 +498,11 @@ int mmead_set_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo)
 			mdioInfo.value &= ~0x2;
 			ret = mmead_set_ar8236_phy(ODA, &mdioInfo);
 		}
-	}        
+	}
+	/*//for debug
+	printf("RTL8306E write phy %d reg %d page %d:	[0x%04X]\n", 
+			pRegInfo->mdioInfo.phy, pRegInfo->mdioInfo.reg, pRegInfo->mdioInfo.page, 
+			pRegInfo->mdioInfo.value);*/
 	return ret;	
 }
 

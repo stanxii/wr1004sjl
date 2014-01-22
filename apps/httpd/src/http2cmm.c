@@ -782,6 +782,34 @@ int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar)
 		pWebVar->swEth3LoopStatus = ack_data->loopDetect.port_loop_status[2];
 		pWebVar->swEth4LoopStatus = ack_data->loopDetect.port_loop_status[3];
 
+		//storm filter
+		pWebVar->swSfDisBroadcast = ack_data->stormFilter.disable_broadcast;
+		pWebVar->swSfDisMulticast = ack_data->stormFilter.disable_multicast;
+		pWebVar->swSfDisUnknown = ack_data->stormFilter.disable_unknown;
+		pWebVar->swSfRule = ack_data->stormFilter.rule;
+		pWebVar->swSfResetSrc = ack_data->stormFilter.reset_source;
+		pWebVar->swSfIteration = ack_data->stormFilter.iteration;
+		pWebVar->swSfThresholt = ack_data->stormFilter.thresholt;
+
+		//mac limit
+		pWebVar->swMlSysEnable = ack_data->macLimit.system.enable;
+		pWebVar->swMlSysThresholt = ack_data->macLimit.system.thresholt;
+		pWebVar->swMlEth1Enable = ack_data->macLimit.port[0].enable;
+		pWebVar->swMlEth1Thresholt = ack_data->macLimit.port[0].thresholt;
+		pWebVar->swMlEth2Enable = ack_data->macLimit.port[1].enable;
+		pWebVar->swMlEth2Thresholt = ack_data->macLimit.port[1].thresholt;
+		pWebVar->swMlEth3Enable = ack_data->macLimit.port[2].enable;
+		pWebVar->swMlEth3Thresholt = ack_data->macLimit.port[2].thresholt;
+		pWebVar->swMlEth4Enable = ack_data->macLimit.port[3].enable;
+		pWebVar->swMlEth4Thresholt = ack_data->macLimit.port[3].thresholt;
+
+		//port control
+		pWebVar->cnuPermition = ack_data->portControl.port[4].enable;
+		pWebVar->col_eth1sts = ack_data->portControl.port[0].enable;
+		pWebVar->col_eth2sts = ack_data->portControl.port[1].enable;
+		pWebVar->col_eth3sts = ack_data->portControl.port[2].enable;
+		pWebVar->col_eth4sts = ack_data->portControl.port[3].enable;
+
 		return CMM_SUCCESS;
 	}	
 	return CMM_FAILED;
@@ -807,6 +835,13 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 
 	req_data->node.clt = 1;
 	req_data->node.cnu = pWebVar->cnuid;
+
+	//port control
+	req_data->rtl8306eConfig.portControl.port[4].enable = pWebVar->cnuPermition;
+	req_data->rtl8306eConfig.portControl.port[0].enable = pWebVar->col_eth1sts;
+	req_data->rtl8306eConfig.portControl.port[1].enable = pWebVar->col_eth2sts;
+	req_data->rtl8306eConfig.portControl.port[2].enable = pWebVar->col_eth3sts;
+	req_data->rtl8306eConfig.portControl.port[3].enable = pWebVar->col_eth4sts;
 
 	//vlan enable
 	req_data->rtl8306eConfig.vlanConfig.vlan_enable = pWebVar->swVlanEnable;
@@ -890,6 +925,29 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 	req_data->rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = pWebVar->swEth4TxRate;
 	req_data->rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = pWebVar->swUplinkTxRate;
 
+	//storm filter
+	req_data->rtl8306eConfig.stormFilter.disable_broadcast = pWebVar->swSfDisBroadcast;
+	req_data->rtl8306eConfig.stormFilter.disable_multicast = pWebVar->swSfDisMulticast;
+	req_data->rtl8306eConfig.stormFilter.disable_unknown = pWebVar->swSfDisUnknown;
+	req_data->rtl8306eConfig.stormFilter.iteration = pWebVar->swSfIteration;
+	req_data->rtl8306eConfig.stormFilter.reset_source = pWebVar->swSfResetSrc;
+	req_data->rtl8306eConfig.stormFilter.rule = pWebVar->swSfRule;
+	req_data->rtl8306eConfig.stormFilter.thresholt = pWebVar->swSfThresholt;
+
+	//mac limit
+	req_data->rtl8306eConfig.macLimit.action = 0;			/* drop */
+	req_data->rtl8306eConfig.macLimit.system.enable = pWebVar->swMlSysEnable;
+	req_data->rtl8306eConfig.macLimit.system.thresholt = pWebVar->swMlSysThresholt;
+	req_data->rtl8306eConfig.macLimit.system.mport = 0xf;	/* p0~p3 */
+	req_data->rtl8306eConfig.macLimit.port[0].enable = pWebVar->swMlEth1Enable;
+	req_data->rtl8306eConfig.macLimit.port[0].thresholt = pWebVar->swMlEth1Thresholt;
+	req_data->rtl8306eConfig.macLimit.port[1].enable = pWebVar->swMlEth2Enable;
+	req_data->rtl8306eConfig.macLimit.port[1].thresholt = pWebVar->swMlEth2Thresholt;
+	req_data->rtl8306eConfig.macLimit.port[2].enable = pWebVar->swMlEth3Enable;
+	req_data->rtl8306eConfig.macLimit.port[2].thresholt = pWebVar->swMlEth3Thresholt;
+	req_data->rtl8306eConfig.macLimit.port[3].enable = pWebVar->swMlEth4Enable;
+	req_data->rtl8306eConfig.macLimit.port[3].thresholt = pWebVar->swMlEth4Thresholt;
+
 	//loop deection
 	req_data->rtl8306eConfig.loopDetect.status = pWebVar->swLoopDetect;
 	if( 0 == req_data->rtl8306eConfig.loopDetect.status )
@@ -917,6 +975,116 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 	{
 		return CMM_FAILED;
 	}
+	
+}
+
+int http2cmm_eraseSwitchSettings(PWEB_NTWK_VAR pWebVar)
+{	
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	uint8_t tmp;
+	uint32_t cltindex = 0;
+	uint32_t cnuindex = 0;
+	st_dbsCnu cnu;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+
+	dbsGetCnu(dbsdev, pWebVar->cnuid, &cnu);
+	if( cnu.col_auth == 0 )
+	{
+		cnu.col_auth = 1;
+		dbsUpdateCnu(dbsdev, pWebVar->cnuid, &cnu);
+	}
+
+	pWebVar->cnuPermition = 1;
+	pWebVar->col_eth1sts = 1;
+	pWebVar->col_eth2sts = 1;
+	pWebVar->col_eth3sts = 1;
+	pWebVar->col_eth4sts = 1;
+	
+	pWebVar->swVlanEnable = 0;
+	pWebVar->swUplinkPortVMode = 0;
+	pWebVar->swEth1PortVMode = 0;
+	pWebVar->swEth2PortVMode = 0;
+	pWebVar->swEth3PortVMode = 0;
+	pWebVar->swEth4PortVMode = 0;
+
+	pWebVar->swUplinkPortVid = 1;
+	pWebVar->swEth1PortVid = 1;
+	pWebVar->swEth2PortVid = 1;
+	pWebVar->swEth3PortVid = 1;
+	pWebVar->swEth4PortVid = 1;
+
+	pWebVar->swRxRateLimitEnable = 0;
+	pWebVar->swTxRateLimitEnable = 0;
+
+	pWebVar->swUplinkRxRate = 0x7ff;
+	pWebVar->swEth1RxRate = 0x7ff;
+	pWebVar->swEth2RxRate = 0x7ff;
+	pWebVar->swEth3RxRate = 0x7ff;
+	pWebVar->swEth4RxRate = 0x7ff;
+	pWebVar->swUplinkTxRate = 0x7ff;
+	pWebVar->swEth1TxRate = 0x7ff;
+	pWebVar->swEth2TxRate = 0x7ff;
+	pWebVar->swEth3TxRate = 0x7ff;
+	pWebVar->swEth4TxRate = 0x7ff;
+
+	pWebVar->swLoopDetect = 0;
+	pWebVar->swldmethod = 0;
+	pWebVar->swldtime = 0;
+	pWebVar->swldbckfrq = 0;
+	pWebVar->swldsclr = 0;
+	pWebVar->swpabuzzer = 0;
+	pWebVar->swentaglf = 0;
+	pWebVar->swlpttlinit = 0;
+	pWebVar->swlpfpri = 0;
+	pWebVar->swenlpfpri = 0;
+	pWebVar->swdisfltlf = 0;
+	pWebVar->swenlpttl = 0;
+	pWebVar->swEth1LoopStatus = 0;
+	pWebVar->swEth2LoopStatus = 0;
+	pWebVar->swEth3LoopStatus = 0;
+	pWebVar->swEth4LoopStatus = 0;
+	strcpy(pWebVar->swSwitchSid, "52:54:4C:83:05:C0");
+
+	pWebVar->swSfDisBroadcast = 1;
+	pWebVar->swSfDisMulticast = 1;
+	pWebVar->swSfDisUnknown = 1;
+	pWebVar->swSfRule = 0;
+	pWebVar->swSfResetSrc = 0;
+	pWebVar->swSfIteration = 0;
+	pWebVar->swSfThresholt = 0;
+
+	//mac limit
+	pWebVar->swMlSysEnable = 0;
+	pWebVar->swMlSysThresholt = 0;
+	pWebVar->swMlEth1Enable = 0;
+	pWebVar->swMlEth1Thresholt = 0;
+	pWebVar->swMlEth2Enable = 0;
+	pWebVar->swMlEth2Thresholt = 0;
+	pWebVar->swMlEth3Enable = 0;
+	pWebVar->swMlEth3Thresholt = 0;
+	pWebVar->swMlEth4Enable = 0;
+	pWebVar->swMlEth4Thresholt = 0;
+
+	cltindex = (pWebVar->cnuid - 1)/MAX_CNUS_PER_CLT + 1;
+	cnuindex = (pWebVar->cnuid - 1)%MAX_CNUS_PER_CLT + 1;
+	
+	//T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_ERASE_MOD_A;
+	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->clt = cltindex;
+	req_data->cnu = cnuindex;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	
+	return __http2cmm_comm(buf, len);
 	
 }
 

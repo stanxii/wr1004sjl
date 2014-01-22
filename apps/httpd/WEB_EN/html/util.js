@@ -323,6 +323,44 @@ function isValidVlanId(vlanid) {
 	return true;
 }
 
+function isValidMlsys(thresholt) {
+	var msg;
+	var value;
+	if ( isNaN(parseInt(thresholt)) == true )
+	{
+            msg = 'Thresholt value "' + thresholt + '" is invalid.';
+            alert(msg);
+            return false;
+       }
+	value = parseInt(thresholt);
+	if ( value < 0 || value > 127 )
+	{
+            msg = 'Thresholt value "' + thresholt + '" is out of range [0-127].';
+            alert(msg);
+            return false;
+       }
+	return true;
+}
+
+function isValidMlport(thresholt) {
+	var msg;
+	var value;
+	if ( isNaN(parseInt(thresholt)) == true )
+	{
+            msg = 'Thresholt value "' + thresholt + '" is invalid.';
+            alert(msg);
+            return false;
+       }
+	value = parseInt(thresholt);
+	if ( value < 0 || value > 31 )
+	{
+            msg = 'Thresholt value "' + thresholt + '" is out of range [0-31].';
+            alert(msg);
+            return false;
+       }
+	return true;
+}
+
 function isValidBctrlValue(value) {
 	var msg;
 	var value;

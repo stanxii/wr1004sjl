@@ -1298,6 +1298,65 @@ int cli2cmm_DoDsdtMacBinding(stDsdtMacBinding *macBindingInfo)
 	return __cli2cmm_comm(buf, len);
 }
 
+/********************************************************************************************
+*	函数名称:cli2cmm_do_aclDropMme
+*	函数功能:
+*********************************************************************************************/
+int cli2cmm_do_aclDropMme(uint16_t cltid, uint16_t cnuid)
+{
+	uint32_t len = 0;
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_DO_CNU_ACL_DROP_MME;
+	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
+	req->HEADER.fragment = 0;
+	req_data->clt = cltid;
+	req_data->cnu = cnuid;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	return __cli2cmm_comm(buf, len);
+}
+
+/********************************************************************************************
+*	函数名称:cli2cmm_undo_aclDropMme
+*	函数功能:
+*********************************************************************************************/
+int cli2cmm_undo_aclDropMme(uint16_t cltid, uint16_t cnuid)
+{
+	uint32_t len = 0;
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_UNDO_CNU_ACL_DROP_MME;
+	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
+	req->HEADER.fragment = 0;
+	req_data->clt = cltid;
+	req_data->cnu = cnuid;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	return __cli2cmm_comm(buf, len);
+}
+
+
 #if 0
 int cli2cmm_upgradeApp(void)
 {

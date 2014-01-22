@@ -1080,6 +1080,15 @@ int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
 			printf("-p%d tx_bandwidth_control_enable: %d\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_control_enable);
 			printf("-p%d tx_bandwidth_value: 0x%03x\n", i, rtl8306e->bandwidthConfig.txPort[i].bandwidth_value);
 		}
+		printf("-storm filter settings:\n");
+		printf("-rule: %d\n", rtl8306e->stormFilter.rule);
+		printf("-disable_broadcast: %d\n", rtl8306e->stormFilter.disable_broadcast);
+		printf("-disable_multicast: %d\n", rtl8306e->stormFilter.disable_multicast);
+		printf("-disable_unknown: %d\n", rtl8306e->stormFilter.disable_unknown);
+		printf("-iteration: %d\n", rtl8306e->stormFilter.iteration);
+		printf("-thresholt_counter: %d\n", rtl8306e->stormFilter.thresholt);
+		printf("-reset_source: %d\n", rtl8306e->stormFilter.reset_source);
+		
 		printf("-port loop detect config and status:\n");
 		printf("-sid: %02X:%02X:%02X:%02X:%02X:%02X\n", 
 			rtl8306e->loopDetect.sid[0], rtl8306e->loopDetect.sid[1], 
@@ -1102,13 +1111,30 @@ int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
 		{
 			printf("-p%d loop status: 0x%03x\n", i, rtl8306e->loopDetect.port_loop_status[i]);
 		}
+		printf("-mac limit config:\n");
+		printf("-action: %d\n", rtl8306e->macLimit.action);
+		printf("-system enable: %d\n", rtl8306e->macLimit.system.enable);
+		printf("-system mport: %d\n", rtl8306e->macLimit.system.mport);
+		printf("-system thresholt: %d\n", rtl8306e->macLimit.system.thresholt);
+		printf("-system counter: %d\n", rtl8306e->macLimit.system.counter);
+		for(i=0;i<4;i++)
+		{
+			printf("-p%d mac limit enable: %d\n", i, rtl8306e->macLimit.port[i].enable);
+			printf("-p%d mac limit thresholt: %d\n", i, rtl8306e->macLimit.port[i].thresholt);
+			printf("-p%d mac limit counter: %d\n", i, rtl8306e->macLimit.port[i].counter);
+		}
+
+		printf("-port control config:\n");
+		for(i=0;i<5;i++)
+		{
+			printf("-port[%d] enable: %d\n", i, rtl8306e->portControl.port[i].enable);
+		}
 		
 		printf("\n\n");
 		return 0;
 	}
 	return -1;
 }
-
 
 int MMEAD_MSG_DEBUG_ENABLE(T_UDP_SK_INFO *sk, uint32_t enable)
 {

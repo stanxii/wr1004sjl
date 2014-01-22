@@ -294,6 +294,9 @@
 						HELP_FMT "cnu-switch read phy <phyad> register <regad> page <pageid>"  \
 						HELP_FMT "cnu-switch write <regvalue> phy <phyad> register <regad> page <pageid>"
 
+/* acl 的帮助信息 */
+#define CMDHELP_GLB_CNU_ACL                 HELP_FUN "Drop mme by acl."
+
 #define CMDHELP_GLB_MME_MDIO            HELP_FUN "Read or write phy register value from MDIO interface." \
 						HELP_SPC "phyad	: the internal phy address. range of 0x0~0xf."\
 						HELP_SPC "regad	: the internal phy register address. range of 0x0~0xFF."\
@@ -498,6 +501,9 @@
 						HELP_SPC "index	:CNU index in the topology."\
 						HELP_FMT "undo permit cnu <index>" \
 						HELP_FMT "undo permit cnu 1/1"
+
+/*undo cnu acl drop mme 的帮助信息 */
+#define CMDHELP_GLB_UNDO_CNU_ACL          HELP_FUN "Undo acl-drop-mme."
 						
 /*user del 的帮助信息 */
 #define CMDHELP_GLB_USER_DEL          HELP_FUN "del user." \
