@@ -1,102 +1,156 @@
 <html>
-	<head>
-		<link rel="stylesheet" href='stylemain.css' type='text/css'>
-		<link rel="stylesheet" href='colors.css' type='text/css'>
-		<meta http-equiv="Content-Type" content="text/html;charset=utf-8;no-cache">
-		<title>WEC9720EK</title>
-		<base target="_self">
-		<script language="javascript" src="util.js"></script>
-		<SCRIPT language=JavaScript>
-			function btnReturn()
-			{
-				window.location = "previewCnus.cgi";
-			}
+<head>
+<title>EoC</title>
+<base target='_self'>
+<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'/>
+<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>
+<link rel='stylesheet' href='css/redmond/demos.css'/>
+<link rel='stylesheet' href='stylemain.css' type='text/css'/>
+<link rel='stylesheet' href='colors.css' type='text/css'/>
+<script src='js/jquery-1.9.1.js'></script>
+<script src='js/jquery-ui-1.10.3.custom.min.js'></script>
+<script language='javascript' src='util.js'></script>
+<script language='javascript'>
+	
+function btnReturn()
+{
+	window.location = 'previewTopology.cgi';
+}
 			
-			function btnApply()
-			{				
-				var loc = 'cnuCreate.cgi?';
-				with ( document.forms[0] )
-				{
-					if( isValidMacAddress(cnuMac.value) == false )
-					{
-						alert('MAC address "' + cnuMac.value + '" is invalid.');
-						return;
-					}
-					loc += 'newCnuMac=' + cnuMac.value;
-					loc += '&newCnuModel=' + devModel.selectedIndex;
-					loc += '&newCnuPro=' + devPro.selectedIndex;
-				}
-				var code = 'location="' + loc + '"';
-				//alert(code);
-    		eval(code);
-			}
-		</SCRIPT>
-   </head>
-   <body>
-      <blockquote>
-         <form>
-            <br>
-            <table border="0" cellpadding="5" cellspacing="0">
-            	<tr>
-            		<td class='maintitle'><b>创建新设备</b></td>            		
-            	</tr>                       
-		        </table>
-		        <table border="0" cellpadding="0" cellspacing="0">            	
-            	<tr>
-								<td class='mainline' width=800></td>
-							</tr>                           
-		        </table>
-          	<br>通过该页面，您可以创建一个新的CNU设备。新设备创建之后您可以对该设备进行离线配置。</br>
-            	 <br>            	
-               <br>
-               <table border="0" cellpadding="0" cellspacing="0">
-								<tr>
-									<td class='diagret' width=200>录入设备信息</td>
-									<td class='diagret' width=360>&nbsp;</td>
-								</tr>                           
-			        </table>
-			        <br>
-              <table border="0" cellpadding="0" cellspacing="0">
-               <tr>
-                  <td class='diagdata' width=110>MAC地址:</td>
-                  <td class='diagdata' width=150><input type='text' name='cnuMac' size="20"></td>
-                  <td class='diagdata' width=300>格式如：30:71:B2:20:12:00</td>
-               </tr>
-               <tr>
-                  <td class='diagdata'>设备类型:</td>
-                  <td class='diagdata'>
-                  	<select name='devModel' size="1">
-                  		<option value="0" selected='selected'>自动检测
-                      <option value="1">WEC701 C4
-                    </select>
-                  </td>
-                  <td class='diagdata'>&nbsp;</td>
-               </tr> 
-               <tr>
-                  <td class='diagdata'>模板:</td>
-                  <td class='diagdata'>
-                  	<select name='devPro' size="1">
-                  		<option value="0" selected='selected' disabled>缺省模板                      
-                    </select>
-                  </td>
-                  <td class='diagdata'>&nbsp;</td>
-               </tr>             
-        </table>
-        <br>
-        <table border="0" cellpadding="0" cellspacing="0">
-					<tr>
-						<td class='listend' width=560></td>
-					</tr>                           
-        </table>
-        <br><b>注意：</b>如果您不确定设备类型是什么，请选择"自动检测"。
-        <br><b>提示：</b>新用户的创建需要一些时间，创建操作完成之后，您在用户表中有可能不能立即看到该设备，
-        <br>请等待几秒钟后点击刷新按钮再次尝试。</br>
-        <br><br>
-        <p>
-        	<input type='button' class='btn2L' onClick='btnReturn()' value='返 回'>          	
-        	<input type='button' class='btn2L' onClick='btnApply()' value='确 定'>
-        </p>
-			</form>
-		</blockquote>
-	</body>
+function btnApply()
+{				
+	var loc = 'cnuCreate.cgi?';
+	
+
+	if( isValidMacAddress($('#cnuMac').val()) == false )
+	{
+		alert('MAC地址 "' + $('#cnuMac').val() + '" 输入不正确！');
+		return;
+	}
+	loc += 'newCnuMac=' + $('#cnuMac').val();
+	loc += '&newCnuModel=' + $('#devModel').val();
+	loc += '&newCnuPro=' + $('#devPro').val();
+
+	var code = 'location="' + loc + '"';
+	//alert(code);
+	eval(code);
+}
+
+$(function()
+{
+	$('#devModel').val(0);
+	$('#devPro').val(0);
+	$('#accordion').accordion({
+		collapsible: true,
+		heightStyle: 'content' 
+	});
+
+	$('#dialog').dialog({
+		autoOpen: false,
+		width:370,
+		show:
+		{
+			effect: 'blind',
+			duration: 1000
+		},
+		hide:
+		{
+			effect: 'explode',
+			duration: 1000
+		}
+	});
+	
+	$('#opener').button(
+		{
+			icons:
+			{
+				primary: 'ui-icon-help'
+			},
+			text: false
+		}
+	).click(function(){
+		$('#dialog').dialog('open');
+	});
+
+	$('#comBtn').button({
+			icons: {
+				primary: 'ui-icon-arrowthickstop-1-s'
+			},
+	});
+	$('#comBtn').button().click(function(event){
+		event.preventDefault();
+		btnApply();
+	});
+
+	$('#retBtn').button({
+			icons: {
+				primary: 'ui-icon-carat-1-w'
+			},
+	});
+	$('#retBtn').button().click(function(event){
+		event.preventDefault();
+		btnReturn();
+	});
+
+});
+
+</script>
+</head>
+<body>
+<blockquote>
+<br>
+<table border=0 cellpadding=5 cellspacing=0>
+	<tr><td class='maintitle'><b>创建新设备</b></td></tr>                       
+</table>
+<table border=0 cellpadding=0 cellspacing=0 width='100%'>            	
+	<tr><td class='mainline' width='100%'></td></tr>                           
+</table>
+<br>	
+<br>
+<div id='accordion'>
+	<h3>创建新的终端用户</h3>
+	<div>
+		<table border=0 cellpadding=0 cellspacing=0>		  		
+			<tr>
+				<td class='diagdata' width=160>MAC地址</td>
+				<td class='diagdata' width=180><input type='text' id='cnuMac' size=20></td>
+				<td class='diagdata' width=240>如：30:71:B2:20:12:00</td>
+			</tr>
+			<tr>
+	      <td class='diagdata'>设备型号</td>
+	      <td class='diagdata'>
+	      	<select id='devModel' size=1>
+	      		<option value=0>自动检测</option>
+	      		<option value=1>WEC701 C4</option>
+	        </select>
+	      </td>
+	      <td class='diagdata'>&nbsp;</td>
+			</tr> 
+			<tr>
+				<td class='diagdata'>模板</td>
+				<td class='diagdata'>
+					<select id='devPro' size=1>
+					<option value=0>缺省模板</option>
+					</select>
+				</td>
+				<td class='diagdata'>&nbsp;</td>
+			</tr> 
+		</table>  		
+	</div>
+</div>
+<p>
+	<button id='retBtn'>返 回</button>
+	<button id='comBtn'>确 认</button>
+	<button id='opener'>帮助</button>
+</p>
+<div id='dialog' title='帮助信息'>
+	通过该页面，您可以创建一个新的CNU设备。新设备创建之后您可以对该设备进行离线配置。</br>
+	<br>注意：</br>
+	1. 如果您不确定设备类型是什么，请选择"自动检测"；</br>
+	2. 新用户的创建需要一些时间，创建操作完成之后，您在用户表中有可能不能立即看到该设备，请等待几秒钟后点击刷新按钮再次尝试。
+	</br>
+</div>
+</blockquote>
+</body>
 </html>
+

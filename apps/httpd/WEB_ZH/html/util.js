@@ -265,14 +265,14 @@ function isValidUDPPort(port) {
 	var value;
 	if ( isNaN(parseInt(port)) == true )
 	{
-            msg = 'Port "' + port + '" is invalid.';
+            msg = '端口号 "' + port + '" 输入不正确！';
             alert(msg);
             return false;
        }
 	value = parseInt(port);
 	if ( value < 1 || value > 65535 )
 	{
-            msg = 'Port "' + port + '" is out of range [1-65535].';
+            msg = '端口号 "' + port + '" 的有效范围为[1-65535]！';
             alert(msg);
             return false;
        }
@@ -294,7 +294,7 @@ function isValidMacAddress(address) {
       for ( j = 0; j < addrParts[i].length; j++ ) {
          c = addrParts[i].toLowerCase().charAt(j);
          if ( (c >= '0' && c <= '9') ||
-              (c >= 'a' && c <= 'f') )
+              (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
             continue;
          else
             return false;
@@ -309,14 +309,71 @@ function isValidVlanId(vlanid) {
 	var value;
 	if ( isNaN(parseInt(vlanid)) == true )
 	{
-            msg = 'Vlan id "' + vlanid + '" is invalid.';
+            msg = 'Vlan号 "' + vlanid + '" 输入不正确！';
             alert(msg);
             return false;
        }
 	value = parseInt(vlanid);
 	if ( value < 1 || value > 4094 )
 	{
-            msg = 'Vlan id "' + vlanid + '" is out of range [1-4094].';
+            msg = 'Vlan号 "' + vlanid + '" 的有效范围为[1-4094]！';
+            alert(msg);
+            return false;
+       }
+	return true;
+}
+
+function isValidMlsys(thresholt) {
+	var msg;
+	var value;
+	if ( isNaN(parseInt(thresholt)) == true )
+	{
+            msg = '阀值 "' + thresholt + '" 输入不正确！';
+            alert(msg);
+            return false;
+       }
+	value = parseInt(thresholt);
+	if ( value < 0 || value > 127 )
+	{
+            msg = '阀值 "' + thresholt + '" 的有效范围为[0-127]！';
+            alert(msg);
+            return false;
+       }
+	return true;
+}
+
+function isValidMlport(thresholt) {
+	var msg;
+	var value;
+	if ( isNaN(parseInt(thresholt)) == true )
+	{
+            msg = '阀值 "' + thresholt + '" 输入不正确！';
+            alert(msg);
+            return false;
+       }
+	value = parseInt(thresholt);
+	if ( value < 0 || value > 31 )
+	{
+            msg = '阀值 "' + thresholt + '" 的有效范围为[0-31]！';
+            alert(msg);
+            return false;
+       }
+	return true;
+}
+
+function isValidBctrlValue(value) {
+	var msg;
+	var value;
+	if ( isNaN(parseInt(value)) == true )
+	{
+            msg = '带宽值 "' + value + '" 输入不正确！';
+            alert(msg);
+            return false;
+       }
+	value = parseInt(value);
+	if ( value < 0 || value > 1526 )
+	{
+            msg = '带宽值 "' + value + '" 的有效范围为[0-1526]！';
             alert(msg);
             return false;
        }

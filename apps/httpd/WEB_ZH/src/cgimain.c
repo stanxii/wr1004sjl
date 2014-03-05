@@ -51,6 +51,8 @@ void do_cgi(char *path, FILE *fs) {
    char* query = NULL;
    char* ext = NULL;
    int ret = 0;
+   int cltid = 0;
+   int cnuid = 0;
 
    query = strchr(path, '?');
    if ( query != NULL )
@@ -71,7 +73,7 @@ void do_cgi(char *path, FILE *fs) {
 		{
 			do_upload_finnal();
 		}		
-		/* 升级结束才写日志*/
+		/* Éý¼¶½áÊø²ÅÐ´ÈÕÖ¾*/
 		if( glbWebVar.upgStep == 0 )
 		{
 			/*opt-log*/			
@@ -79,24 +81,30 @@ void do_cgi(char *path, FILE *fs) {
 		}
 	}
 	else if ( strstr(filename, "ntwkcfg.html") != NULL )
-	{
-		strcpy(logmsg, "do network settings");
+	{		
 		ret = http2dbs_setWecNetworkConfig(&glbWebVar);
-		/*opt-log*/			
-		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewNetwork.cgi");
+		/*opt-log*/
+		strcpy(logmsg, "do network settings");
+		http2dbs_writeOptlog(ret, logmsg);		
+		strcpy(glbWebVar.returnUrl, "showNetworkInfo.cmd");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");		
+		strcpy(filename, "/webs/wecOptResult2.html");
+	}
+	else if ( strstr(filename, "previewSnmp.html") != NULL )
+	{
+		//strcpy(glbWebVar.frmloadUrl, "wecSnmpCfg.html");
+		//strcpy(filename, "/webs/wecPreView.html");	
+		strcpy(filename, "/webs/wecSnmpCfg.html");
 	}
 	else if ( strstr(filename, "wecSnmpCfgInfo.html") != NULL )
 	{
-		strcpy(logmsg, "do snmp settings");				
 		ret = http2dbs_setSnmpConfig(&glbWebVar);
-		/*opt-log*/			
-		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewSnmp.cgi");
+		/*opt-log*/
+		strcpy(logmsg, "do snmp settings");
+		http2dbs_writeOptlog(ret, logmsg);			
+		strcpy(glbWebVar.returnUrl, "wecSnmpCfg.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "wecPortPropety.html") != NULL )
 	{
@@ -138,6 +146,16 @@ void do_cgi(char *path, FILE *fs) {
 			strcpy(filename, "/webs/wecOptResult2.html");
 		}
 	}
+	else if ( strstr(filename, "wecWebUsersInfo.html") != NULL )
+	{
+		ret = http2dbs_setWebAdminPwd(&glbWebVar);		
+		/*opt-log*/			
+		http2dbs_writeOptlog(ret, "set web admin password");
+
+		strcpy(glbWebVar.returnUrl, "wecWebUsers.html");
+		glbWebVar.wecOptCode = (ret?1:0);
+		strcpy(filename, "/webs/wecOptResult2.html");
+	}
 	else if ( strstr(filename, "wecCliAdmin.html") != NULL )
 	{
 		strcpy(logmsg, "modify cli admin password");
@@ -146,7 +164,7 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecCliUsers.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "wecCliOpt.html") != NULL )
 	{
@@ -156,7 +174,7 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecCliUsers.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "wecCliUser.html") != NULL )
 	{
@@ -166,7 +184,7 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecCliUsers.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");
+		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cltReboot.html") != NULL )
 	{
@@ -174,7 +192,7 @@ void do_cgi(char *path, FILE *fs) {
 		ret = http2cmm_rebootClt(glbWebVar.cltid);
 		/*opt-log*/		
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "cltManagement.cmd");
+		sprintf(glbWebVar.returnUrl, "cltManagement.cmd?cltid=%d", glbWebVar.cltid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
@@ -189,74 +207,86 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuCreate.html") != NULL )
-	{
-		sprintf(logmsg, "create new cnu <%s>", glbWebVar.newCnuMac);
+	{		
 		ret = http2cmm_createCnu(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "create new cnu <%s>", glbWebVar.newCnuMac);
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		strcpy(glbWebVar.returnUrl, "previewTopology.cgi");
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuReboot.html") != NULL )
 	{
-		sprintf(logmsg, "reboot cnu/1/%d", glbWebVar.cnuid);
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "reboot cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_rebootCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuReload.html") != NULL )
 	{
-		sprintf(logmsg, "reload profile for cnu/1/%d", glbWebVar.cnuid);
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "reload profile for cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_reloadCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuDelete.html") != NULL )
 	{
-		sprintf(logmsg, "delete cnu/1/%d", glbWebVar.cnuid);
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "delete cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_deleteCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		strcpy(glbWebVar.returnUrl, "previewTopology.cgi");
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuPermit.html") != NULL )
 	{
-		sprintf(logmsg, "permit cnu/1/%d", glbWebVar.cnuid);
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "permit cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_permitCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "cnuUndoPermit.html") != NULL )
 	{
-		sprintf(logmsg, "undo permit cnu/1/%d", glbWebVar.cnuid);
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "undo permit cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_undoPermitCnu(glbWebVar.cnuid);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
-		strcpy(glbWebVar.returnUrl, "previewCnus.cgi");
+		sprintf(glbWebVar.returnUrl, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
 	}
 	else if ( strstr(filename, "macLimit.html") != NULL )
 	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if( glbWebVar.col_macLimit )
 		{
-			sprintf(logmsg, "do mac address limiting for cnu/1/%d", glbWebVar.cnuid);
+			sprintf(logmsg, "do mac address limiting for cnu/%d/%d",  cltid, cnuid);
 		}
 		else
 		{
-			sprintf(logmsg, "uodo mac address limiting for cnu/1/%d", glbWebVar.cnuid);
+			sprintf(logmsg, "uodo mac address limiting for cnu/%d/%d",  cltid, cnuid);
 		}		
 		ret = http2cmm_doMacLimiting(&glbWebVar);
 		/*opt-log*/			
@@ -271,7 +301,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setAgTime.html") != NULL )
 	{
-		sprintf(logmsg, "do aging time settings for cnu/1/%d", glbWebVar.cnuid);	
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "do aging time settings for cnu/%d/%d", cltid, cnuid);	
 		ret = http2cmm_doAgTimeSettings(&glbWebVar);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -285,13 +317,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setSFilter.html") != NULL )
 	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_sfbSts|glbWebVar.col_sfuSts|glbWebVar.col_sfmSts)
 		{
-			sprintf(logmsg, "do storm filter settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do storm filter settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "undo storm filter settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo storm filter settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		ret = http2cmm_doSFilterSettings(&glbWebVar);
 		/*opt-log*/			
@@ -306,13 +340,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setCnuVlan.html") != NULL )
 	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_vlanSts)
 		{
-			sprintf(logmsg, "do vlan settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do vlan settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "undo vlan settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo vlan settings for cnu/%d/%d",  cltid, cnuid);	
 		}
 		ret = http2cmm_doCnuVlanSettings(&glbWebVar);
 		/*opt-log*/			
@@ -327,13 +363,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setPLinkSts.html") != NULL )
 	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_eth1sts && glbWebVar.col_eth2sts && glbWebVar.col_eth3sts && glbWebVar.col_eth4sts)
 		{
-			sprintf(logmsg, "undo port shut down settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo port shut down settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "do port shut down settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do port shut down settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		ret = http2cmm_doShutdownSettings(&glbWebVar);
 		/*opt-log*/			
@@ -348,13 +386,15 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "doRateLimit.html") != NULL )
 	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
 		if(glbWebVar.col_rxLimitSts|glbWebVar.col_txLimitSts)
 		{
-			sprintf(logmsg, "do port speed limit settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "do port speed limit settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		else
 		{
-			sprintf(logmsg, "undo port speed limit settings for cnu/1/%d", glbWebVar.cnuid);	
+			sprintf(logmsg, "undo port speed limit settings for cnu/%d/%d", cltid, cnuid);	
 		}
 		ret = http2cmm_doSpeedLimitSettings(&glbWebVar);
 		/*opt-log*/			
@@ -369,7 +409,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "saveProfile.html") != NULL )
 	{
-		sprintf(logmsg, "save profile for cnu/1/%d", glbWebVar.cnuid);
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "save profile for cnu/%d/%d", cltid, cnuid);
 		ret = http2dbs_saveConfig();
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -379,14 +421,18 @@ void do_cgi(char *path, FILE *fs) {
 			glbWebVar.wecOptCode = CMM_FAILED;
 			strcpy(filename, "/webs/wecOptResult2.html");
 		}
-		else sprintf(filename, "wecEocMgmt.cmd");
+		else
+		{
+			sprintf(filename, "cnuManagement.cmd?cnuid=%d", glbWebVar.cnuid);
+		}
 	}
 	else if ( strstr(filename, "setCltAgTime.html") != NULL )
 	{
-		sprintf(logmsg, "do aging time settings for clt/%d", glbWebVar.cltid);	
 		ret = http2dbs_doCltAgTimeSettings(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "do aging time settings for clt/%d", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
+		
 		if( 0 != ret )
 		{
 			sprintf(glbWebVar.returnUrl, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
@@ -397,9 +443,23 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setCltDeCap.html") != NULL )
 	{
-		sprintf(logmsg, "do default cap settings for clt/%d", glbWebVar.cltid);	
 		ret = http2dbs_doCltDecapSettings(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "do default cap settings for clt/%d", glbWebVar.cltid);	
+		http2dbs_writeOptlog(ret, logmsg);
+		if( 0 != ret )
+		{
+			sprintf(glbWebVar.returnUrl, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
+			glbWebVar.wecOptCode = CMM_FAILED;
+			strcpy(filename, "/webs/wecOptResult2.html");
+		}
+		else sprintf(filename, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
+	}
+	else if ( strstr(filename, "enableCltQoS.html") != NULL )
+	{
+		ret = http2dbs_doCltQosEnable(&glbWebVar);
+		/*opt-log*/	
+		sprintf(logmsg, "%s qos for clt/%d", glbWebVar.col_tbaPriSts?"enable":"disable", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
 		if( 0 != ret )
 		{
@@ -411,9 +471,9 @@ void do_cgi(char *path, FILE *fs) {
 	}
 	else if ( strstr(filename, "setCltQoS.html") != NULL )
 	{
-		sprintf(logmsg, "do qos settings for clt/%d", glbWebVar.cltid);	
 		ret = http2dbs_doCltQosSettings(&glbWebVar);
-		/*opt-log*/			
+		/*opt-log*/	
+		sprintf(logmsg, "do qos settings for clt/%d", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
 		if( 0 != ret )
 		{
@@ -424,10 +484,10 @@ void do_cgi(char *path, FILE *fs) {
 		else sprintf(filename, "editCltPro.cmd?cltid=%d", glbWebVar.cltid);
 	}
 	else if ( strstr(filename, "saveCltProfile.html") != NULL )
-	{
-		sprintf(logmsg, "save profile for clt/%d", glbWebVar.cltid);
+	{		
 		ret = http2dbs_saveConfig();
-		/*opt-log*/			
+		/*opt-log*/
+		sprintf(logmsg, "save profile for clt/%d", glbWebVar.cltid);
 		http2dbs_writeOptlog(ret, logmsg);
 		if( 0 != ret )
 		{
@@ -435,7 +495,7 @@ void do_cgi(char *path, FILE *fs) {
 			glbWebVar.wecOptCode = CMM_FAILED;
 			strcpy(filename, "/webs/wecOptResult2.html");
 		}
-		else sprintf(filename, "cltManagement.cmd");
+		else sprintf(filename, "cltManagement.cmd?cltid=%d", glbWebVar.cltid);
 	}
 	else if ( strstr(filename, "doWlistCtl.html") != NULL )
 	{
@@ -445,11 +505,13 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		strcpy(glbWebVar.returnUrl, "wecWlistCtrl.html");
 		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");	
+		strcpy(filename, "/webs/wecOptResult2.html");	
 	}
 	else if ( strstr(filename, "wecLinkDiag.html") != NULL )
 	{
-		sprintf(logmsg, "do physical link status diagnosis for cnu/1/%d", glbWebVar.cnuid);
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		sprintf(logmsg, "do physical link status diagnosis for cnu/%d/%d", cltid, cnuid);
 		ret = http2cmm_doLinkDiag(&glbWebVar);
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, logmsg);
@@ -487,40 +549,55 @@ void do_cgi(char *path, FILE *fs) {
 		/*opt-log*/			
 		http2dbs_writeOptlog(0, logmsg);
 		sprintf(filename, "portPropety.cmd?portid=%d", glbWebVar.portid);
-	}
-	else if ( strstr(filename, "wecWebUsersInfo.html") != NULL )
-	{
-		ret = http2dbs_setWebAdminPwd(&glbWebVar);		
-		/*opt-log*/			
-		http2dbs_writeOptlog(ret, "set web admin password");
-		strcpy(glbWebVar.returnUrl, "wecWebUsers.html");
-		glbWebVar.wecOptCode = (ret?1:0);
-		strcpy(filename, "/webs/wecOptResult.html");	
-	}
+	}	
 	else if ( strstr(filename, "previewTopology.html") != NULL )
 	{
 		strcpy(glbWebVar.frmloadUrl, "wecTopology.cmd");
-		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "previewCnus.html") != NULL )
-	{
-		strcpy(glbWebVar.frmloadUrl, "wecEocMgmt.cmd");
 		strcpy(filename, "/webs/wecPreView.html");	
 	}
 	else if ( strstr(filename, "previewLinkDiag.html") != NULL )
 	{
 		strcpy(glbWebVar.frmloadUrl, "wecLinkDiag.cmd");
 		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "previewNetwork.html") != NULL )
+	}	
+	else if ( strstr(filename, "rtl8306eConfig.html") != NULL )
 	{
-		strcpy(glbWebVar.frmloadUrl, "wecNetworkConfig.html");
-		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "previewSnmp.html") != NULL )
+		cgiInitRtl8306eSettings();
+		//sprintf(glbWebVar.frmloadUrl, "rtl8306eConfig.cgi?cnuid=%d", glbWebVar.cnuid);
+		strcpy(filename, "rtl8306eConfigView.cmd");
+	}	
+	else if ( strstr(filename, "rtl8306eConfigRead.html") != NULL )
 	{
-		strcpy(glbWebVar.frmloadUrl, "wecSnmpCfg.html");
-		strcpy(filename, "/webs/wecPreView.html");	
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		ret = http2cmm_readSwitchSettings(&glbWebVar);
+		//strcpy(filename, "/webs/rtl8306eConfig.html");
+		strcpy(filename, "rtl8306eConfigView.cmd");
+		/*opt-log*/
+		sprintf(logmsg, "read cnu/%d/%d switch settings", cltid, cnuid);
+		http2dbs_writeOptlog(ret, logmsg);
+	}
+	else if ( strstr(filename, "rtl8306eConfigWrite.html") != NULL )
+	{
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		ret = http2cmm_writeSwitchSettings(&glbWebVar);
+		//strcpy(filename, "/webs/rtl8306eConfig.html");
+		strcpy(filename, "rtl8306eConfigView.cmd");		
+		/*opt-log*/
+		sprintf(logmsg, "write cnu/%d/%d switch settings", cltid, cnuid);
+		http2dbs_writeOptlog(ret, logmsg);
+	}
+	else if ( strstr(filename, "rtl8306eConfigErase.html") != NULL )
+	{	
+		cltid = (glbWebVar.cnuid-1)/MAX_CNUS_PER_CLT + 1;
+		cnuid = (glbWebVar.cnuid-1)%MAX_CNUS_PER_CLT + 1;
+		ret = http2cmm_eraseSwitchSettings(&glbWebVar);
+		//strcpy(filename, "/webs/rtl8306eConfig.html");
+		strcpy(filename, "rtl8306eConfigView.cmd");
+		/*opt-log*/
+		sprintf(logmsg, "erase cnu/%d/%d switch settings", cltid, cnuid);
+		http2dbs_writeOptlog(ret, logmsg);
 	}
 	
 	if( strstr(filename, ".cmd") != NULL )
@@ -726,6 +803,39 @@ CGI_ITEM CgiGetTable[] = {
    { "frmloadUrl", (void *)glbWebVar.frmloadUrl, CGI_TYPE_STR },
    { "returnUrl", (void *)glbWebVar.returnUrl, CGI_TYPE_STR },
    { "wecOptCode", (void *)&glbWebVar.wecOptCode, CGI_TYPE_NUM }, 
+
+   { "swVlanEnable", (void *)&glbWebVar.swVlanEnable, CGI_TYPE_NUM }, 
+   { "swUplinkPortVMode", (void *)&glbWebVar.swUplinkPortVMode, CGI_TYPE_NUM }, 
+   { "swEth1PortVMode", (void *)&glbWebVar.swEth1PortVMode, CGI_TYPE_NUM }, 
+   { "swEth2PortVMode", (void *)&glbWebVar.swEth2PortVMode, CGI_TYPE_NUM }, 
+   { "swEth3PortVMode", (void *)&glbWebVar.swEth3PortVMode, CGI_TYPE_NUM }, 
+   { "swEth4PortVMode", (void *)&glbWebVar.swEth4PortVMode, CGI_TYPE_NUM }, 
+
+   { "swUplinkPortVid", (void *)&glbWebVar.swUplinkPortVid, CGI_TYPE_NUM }, 
+   { "swEth1PortVid", (void *)&glbWebVar.swEth1PortVid, CGI_TYPE_NUM }, 
+   { "swEth2PortVid", (void *)&glbWebVar.swEth2PortVid, CGI_TYPE_NUM }, 
+   { "swEth3PortVid", (void *)&glbWebVar.swEth3PortVid, CGI_TYPE_NUM }, 
+   { "swEth4PortVid", (void *)&glbWebVar.swEth4PortVid, CGI_TYPE_NUM }, 
+
+   { "swRxRateLimitEnable", (void *)&glbWebVar.swRxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swTxRateLimitEnable", (void *)&glbWebVar.swTxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swUplinkRxRate", (void *)&glbWebVar.swUplinkRxRate, CGI_TYPE_NUM }, 
+   { "swEth1RxRate", (void *)&glbWebVar.swEth1RxRate, CGI_TYPE_NUM }, 
+   { "swEth2RxRate", (void *)&glbWebVar.swEth2RxRate, CGI_TYPE_NUM },
+   { "swEth3RxRate", (void *)&glbWebVar.swEth3RxRate, CGI_TYPE_NUM },
+   { "swEth4RxRate", (void *)&glbWebVar.swEth4RxRate, CGI_TYPE_NUM },
+   { "swUplinkTxRate", (void *)&glbWebVar.swUplinkTxRate, CGI_TYPE_NUM },
+   { "swEth1TxRate", (void *)&glbWebVar.swEth1TxRate, CGI_TYPE_NUM },
+   { "swEth2TxRate", (void *)&glbWebVar.swEth2TxRate, CGI_TYPE_NUM },
+   { "swEth3TxRate", (void *)&glbWebVar.swEth3TxRate, CGI_TYPE_NUM },
+   { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
+
+   //{ "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
+   //{ "swSwitchSid", (void *)glbWebVar.swSwitchSid, CGI_TYPE_STR },
+   //{ "swEth1LoopStatus", (void *)&glbWebVar.swEth1LoopStatus, CGI_TYPE_NUM },
+   //{ "swEth2LoopStatus", (void *)&glbWebVar.swEth2LoopStatus, CGI_TYPE_NUM },
+   //{ "swEth3LoopStatus", (void *)&glbWebVar.swEth3LoopStatus, CGI_TYPE_NUM },
+   //{ "swEth4LoopStatus", (void *)&glbWebVar.swEth4LoopStatus, CGI_TYPE_NUM },
    
    { NULL, NULL, CGI_TYPE_NONE }
 };
@@ -743,7 +853,7 @@ void cgiGetVar(char *varName, char *varValue) {
    /*You can add any source code here to synchronize the date you instresting between webgui and dbs*/
    if ( strcmp(varName, "wecIpaddr") == 0 )
    {
-   	/* 从数据库获取*/
+   	/* ´ÓÊý¾Ý¿â»ñÈ¡*/
 	http2dbs_getWecIpaddr(varValue);		
 	return;
    }
@@ -816,7 +926,7 @@ void cgiGetVar(char *varName, char *varValue) {
    {
 	http2dbs_getWlistStatus(varValue);
 	return;
-   }
+   }   
    else if ( strcmp(varName, "wecTemprature") == 0 )
    {
 #ifdef __AT30TK175STK__
@@ -824,19 +934,19 @@ void cgiGetVar(char *varName, char *varValue) {
 	{
 		if( 0 == temp_data.sign )
 		{
-			sprintf(varValue, "+%d.%d 摄氏度", temp_data.itemp, temp_data.ftemp);
+			sprintf(varValue, "+%d.%d", temp_data.itemp, temp_data.ftemp);
 		}
 		else
 		{
-			sprintf(varValue, "-%d.%d 摄氏度", temp_data.itemp, temp_data.ftemp);
+			sprintf(varValue, "-%d.%d", temp_data.itemp, temp_data.ftemp);
 		}
 	}
 	else
 	{
-		strcpy(varValue, "未知");
+		strcpy(varValue, "Unknown");
 	}
 #else
-	strcpy(varValue, "系统不支持");
+	strcpy(varValue, "Not supported");
 #endif
 	return;
    }
@@ -1027,6 +1137,56 @@ CGI_ITEM CgiSetTable[] = {
    { "cliAdminPwd", (void *)&glbWebVar.cliAdminPwd, CGI_TYPE_STR },
    { "cliOptPwd", (void *)&glbWebVar.cliOptPwd, CGI_TYPE_STR },
    { "cliUserPwd", (void *)&glbWebVar.cliUserPwd, CGI_TYPE_STR },
+
+   { "swVlanEnable", (void *)&glbWebVar.swVlanEnable, CGI_TYPE_NUM }, 
+   { "swUplinkPortVMode", (void *)&glbWebVar.swUplinkPortVMode, CGI_TYPE_NUM }, 
+   { "swEth1PortVMode", (void *)&glbWebVar.swEth1PortVMode, CGI_TYPE_NUM }, 
+   { "swEth2PortVMode", (void *)&glbWebVar.swEth2PortVMode, CGI_TYPE_NUM }, 
+   { "swEth3PortVMode", (void *)&glbWebVar.swEth3PortVMode, CGI_TYPE_NUM }, 
+   { "swEth4PortVMode", (void *)&glbWebVar.swEth4PortVMode, CGI_TYPE_NUM }, 
+
+   { "swUplinkPortVid", (void *)&glbWebVar.swUplinkPortVid, CGI_TYPE_NUM }, 
+   { "swEth1PortVid", (void *)&glbWebVar.swEth1PortVid, CGI_TYPE_NUM }, 
+   { "swEth2PortVid", (void *)&glbWebVar.swEth2PortVid, CGI_TYPE_NUM }, 
+   { "swEth3PortVid", (void *)&glbWebVar.swEth3PortVid, CGI_TYPE_NUM }, 
+   { "swEth4PortVid", (void *)&glbWebVar.swEth4PortVid, CGI_TYPE_NUM }, 
+
+   { "swRxRateLimitEnable", (void *)&glbWebVar.swRxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swTxRateLimitEnable", (void *)&glbWebVar.swTxRateLimitEnable, CGI_TYPE_NUM }, 
+   { "swUplinkRxRate", (void *)&glbWebVar.swUplinkRxRate, CGI_TYPE_NUM }, 
+   { "swEth1RxRate", (void *)&glbWebVar.swEth1RxRate, CGI_TYPE_NUM }, 
+   { "swEth2RxRate", (void *)&glbWebVar.swEth2RxRate, CGI_TYPE_NUM },
+   { "swEth3RxRate", (void *)&glbWebVar.swEth3RxRate, CGI_TYPE_NUM },
+   { "swEth4RxRate", (void *)&glbWebVar.swEth4RxRate, CGI_TYPE_NUM },
+   { "swUplinkTxRate", (void *)&glbWebVar.swUplinkTxRate, CGI_TYPE_NUM },
+   { "swEth1TxRate", (void *)&glbWebVar.swEth1TxRate, CGI_TYPE_NUM },
+   { "swEth2TxRate", (void *)&glbWebVar.swEth2TxRate, CGI_TYPE_NUM },
+   { "swEth3TxRate", (void *)&glbWebVar.swEth3TxRate, CGI_TYPE_NUM },
+   { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
+
+   { "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
+   { "swSwitchSid", (void *)glbWebVar.swSwitchSid, CGI_TYPE_STR },
+
+   { "swSfDisBroadcast", (void *)&glbWebVar.swSfDisBroadcast, CGI_TYPE_NUM }, 
+   { "swSfDisMulticast", (void *)&glbWebVar.swSfDisMulticast, CGI_TYPE_NUM }, 
+   { "swSfDisUnknown", (void *)&glbWebVar.swSfDisUnknown, CGI_TYPE_NUM }, 
+   { "swSfRule", (void *)&glbWebVar.swSfRule, CGI_TYPE_NUM }, 
+   { "swSfResetSrc", (void *)&glbWebVar.swSfResetSrc, CGI_TYPE_NUM }, 
+   { "swSfIteration", (void *)&glbWebVar.swSfIteration, CGI_TYPE_NUM }, 
+   { "swSfThresholt", (void *)&glbWebVar.swSfThresholt, CGI_TYPE_NUM }, 
+
+   { "swMlSysEnable", (void *)&glbWebVar.swMlSysEnable, CGI_TYPE_NUM }, 
+   { "swMlSysThresholt", (void *)&glbWebVar.swMlSysThresholt, CGI_TYPE_NUM }, 
+   { "swMlEth1Enable", (void *)&glbWebVar.swMlEth1Enable, CGI_TYPE_NUM }, 
+   { "swMlEth1Thresholt", (void *)&glbWebVar.swMlEth1Thresholt, CGI_TYPE_NUM }, 
+   { "swMlEth2Enable", (void *)&glbWebVar.swMlEth2Enable, CGI_TYPE_NUM }, 
+   { "swMlEth2Thresholt", (void *)&glbWebVar.swMlEth2Thresholt, CGI_TYPE_NUM }, 
+   { "swMlEth3Enable", (void *)&glbWebVar.swMlEth3Enable, CGI_TYPE_NUM }, 
+   { "swMlEth3Thresholt", (void *)&glbWebVar.swMlEth3Thresholt, CGI_TYPE_NUM }, 
+   { "swMlEth4Enable", (void *)&glbWebVar.swMlEth4Enable, CGI_TYPE_NUM }, 
+   { "swMlEth4Thresholt", (void *)&glbWebVar.swMlEth4Thresholt, CGI_TYPE_NUM }, 
+
+   { "cnuPermition", (void *)&glbWebVar.cnuPermition, CGI_TYPE_NUM }, 
    
    { NULL, NULL, CGI_TYPE_NONE }
 };
@@ -1068,8 +1228,14 @@ void cgiSetTestVar(char *varName, char *varValue) {
 }
 
 
-void cgiGetAllInfo(void) {
-   BcmWeb_getAllInfo(&glbWebVar);
+void cgiGetAllInfo(void) 
+{
+	BcmWeb_getAllInfo(&glbWebVar);
+}
+
+void cgiInitRtl8306eSettings(void)
+{
+	BcmWeb_initRtl8306eSettings(&glbWebVar);
 }
 
 int UpgradeBegin(PWEB_NTWK_VAR pWebVar)
@@ -1188,7 +1354,7 @@ void cgiWriteUpgStep1Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=2';\n");
@@ -1224,7 +1390,7 @@ void cgiWriteUpgStep1Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "</head>\n");
 		fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
 		fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
@@ -1254,7 +1420,7 @@ void cgiWriteUpgStep2Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=3';\n");
@@ -1295,7 +1461,7 @@ void cgiWriteUpgStep2Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "</head>\n");
 		fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
 		fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
@@ -1325,7 +1491,7 @@ void cgiWriteUpgStep3Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=4';\n");
@@ -1371,7 +1537,7 @@ void cgiWriteUpgStep3Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "</head>\n");
 		fprintf(fs, "<body onLoad='frmLoad()'>\n<blockquote>\n<form>\n");
 		fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
@@ -1406,7 +1572,7 @@ void cgiWriteUpgStep4Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=5';\n");
@@ -1457,7 +1623,7 @@ void cgiWriteUpgStep4Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1518,7 +1684,7 @@ void cgiWriteUpgStep5Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function upgAction(){\n");
 		fprintf(fs, "	var loc = 'wecUpgradeInfo.cgi?upgStep=6';\n");
@@ -1526,7 +1692,7 @@ void cgiWriteUpgStep5Page(FILE *fs, int ret)
 		fprintf(fs, "	eval(code);\n");
 		fprintf(fs, "}\n");
 		fprintf(fs, "function frmLoad() {\n");
-		fprintf(fs, "	setTimeout('upgAction()', 1000);\n");
+		fprintf(fs, "	setTimeout('upgAction()', 2000);\n");
 		fprintf(fs, "}\n");
 		fprintf(fs, "</SCRIPT>\n");
 		fprintf(fs, "</head>\n");
@@ -1574,7 +1740,7 @@ void cgiWriteUpgStep5Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1640,7 +1806,7 @@ void cgiWriteUpgStep0Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1706,7 +1872,7 @@ void cgiWriteUpgStep0Page(FILE *fs, int ret)
 		fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
 		fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
 		fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-		fprintf(fs, "<title>WEC9720EK</title>\n<base target='_self'>\n");
+		fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n");
 		fprintf(fs, "<SCRIPT language=JavaScript>\n");
 		fprintf(fs, "function reboot(){\n");
 		fprintf(fs, "	var loc = 'main.html';\n");
@@ -1812,7 +1978,7 @@ void cgiWriteMessagePage(FILE *fs, char *title,
    fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
    fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
    fprintf(fs, "<meta HTTP-EQUIV='Pragma' CONTENT='no-cache'>\n");
-   fprintf(fs, "<title></title>\n");
+   fprintf(fs, "<title>EoC</title>\n");
 
    fprintf(fs, "<script language='javascript'>\n");
    fprintf(fs, "<!-- hide\n");
@@ -1981,6 +2147,5 @@ CGI_STATUS cgiGetValueByName(char *query, char *id, char *val) {
    ret = CGI_STS_OK;
    return ret;
 }
-
 
 
