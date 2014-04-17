@@ -765,15 +765,11 @@ GT_STATUS dsdTester_addAtherosMulticastAddressToAllCablePort(void)
 	macEntry.macAddr.arEther[4] = 0x00;
 	macEntry.macAddr.arEther[5] = 0x01;
 
-#ifdef CFG_USE_PLATFORM_WEC9720EK_C22
+#ifdef CFG_USE_PLATFORM_WEC9720EK
 	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
 #endif
 
-#ifdef CFG_USE_PLATFORM_WEC9720EK_S220
-	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
-#endif
-
-#ifdef CFG_USE_PLATFORM_WEC9720EK_XD25
+#ifdef CFG_USE_PLATFORM_WR1004JL
 	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
 #endif
 

@@ -46,33 +46,6 @@ void BcmWeb_getAllInfo(PWEB_NTWK_VAR pWebVar)
 	http2dbs_getAppVersion(pWebVar->wecAppVersion);
 	http2dbs_getManufactory(pWebVar->wecManufactory);
 
-	pWebVar->eth1speed = SPEED_AUTO_NEGOTIATION;
-	pWebVar->eth1duplex = DUPLEX_AUTO_NEGOTIATION;
-	pWebVar->eth1pri = 0;
-	pWebVar->eth1fc = BOOL_FALSE;
-	pWebVar->eth1sts = BOOL_TRUE;
-	pWebVar->eth1linksts = LINKUP_100M_FULL_DUPLEX;
-	
-	pWebVar->eth2speed = SPEED_AUTO_NEGOTIATION;
-	pWebVar->eth2duplex = DUPLEX_AUTO_NEGOTIATION;
-	pWebVar->eth2pri = 0;
-	pWebVar->eth2fc = BOOL_FALSE;
-	pWebVar->eth2sts = BOOL_TRUE;
-	pWebVar->eth2linksts = PORT_LINK_DOWN;
-
-	pWebVar->eth3speed = SPEED_AUTO_NEGOTIATION;
-	pWebVar->eth3duplex = DUPLEX_AUTO_NEGOTIATION;
-	pWebVar->eth3pri = 0;
-	pWebVar->eth3fc = BOOL_FALSE;
-	pWebVar->eth3sts = BOOL_TRUE;
-	pWebVar->eth3linksts = LINKUP_100M_FULL_DUPLEX;
-
-	pWebVar->eth4speed = SPEED_AUTO_NEGOTIATION;
-	pWebVar->eth4duplex = DUPLEX_AUTO_NEGOTIATION;
-	pWebVar->eth4pri = 0;
-	pWebVar->eth4fc = BOOL_FALSE;
-	pWebVar->eth4sts = BOOL_TRUE;
-	pWebVar->eth4linksts = PORT_LINK_DOWN;
 }
 
 void BcmWeb_initRtl8306eSettings(PWEB_NTWK_VAR pWebVar)

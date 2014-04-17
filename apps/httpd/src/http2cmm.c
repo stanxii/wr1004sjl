@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <wecplatform.h>
 #include "syscall.h"
 #include "http2cmm.h"
@@ -365,6 +366,7 @@ int http2cmm_undoPermitCnu(int id)
 	return __http2cmm_comm(buf, len);
 }
 
+#if 0
 int http2cmm_getEth1Stat(PWEB_NTWK_VAR pWebVar)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
@@ -476,67 +478,16 @@ int http2cmm_getCable1Stat(PWEB_NTWK_VAR pWebVar)
 	return CMM_SUCCESS;
 }
 
-int http2cmm_getCable2Stat(PWEB_NTWK_VAR pWebVar)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-	uint32_t *req_data = (uint32_t *)(req->BUF);
-	
-	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
-	T_CMM_PORT_STATS_INFO *ack_data = (T_CMM_PORT_STATS_INFO *)(ack->BUF);
-
-	req->HEADER.usSrcMID = MID_HTTP;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_GET_PORT_STAT;
-	req->HEADER.ulBodyLength = sizeof(uint32_t);
-	req->HEADER.fragment = 0;
-
-	*req_data = PORT_CABLE2_PORT_ID;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-
-	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
-	{
-		pWebVar->eth4rxbc = ack_data->InBroadcasts;
-		pWebVar->eth4rxm = ack_data->InMulticasts;
-		pWebVar->eth4rxu = ack_data->InUnicasts;
-		pWebVar->eth4rxp = ack_data->rxCtr;
-		pWebVar->eth4rxb = ack_data->InGoodOctets;
-		pWebVar->eth4txbc = ack_data->OutBroadcasts;
-		pWebVar->eth4txm = ack_data->OutMulticasts;
-		pWebVar->eth4txu = ack_data->OutUnicasts;
-		pWebVar->eth4txp = ack_data->txCtr;
-		pWebVar->eth4txb = ack_data->OutGoodOctets;
-	}	
-	return CMM_SUCCESS;
-}
-
 int http2cmm_doPortStas(PWEB_NTWK_VAR pWebVar)
 {	
 	http2cmm_getEth1Stat(pWebVar);
 	http2cmm_getEth2Stat(pWebVar);
 	http2cmm_getCable1Stat(pWebVar);
-	http2cmm_getCable2Stat(pWebVar);
+	//http2cmm_getCable2Stat(pWebVar);
 	return CMM_SUCCESS;
 }
 
-int http2cmm_clearPortStats(void)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
 
-	req->HEADER.usSrcMID = MID_HTTP;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_CLEAR_PORT_STAT;
-	req->HEADER.ulBodyLength = 0;
-	req->HEADER.fragment = 0;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-	return __http2cmm_comm(buf, len);
-}
 
 int http2cmm_clearPortStas(PWEB_NTWK_VAR pWebVar)
 {
@@ -586,6 +537,8 @@ int http2cmm_clearPortStas(PWEB_NTWK_VAR pWebVar)
 	
 	return http2cmm_clearPortStats();
 }
+
+#endif
 
 int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar)
 {
@@ -1661,10 +1614,90 @@ int http2cmm_restoreDefault(void)
 	return __http2cmm_comm(buf, len);
 }
 
-int http2cmm_getEth1Propety(PWEB_NTWK_VAR pWebVar)
+int http2cmm_clearPortStats(void)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
 	uint32_t len = 0;
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CLEAR_PORT_STAT;
+	req->HEADER.ulBodyLength = 0;
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	return __http2cmm_comm(buf, len);
+}
+
+int http2cmm_getPortStats(int port, T_CMM_PORT_STATS_INFO *stats)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	assert( NULL != stats );
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	uint32_t *req_data = (uint32_t *)(req->BUF);
+	
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	T_CMM_PORT_STATS_INFO *ack_data = (T_CMM_PORT_STATS_INFO *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_GET_PORT_STAT;
+	req->HEADER.ulBodyLength = sizeof(uint32_t);
+	req->HEADER.fragment = 0;
+
+	*req_data = port;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+
+	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
+	{
+		memcpy(stats, ack_data, sizeof(T_CMM_PORT_STATS_INFO));
+	}
+	else
+	{
+		bzero(stats, sizeof(T_CMM_PORT_STATS_INFO));
+	}
+	return CMM_SUCCESS;
+}
+
+int http2cmm_getPortStatsAll(T_CMM_PORT_STATS_INFO *stats)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	
+	assert( NULL != stats );
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	T_CMM_PORT_STATS_INFO *ack_data = (T_CMM_PORT_STATS_INFO *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_GET_88E6171R_PORT_STATS_ALL;
+	req->HEADER.ulBodyLength =0;
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+
+	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
+	{
+		len = ack->HEADER.ulBodyLength - sizeof(uint16_t);
+		memcpy(stats, ack_data, len);	
+	}	
+	return CMM_SUCCESS;
+}
+
+int http2cmm_getPortPropety(int port, T_CMM_PORT_PROPETY_INFO *propety)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	assert( NULL != propety );
 	
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;
 	uint32_t *req_data = (uint32_t *)(req->BUF);
@@ -1678,163 +1711,46 @@ int http2cmm_getEth1Propety(PWEB_NTWK_VAR pWebVar)
 	req->HEADER.ulBodyLength = sizeof(uint32_t);
 	req->HEADER.fragment = 0;
 
-	*req_data = PORT_ETH1_PORT_ID;
+	*req_data = port;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
 
 	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
 	{
-		pWebVar->eth1speed = ack_data->speed;
-		pWebVar->eth1duplex = ack_data->duplex;
-		pWebVar->eth1pri = ack_data->pri;
-		pWebVar->eth1fc = ack_data->flowControl;
-		pWebVar->eth1linksts = ack_data->linkStatus;
-		pWebVar->eth1sts = ack_data->portStatus;
+		memcpy(propety, ack_data, sizeof(T_CMM_PORT_PROPETY_INFO));
 	}
 	else
 	{
-		pWebVar->eth1speed = SPEED_AUTO_NEGOTIATION;
-		pWebVar->eth1duplex = DUPLEX_AUTO_NEGOTIATION;
-		pWebVar->eth1pri = 0;
-		pWebVar->eth1fc = BOOL_FALSE;
-		pWebVar->eth1linksts = PORT_LINK_DOWN;
-		pWebVar->eth1sts = BOOL_TRUE;
+		bzero(propety, sizeof(T_CMM_PORT_PROPETY_INFO));
 	}
 	return CMM_SUCCESS;
 }
 
-int http2cmm_getEth2Propety(PWEB_NTWK_VAR pWebVar)
+int http2cmm_getPortPropetyAll(T_CMM_PORT_PROPETY_INFO *propety)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
 	uint32_t len = 0;
 	
+	assert( NULL != propety );
+	
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-	uint32_t *req_data = (uint32_t *)(req->BUF);
 	
 	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
 	T_CMM_PORT_PROPETY_INFO *ack_data = (T_CMM_PORT_PROPETY_INFO *)(ack->BUF);
 
 	req->HEADER.usSrcMID = MID_HTTP;
 	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_GET_IP175D_PORT_PROPETY;
-	req->HEADER.ulBodyLength = sizeof(uint32_t);
+	req->HEADER.usMsgType = CMM_GET_88E6171R_PORT_PROPETY_ALL;
+	req->HEADER.ulBodyLength =0;
 	req->HEADER.fragment = 0;
-
-	*req_data = PORT_ETH2_PORT_ID;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
 
 	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
 	{
-		pWebVar->eth2speed = ack_data->speed;
-		pWebVar->eth2duplex = ack_data->duplex;
-		pWebVar->eth2pri = ack_data->pri;
-		pWebVar->eth2fc = ack_data->flowControl;
-		pWebVar->eth2linksts = ack_data->linkStatus;
-		pWebVar->eth2sts = ack_data->portStatus;
-	}
-	else
-	{
-		pWebVar->eth2speed = SPEED_AUTO_NEGOTIATION;
-		pWebVar->eth2duplex = DUPLEX_AUTO_NEGOTIATION;
-		pWebVar->eth2pri = 0;
-		pWebVar->eth2fc = BOOL_FALSE;
-		pWebVar->eth2linksts = PORT_LINK_DOWN;
-		pWebVar->eth2sts = BOOL_TRUE;
-	}
-	return CMM_SUCCESS;
-}
-
-int http2cmm_getCable1Propety(PWEB_NTWK_VAR pWebVar)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-	uint32_t *req_data = (uint32_t *)(req->BUF);
-	
-	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
-	T_CMM_PORT_PROPETY_INFO *ack_data = (T_CMM_PORT_PROPETY_INFO *)(ack->BUF);
-
-	req->HEADER.usSrcMID = MID_HTTP;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_GET_IP175D_PORT_PROPETY;
-	req->HEADER.ulBodyLength = sizeof(uint32_t);
-	req->HEADER.fragment = 0;
-
-	*req_data = PORT_CABLE1_PORT_ID;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-
-	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
-	{
-		pWebVar->eth3speed = ack_data->speed;
-		pWebVar->eth3duplex = ack_data->duplex;
-		pWebVar->eth3pri = ack_data->pri;
-		pWebVar->eth3fc = ack_data->flowControl;
-		pWebVar->eth3linksts = ack_data->linkStatus;
-		pWebVar->eth3sts = ack_data->portStatus;
-	}
-	else
-	{
-		pWebVar->eth3speed = SPEED_AUTO_NEGOTIATION;
-		pWebVar->eth3duplex = DUPLEX_AUTO_NEGOTIATION;
-		pWebVar->eth3pri = 0;
-		pWebVar->eth3fc = BOOL_FALSE;
-		pWebVar->eth3linksts = PORT_LINK_DOWN;
-		pWebVar->eth3sts = BOOL_TRUE;
-	}
-	return CMM_SUCCESS;
-}
-
-int http2cmm_getCable2Propety(PWEB_NTWK_VAR pWebVar)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-	uint32_t *req_data = (uint32_t *)(req->BUF);
-	
-	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
-	T_CMM_PORT_PROPETY_INFO *ack_data = (T_CMM_PORT_PROPETY_INFO *)(ack->BUF);
-
-	req->HEADER.usSrcMID = MID_HTTP;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_GET_IP175D_PORT_PROPETY;
-	req->HEADER.ulBodyLength = sizeof(uint32_t);
-	req->HEADER.fragment = 0;
-
-	*req_data = PORT_CABLE2_PORT_ID;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-
-	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
-	{
-		pWebVar->eth4speed = ack_data->speed;
-		pWebVar->eth4duplex = ack_data->duplex;
-		pWebVar->eth4pri = ack_data->pri;
-		pWebVar->eth4fc = ack_data->flowControl;
-		pWebVar->eth4linksts = ack_data->linkStatus;
-		pWebVar->eth4sts = ack_data->portStatus;
-	}
-	else
-	{
-		pWebVar->eth4speed = SPEED_AUTO_NEGOTIATION;
-		pWebVar->eth4duplex = DUPLEX_AUTO_NEGOTIATION;
-		pWebVar->eth4pri = 0;
-		pWebVar->eth4fc = BOOL_FALSE;
-		pWebVar->eth4linksts = PORT_LINK_DOWN;
-		pWebVar->eth4sts = BOOL_TRUE;
-	}
-	return CMM_SUCCESS;
-}
-
-int http2cmm_getPortPropetyAll(PWEB_NTWK_VAR pWebVar)
-{
-	http2cmm_getEth1Propety(pWebVar);
-	http2cmm_getEth2Propety(pWebVar);
-	http2cmm_getCable1Propety(pWebVar);
-	http2cmm_getCable2Propety(pWebVar);
+		len = ack->HEADER.ulBodyLength - sizeof(uint16_t);
+		memcpy(propety, ack_data, len);	
+	}	
 	return CMM_SUCCESS;
 }
 

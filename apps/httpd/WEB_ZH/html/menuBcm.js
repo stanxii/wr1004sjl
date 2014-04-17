@@ -7,9 +7,9 @@ function createBcmMenu()
 	insFld(wecSysSettings, gFld(getMenuTitle(MENU_WEC_SNMP_SETTINGS), 'previewSnmp.cgi'));
 	////insFld(wecSysSettings, gFld(getMenuTitle(MENU_WEC_NTP_SETTINGS), 'wecNtpcfg.html'));
 	//端口设置菜单
-	wecPortSettings = insFld(foldersTree, gFld(getMenuTitle(MENU_WEC_PORT_SETTINGS), 'wecPortPropety.cgi'));
-	insFld(wecPortSettings, gFld(getMenuTitle(MENU_WEC_PORT_PROPERTY), 'wecPortPropety.cgi'));
-	insFld(wecPortSettings, gFld(getMenuTitle(MENU_WEC_PORT_STATISTICS), 'wecPortStas.cgi'));
+	wecPortSettings = insFld(foldersTree, gFld(getMenuTitle(MENU_WEC_PORT_SETTINGS), 'wecPortPropety.cmd'));
+	insFld(wecPortSettings, gFld(getMenuTitle(MENU_WEC_PORT_PROPERTY), 'wecPortPropety.cmd'));
+	insFld(wecPortSettings, gFld(getMenuTitle(MENU_WEC_PORT_STATISTICS), 'wecPortStats.cmd'));
 	//网络管理菜单
 	wecNtwkMgmt = insFld(foldersTree, gFld(getMenuTitle(MENU_WEC_NET_MGMT), 'previewTopology.cgi'));
 	insFld(wecNtwkMgmt, gFld(getMenuTitle(MENU_WEC_TOPOLOGY), 'previewTopology.cgi'));

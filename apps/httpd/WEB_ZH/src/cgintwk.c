@@ -21,6 +21,7 @@
 #include <ifcuiweb.h>
 #include <bcmcfm.h>
 #include <http2dbs.h>
+#include <http2cmm.h>
 #include <dbsapi.h>
 #include <boardapi.h>
 
@@ -74,7 +75,6 @@ int mapRate2SelectIndex(uint32_t rate)
 	}
 	return 0;
 }
-
 
 void cgiNtwkView(char *query, FILE *fs)
 {
@@ -271,14 +271,17 @@ void cgiNtwkView(char *query, FILE *fs)
 	fflush(fs);	
 }
 
-
-void cgiPortPropety(char *query, FILE *fs)
+void cgiPortPropetyView(char *query, FILE *fs)
 {
-	char action[IFC_LARGE_LEN];
 	int id = 0;
+	char action[IFC_LARGE_LEN];
+	T_CMM_PORT_PROPETY_INFO propety;
 
 	cgiGetValueByName(query, "portid", action);
 	id = atoi(action);
+
+	bzero((void *)&propety, sizeof(T_CMM_PORT_PROPETY_INFO));
+	http2cmm_getPortPropety(id, &propety);	
 
 	fprintf(fs, "<html>\n");
 	fprintf(fs, "<head>\n");
@@ -291,48 +294,15 @@ void cgiPortPropety(char *query, FILE *fs)
 	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
 	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
-
 	fprintf(fs, "<script language='javascript'>\n");
 	fprintf(fs, "function btnReturn(){\n");
-	fprintf(fs, "	var loc = 'wecPortPropety.html';\n");
+	fprintf(fs, "	var loc = 'wecPortPropety.cmd';\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
 	fprintf(fs, "function btnSave(portid){\n");
-	fprintf(fs, "	var loc = 'portPropety.cgi?portid=%d';\n", id);
-	if( 1 == id )
-	{
-		fprintf(fs, "		loc += '&eth1speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth1duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth1pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth1fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth1sts=' + $(\"#portStatus\").val();\n");
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "		loc += '&eth2speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth2duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth2pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth2fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth2sts=' + $(\"#portStatus\").val();\n");
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "		loc += '&eth3speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth3duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth3pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth3fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth3sts=' + $(\"#portStatus\").val();\n");
-	}
-	else
-	{
-		fprintf(fs, "		loc += '&eth4speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth4duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth4pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth4fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth4sts=' + $(\"#portStatus\").val();\n");
-	}	
+	fprintf(fs, "	var loc = 'portPropety.cmd?portid=%d';\n", id);	
 	fprintf(fs, "	if( $(\"#portStatus\").val() == 0 ){\n");
 	fprintf(fs, "		if(!confirm('警告：端口即将关闭！')) return;\n");
 	fprintf(fs, "	}\n");
@@ -342,38 +312,11 @@ void cgiPortPropety(char *query, FILE *fs)
 	fprintf(fs, "}\n");
 	fprintf(fs, "$(function()\n");
 	fprintf(fs, "{\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth1speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth1duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth1pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth1fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth1sts);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth2speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth2duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth2pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth2fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth2sts);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth3speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth3duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth3pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth3fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth3sts);
-	}
-	else
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth4speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth4duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth4pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth4fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth4sts);
-	}
+	fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", propety.speed);
+	fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", propety.duplex);
+	fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", propety.pri);
+	fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", propety.flowControl);
+	fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", propety.portStatus);
 	fprintf(fs, "	$(\"#accordion\").accordion({\n");
 	fprintf(fs, "		collapsible: true,\n");
 	fprintf(fs, "		heightStyle: 'content'\n");
@@ -403,22 +346,7 @@ void cgiPortPropety(char *query, FILE *fs)
 	fprintf(fs, "<blockquote>\n");
 	fprintf(fs, "	<br>\n");
 	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH1端口属性</b></td></tr>\n");
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH2端口属性</b></td></tr>\n");
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable1端口属性</b></td></tr>\n");
-	}
-	else
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable2端口属性</b></td></tr>\n");
-	}
+	fprintf(fs, "<tr><td class='maintitle'><b>%s端口属性</b></td></tr>\n", boardapi_getDsdtPortName(id));
 	fprintf(fs, "	</table>\n");
 	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
 	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
@@ -499,94 +427,203 @@ void cgiPortPropety(char *query, FILE *fs)
 	fflush(fs);
 }
 
+void cgiPortPropetyViewAll(char *query, FILE *fs)
+{
+	int i = 0;
+	int iStyle = 0;
+	T_CMM_PORT_PROPETY_INFO propety[CBAT_SW_PORT_NUM];	
+
+	bzero(propety, sizeof(T_CMM_PORT_PROPETY_INFO)*CBAT_SW_PORT_NUM);
+	http2cmm_getPortPropetyAll(propety);
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script src='util.js'></script>\n");
+
+	fprintf(fs, "<script language='javascript'>\n");
+	fprintf(fs, "function btnConfig(portid){\n");
+	fprintf(fs, "	var loc = 'portPropety.cmd?';\n");
+	fprintf(fs, "	loc += 'portid=' + portid;\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	//fprintf(fs, "	\n");
+	
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	var code = 'wecPortPropety.cmd';\n");
+	fprintf(fs, "	location.href = code;\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	$( '.configBtn' ).button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-home'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#refreshBtn' ).click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border='0' cellpadding='5' cellspacing='0'>\n");
+	fprintf(fs, "		<tr><td class='maintitle'><b>端口属性</b></td></tr>\n");	
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
+	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<br><br>\n");
+	fprintf(fs, "	通过该页面，您可以查看及配置本机以太网以及同轴端口的属性，包括：速率、双工状态、端口流控以及端口状态等属性参数。</br>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<ul>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=1>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=thead width=120>端口</td>\n");
+	fprintf(fs, "			<td class=thead width=120>连接状态</td>\n");
+	fprintf(fs, "			<td class=thead width=120>速度/双工</td>\n");
+	fprintf(fs, "			<td class=thead width=50>优先级</td>\n");
+	fprintf(fs, "			<td class=thead width=100>流控</td>\n");
+	fprintf(fs, "			<td class=thead width=100>端口状态</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=6>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+
+	for( i=0; i<CBAT_SW_PORT_NUM; i++)
+	{
+		if( !boardapi_isDsdtPortValid(i) ) continue;
+		iStyle++;		
+		fprintf(fs, "	<tr>\n");
+		fprintf(fs, "		<td class=%s>\n", (iStyle%2==0)?"cola":"colb");
+		fprintf(fs, "			<button class='configBtn' onClick=btnConfig(%d) style='width:120;'>%s</button>\n", i, boardapi_getDsdtPortName(i));
+		fprintf(fs, "		</td>\n");
+		if( propety[i].linkStatus )
+		{
+			fprintf(fs, "	<td class='%s'><font color=green>已连接</font></td>\n", (iStyle%2==0)?"cola":"colb");
+		}
+		else
+		{
+			fprintf(fs, "	<td class='%s'><font color=red>未连接</font></td>\n", (iStyle%2==0)?"cola":"colb");
+		}
+		if( 0 == propety[i].speed )
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>自动/自动</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>自动/半双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>自动/全双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		else if( 1 == propety[i].speed )
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>10M/自动</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>10M/半双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>10M/全双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		else if( 2 == propety[i].speed )
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>100M/自动</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>100M/半双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>100M/全双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		else
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>1000M/自动</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>1000M/半双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>1000M/全双工</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", propety[i].pri);
+		fprintf(fs, "		<td class='%s'>%s</td>\n", (iStyle%2==0)?"cola":"colb", propety[i].flowControl?"启用":"禁用");
+		fprintf(fs, "		<td class='%s'>%s</td>\n", (iStyle%2==0)?"cola":"colb", propety[i].portStatus?"开启":"关闭");		
+		fprintf(fs, "	</tr>\n");
+	}
+
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=6>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=listend colspan=6></td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br>\n");	
+	fprintf(fs, "	</ul>\n");	
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id='refreshBtn'>刷 新</button>\n");
+	fprintf(fs, "	</p>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
+	fflush(fs);
+}
+
 void cgiPortStatsView(char *query, FILE *fs) 
 {
-	char action[IFC_LARGE_LEN];
 	int id = 0;
-
-	char strTitle[32];
-	
-	uint32_t packets_Broadcast_rx;
-	uint32_t packets_Unicast_rx;
-	uint32_t packets_Multicast_rx;
-	uint32_t packets_Errors_rx;
-	uint32_t packets_Runts_rx;
-	uint32_t packets_Giants_rx;
-	uint32_t packets_CRCErrors_rx;
-	uint32_t packets_Frame_rx;
-	uint32_t packets_Aborts_rx;
-	uint32_t packets_Ignored_rx;
-
-	uint32_t packets_Broadcast_tx;
-	uint32_t packets_Unicast_tx;
-	uint32_t packets_Multicast_tx;
-	uint32_t packets_Errors_tx;
-	uint32_t packets_Runts_tx;
-	uint32_t packets_Giants_tx;
-	uint32_t packets_CRCErrors_tx;
-	uint32_t packets_Frame_tx;
-	uint32_t packets_Aborts_tx;
-	uint32_t packets_Ignored_tx;
+	char action[IFC_LARGE_LEN];
+	T_CMM_PORT_STATS_INFO stats;
 
 	cgiGetValueByName(query, "portid", action);
 	id = atoi(action);
 
-	packets_Errors_rx = 0;
-	packets_Runts_rx = 0;
-	packets_Giants_rx = 0;
-	packets_CRCErrors_rx = 0;
-	packets_Frame_rx = 0;
-	packets_Aborts_rx = 0;
-	packets_Ignored_rx = 0;
-	packets_Errors_tx = 0;
-	packets_Runts_tx = 0;
-	packets_Giants_tx = 0;
-	packets_CRCErrors_tx = 0;
-	packets_Frame_tx = 0;
-	packets_Aborts_tx = 0;
-	packets_Ignored_tx = 0;
-
-	if( 1 == id )
-	{
-		strcpy(strTitle, "ETH1端口统计");
-		packets_Broadcast_rx = glbWebVar.eth1rxbc;
-		packets_Unicast_rx = glbWebVar.eth1rxu;
-		packets_Multicast_rx = glbWebVar.eth1rxm;		
-		packets_Broadcast_tx = glbWebVar.eth1txbc;
-		packets_Unicast_tx = glbWebVar.eth1txu;
-		packets_Multicast_tx = glbWebVar.eth1txm;		
-	}
-	else if( 2 == id )
-	{
-		strcpy(strTitle, "ETH2端口统计");
-		packets_Broadcast_rx = glbWebVar.eth2rxbc;
-		packets_Unicast_rx = glbWebVar.eth2rxu;
-		packets_Multicast_rx = glbWebVar.eth2rxm;
-		packets_Broadcast_tx = glbWebVar.eth2txbc;
-		packets_Unicast_tx = glbWebVar.eth2txu;
-		packets_Multicast_tx = glbWebVar.eth2txm;
-	}
-	else if( 3 == id )
-	{
-		strcpy(strTitle, "Cable1端口统计");
-		packets_Broadcast_rx = glbWebVar.eth3rxbc;
-		packets_Unicast_rx = glbWebVar.eth3rxu;
-		packets_Multicast_rx = glbWebVar.eth3rxm;
-		packets_Broadcast_tx = glbWebVar.eth3txbc;
-		packets_Unicast_tx = glbWebVar.eth3txu;
-		packets_Multicast_tx = glbWebVar.eth3txm;
-	}
-	else
-	{
-		strcpy(strTitle, "Cable2端口统计");
-		packets_Broadcast_rx = glbWebVar.eth4rxbc;
-		packets_Unicast_rx = glbWebVar.eth4rxu;
-		packets_Multicast_rx = glbWebVar.eth4rxm;
-		packets_Broadcast_tx = glbWebVar.eth4txbc;
-		packets_Unicast_tx = glbWebVar.eth4txu;
-		packets_Multicast_tx = glbWebVar.eth4txm;
-	}
-
+	bzero((void *)&stats, sizeof(T_CMM_PORT_STATS_INFO));
+	http2cmm_getPortStats(id, &stats);	
+	
 	fprintf(fs, "<html>\n");
 	fprintf(fs, "<head>\n");
 	fprintf(fs, "<title>EoC</title>\n");
@@ -600,7 +637,7 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
 	fprintf(fs, "<script language='javascript'>	\n");
 	fprintf(fs, "function btnReturn(){\n");
-	fprintf(fs, "	var loc = 'wecPortStas.cgi';\n");
+	fprintf(fs, "	var loc = 'wecPortStats.cmd';\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
@@ -629,7 +666,7 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "<blockquote>\n");
 	fprintf(fs, "	<br>\n");
 	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "		<tr><td class='maintitle'><b>%s</b></td></tr>", strTitle);	
+	fprintf(fs, "		<tr><td class='maintitle'><b>%s端口统计</b></td></tr>", boardapi_getDsdtPortName(id));	
 	fprintf(fs, "	</table>\n");
 	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
 	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr> \n");
@@ -640,19 +677,19 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "		<div>\n");	
 	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");	
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata' width=300>广播包</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Broadcast_rx);	
+	fprintf(fs, "				<td class='diagdata' width=300>Broadcast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.InBroadcasts);	
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>单播包</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Unicast_rx);	
+	fprintf(fs, "				<td class='diagdata'>Unicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.InUnicasts);	
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>组播包</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Multicast_rx);
+	fprintf(fs, "				<td class='diagdata'>Multicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.InMulticasts);
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>错误包</td>\n");
+	fprintf(fs, "				<td class='diagdata'>Errors</td>\n");
 	fprintf(fs, "				<td class='diagdata'>0</td>\n");
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
@@ -664,7 +701,7 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "				<td class='diagdata'>0</td>\n");
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>CRC错误包</td>\n");
+	fprintf(fs, "				<td class='diagdata'>CRC Errors</td>\n");
 	fprintf(fs, "				<td class='diagdata'>0</td>\n");
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
@@ -685,19 +722,19 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "		<div>\n");	
 	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");	
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata' width=300>广播包</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Broadcast_tx);
+	fprintf(fs, "				<td class='diagdata' width=300>Broadcast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.OutBroadcasts);
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>单播包</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Unicast_tx);	
+	fprintf(fs, "				<td class='diagdata'>Unicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.OutUnicasts);	
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>组播包</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Multicast_tx);
+	fprintf(fs, "				<td class='diagdata'>Multicast</td>\n");
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.OutMulticasts);
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>错误包</td>\n");
+	fprintf(fs, "				<td class='diagdata'>Errors</td>\n");
 	fprintf(fs, "				<td class='diagdata'>0</td>\n");
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
@@ -709,7 +746,7 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "				<td class='diagdata'>0</td>\n");
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
-	fprintf(fs, "				<td class='diagdata'>CRC错误包</td>\n");
+	fprintf(fs, "				<td class='diagdata'>CRC Errors</td>\n");
 	fprintf(fs, "				<td class='diagdata'>0</td>\n");
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
@@ -730,6 +767,136 @@ void cgiPortStatsView(char *query, FILE *fs)
 
 	fprintf(fs, "	<p>\n");
 	fprintf(fs, "		<button id='retBtn'>返 回</button>\n");
+	fprintf(fs, "	</p>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
+	fflush(fs);
+}
+
+void cgiPortStatsViewAll(char *query, FILE *fs)
+{
+	int i = 0;
+	int iStyle = 0;
+	T_CMM_PORT_STATS_INFO stats[CBAT_SW_PORT_NUM];	
+
+	bzero(stats, sizeof(T_CMM_PORT_STATS_INFO)*CBAT_SW_PORT_NUM);
+	http2cmm_getPortStatsAll(stats);
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script src='util.js'></script>\n");
+
+	fprintf(fs, "<script language='javascript'>\n");
+	fprintf(fs, "function btnClear(){\n");
+	fprintf(fs, "	var loc = 'clearPortStas.cgi';\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");	
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	var code = 'wecPortStats.cmd';\n");
+	fprintf(fs, "	location.href = code;\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function showPortStats(portid){\n");
+	fprintf(fs, "	var loc = 'portStatsDetail.cmd?';\n");
+	fprintf(fs, "	loc += 'portid=' + portid;\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");	
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	$( '.showBtn' ).button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-home'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#refreshBtn' ).click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#clearBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-shuffle'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#clearBtn' ).click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnClear();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border='0' cellpadding='5' cellspacing='0'>\n");
+	fprintf(fs, "		<tr><td class='maintitle'><b>端口统计</b></td></tr>\n");	
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
+	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<br><br>\n");
+	fprintf(fs, "	通过本页面，您可以查询以太网接口以及同轴接口的数据包统计信息。</br>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<ul>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=2>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=thead width=120>端口</td>\n");
+	fprintf(fs, "			<td class=thead width=90>发送数据包</td>\n");
+	fprintf(fs, "			<td class=thead width=140>发送字节数</td>\n");
+	fprintf(fs, "			<td class=thead width=90>接收数据包</td>\n");
+	fprintf(fs, "			<td class=thead width=140>接收字节数</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=5>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+
+	for( i=0; i<CBAT_SW_PORT_NUM; i++)
+	{
+		if( !boardapi_isDsdtPortValid(i) ) continue;
+		iStyle++;		
+		fprintf(fs, "	<tr>\n");
+		fprintf(fs, "		<td class=%s>\n", (iStyle%2==0)?"cola":"colb");
+		fprintf(fs, "			<button class='showBtn' onClick=showPortStats(%d) style='width:120;'>%s</button>\n", i, boardapi_getDsdtPortName(i));
+		fprintf(fs, "		</td>\n");
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].txCtr);
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].OutGoodOctets);
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].rxCtr);
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].InGoodOctets);
+		fprintf(fs, "	</tr>\n");
+	}
+
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=5>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=listend colspan=5></td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br>\n");	
+	fprintf(fs, "	</ul>\n");	
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id='refreshBtn'>刷 新</button>\n");
+	fprintf(fs, "		<button id='clearBtn'>清 除</button>\n");
 	fprintf(fs, "	</p>\n");
 	fprintf(fs, "</blockquote>\n");
 	fprintf(fs, "</body>\n");

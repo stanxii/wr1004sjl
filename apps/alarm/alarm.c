@@ -804,7 +804,8 @@ void send_cbat_topology_traps(void)
 	snmp_add_var(pdu, objid_alarmcode, sizeof(objid_alarmcode) / sizeof(oid), 'i', svalue);
 	/*  绑定告警信息*/
 	snmp_add_var(pdu, objid_trapinfo, sizeof(objid_trapinfo) / sizeof(oid), 's', alarminfo.trap_info);
-	/*  绑定局端基本信息*/
+	/*  绑定局端基本信息*//* NMS_PROTOCAL_VERSION 被NMS用来进行配置兼容性设计*/
+	//sprintf(svalue, "[%s|%s|%d|%d]", g_networkInfo.col_mac, g_networkInfo.col_ip, boardapi_mapDevModel(g_szSysinfo.col_model), NMS_PROTOCAL_VERSION);
 	sprintf(svalue, "[%s|%s|%d]", g_networkInfo.col_mac, g_networkInfo.col_ip, boardapi_mapDevModel(g_szSysinfo.col_model));
 	snmp_add_var(pdu, objid_cbathb, sizeof(objid_cbathb) / sizeof(oid), 's', svalue);
 	/*  绑定终端基本信息分片1  */

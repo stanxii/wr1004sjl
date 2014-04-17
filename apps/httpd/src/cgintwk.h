@@ -14,8 +14,10 @@ extern "C" {
 
 //void writePageHeader(FILE *fs);
 void cgiNtwkView(char *query, FILE *fs);
-void cgiPortPropety(char *query, FILE *fs);
+void cgiPortPropetyView(char *query, FILE *fs);
+void cgiPortPropetyViewAll(char *query, FILE *fs);
 void cgiPortStatsView(char *query, FILE *fs) ;
+void cgiPortStatsViewAll(char *query, FILE *fs);
 void cgiOptlogView(char *query, FILE *fs) ;
 void cgiSyslogView(char *query, FILE *fs) ;
 void cgiAlarmlogView(char *query, FILE *fs) ;
@@ -30,6 +32,7 @@ void cgiCnuProfileExt(char *query, FILE *fs);
 void cgiCnuMgmt(char *query, FILE *fs);
 void cgiLinkDiag(char *query, FILE *fs) ;
 void cgiLinkDiagResult(char *query, FILE *fs);
+void cgiPortPropetyAllView(char *query, FILE *fs);
 
 #if defined(__cplusplus)
 }

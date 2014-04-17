@@ -31,7 +31,6 @@ CGI_CMD WebCmdTable[WEB_CMD_NUM_MAX] = {
    { "wecAlarmlog", cgiAlarmlogView },
    { "alarmlogDetail", cgiAlarmlogDetailView },
    { "wecTopology", cgiTopologyView },   
-   //{ "cltProfile", cgiCltProfileView },
    { "editCltPro", cgiCltProfile },
    { "cltManagement", cgiCltMgmt },
    //{ "cnuProfile", cgiCnuProfileView },
@@ -39,7 +38,9 @@ CGI_CMD WebCmdTable[WEB_CMD_NUM_MAX] = {
    { "rtl8306eConfigView", cgiCnuProfileExt },
    { "cnuManagement", cgiCnuMgmt },   
    { "portStatsDetail", cgiPortStatsView },
-   { "portPropety", cgiPortPropety },
+   { "wecPortStats", cgiPortStatsViewAll },
+   { "wecPortPropety", cgiPortPropetyViewAll },
+   { "portPropety", cgiPortPropetyView },
    { "linkDiagResult", cgiLinkDiagResult },
    { "wecLinkDiag", cgiLinkDiag },   
 };

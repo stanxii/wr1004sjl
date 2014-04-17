@@ -64,12 +64,14 @@ enum
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.2-cr18"
+#define SYSINFO_APP_VERSION		"v1.3.6.2-cr19"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
 #define SYSINFO_FLASH_SIZE			256
 #define SYSINFO_RAM_SIZE			64
+/* NMS management protocal version */
+#define NMS_PROTOCAL_VERSION		2
 /********************************************************/
 
 /********************************************************/
@@ -275,7 +277,7 @@ enum
 	WEC701_C4,
 	WEC_3501I_XD25,	/* 30: du channel */
 	WEC9720EK_XD25,	/* du channel */
-	WR1004JL,			/* 2*clt + 1*onu module */
+	WR1004JL,			/* 1*clt + 1*onu module */
 	WR1004SJL,			/* 4*clt + 1*onu module */
 	WEC_3702I_E4,		/* cnu ar6400+rtl8306e */
 	WEC701_E4,			/* cnu ar7411+rtl8306e */
@@ -399,6 +401,8 @@ enum
 	CMM_UNDO_CNU_ACL_DROP_MME,
 	CMM_ERASE_MOD_A,				/* erase mod id=0 */
 	CMM_ERASE_MOD_B,				/* erase mod id=1 */
+	CMM_GET_88E6171R_PORT_PROPETY_ALL,
+	CMM_GET_88E6171R_PORT_STATS_ALL,
 	
 	/* 请在中间增加其他枚举定义 */
 	

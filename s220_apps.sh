@@ -1,5 +1,5 @@
 #!/bin/sh
-make wec9720ek_s220_config
+make wec9720ek_config
 make apps
 #make nfs
 #        clean src compile targets:

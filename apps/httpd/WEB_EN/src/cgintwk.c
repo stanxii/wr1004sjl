@@ -21,6 +21,7 @@
 #include <ifcuiweb.h>
 #include <bcmcfm.h>
 #include <http2dbs.h>
+#include <http2cmm.h>
 #include <dbsapi.h>
 #include <boardapi.h>
 
@@ -271,14 +272,17 @@ void cgiNtwkView(char *query, FILE *fs)
 	fflush(fs);	
 }
 
-
-void cgiPortPropety(char *query, FILE *fs)
+void cgiPortPropetyView(char *query, FILE *fs)
 {
-	char action[IFC_LARGE_LEN];
 	int id = 0;
+	char action[IFC_LARGE_LEN];
+	T_CMM_PORT_PROPETY_INFO propety;
 
 	cgiGetValueByName(query, "portid", action);
 	id = atoi(action);
+
+	bzero((void *)&propety, sizeof(T_CMM_PORT_PROPETY_INFO));
+	http2cmm_getPortPropety(id, &propety);	
 
 	fprintf(fs, "<html>\n");
 	fprintf(fs, "<head>\n");
@@ -291,48 +295,15 @@ void cgiPortPropety(char *query, FILE *fs)
 	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
 	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
 	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
-
 	fprintf(fs, "<script language='javascript'>\n");
 	fprintf(fs, "function btnReturn(){\n");
-	fprintf(fs, "	var loc = 'wecPortPropety.html';\n");
+	fprintf(fs, "	var loc = 'wecPortPropety.cmd';\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
 	fprintf(fs, "}\n");
 	fprintf(fs, "function btnSave(portid){\n");
-	fprintf(fs, "	var loc = 'portPropety.cgi?portid=%d';\n", id);
-	if( 1 == id )
-	{
-		fprintf(fs, "		loc += '&eth1speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth1duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth1pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth1fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth1sts=' + $(\"#portStatus\").val();\n");
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "		loc += '&eth2speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth2duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth2pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth2fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth2sts=' + $(\"#portStatus\").val();\n");
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "		loc += '&eth3speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth3duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth3pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth3fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth3sts=' + $(\"#portStatus\").val();\n");
-	}
-	else
-	{
-		fprintf(fs, "		loc += '&eth4speed=' + $(\"#portSpeed\").val();\n");
-		fprintf(fs, "		loc += '&eth4duplex=' + $(\"#portDuplex\").val();\n");
-		fprintf(fs, "		loc += '&eth4pri=' + $(\"#portPri\").val();\n");
-		fprintf(fs, "		loc += '&eth4fc=' + $(\"#portFlowControl\").val();\n");
-		fprintf(fs, "		loc += '&eth4sts=' + $(\"#portStatus\").val();\n");
-	}	
+	fprintf(fs, "	var loc = 'portPropety.cmd?portid=%d';\n", id);	
 	fprintf(fs, "	if( $(\"#portStatus\").val() == 0 ){\n");
 	fprintf(fs, "		if(!confirm('Warning: The port will be shutdown. Are you sure to do it?')) return;\n");
 	fprintf(fs, "	}\n");
@@ -342,38 +313,11 @@ void cgiPortPropety(char *query, FILE *fs)
 	fprintf(fs, "}\n");
 	fprintf(fs, "$(function()\n");
 	fprintf(fs, "{\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth1speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth1duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth1pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth1fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth1sts);
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth2speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth2duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth2pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth2fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth2sts);
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth3speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth3duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth3pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth3fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth3sts);
-	}
-	else
-	{
-		fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", glbWebVar.eth4speed);
-		fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", glbWebVar.eth4duplex);
-		fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", glbWebVar.eth4pri);
-		fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", glbWebVar.eth4fc);
-		fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", glbWebVar.eth4sts);
-	}
+	fprintf(fs, "	$(\"#portSpeed\")[0].selectedIndex = %d\n", propety.speed);
+	fprintf(fs, "	$(\"#portDuplex\")[0].selectedIndex = %d\n", propety.duplex);
+	fprintf(fs, "	$(\"#portPri\")[0].selectedIndex = %d\n", propety.pri);
+	fprintf(fs, "	$(\"#portFlowControl\")[0].selectedIndex = %d\n", propety.flowControl);
+	fprintf(fs, "	$(\"#portStatus\")[0].selectedIndex = %d\n", propety.portStatus);
 	fprintf(fs, "	$(\"#accordion\").accordion({\n");
 	fprintf(fs, "		collapsible: true,\n");
 	fprintf(fs, "		heightStyle: 'content'\n");
@@ -403,22 +347,7 @@ void cgiPortPropety(char *query, FILE *fs)
 	fprintf(fs, "<blockquote>\n");
 	fprintf(fs, "	<br>\n");
 	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
-	if( 1 == id )
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH1 Propety</b></td></tr>\n");
-	}
-	else if( 2 == id )
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>ETH2 Propety</b></td></tr>\n");
-	}
-	else if( 3 == id )
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable1 Propety</b></td></tr>\n");
-	}
-	else
-	{
-		fprintf(fs, "<tr><td class='maintitle'><b>Cable2 Propety</b></td></tr>\n");
-	}
+	fprintf(fs, "<tr><td class='maintitle'><b>%s Propety</b></td></tr>\n", boardapi_getDsdtPortName(id));
 	fprintf(fs, "	</table>\n");
 	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
 	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
@@ -499,94 +428,203 @@ void cgiPortPropety(char *query, FILE *fs)
 	fflush(fs);
 }
 
+void cgiPortPropetyViewAll(char *query, FILE *fs)
+{
+	int i = 0;
+	int iStyle = 0;
+	T_CMM_PORT_PROPETY_INFO propety[CBAT_SW_PORT_NUM];	
+
+	bzero(propety, sizeof(T_CMM_PORT_PROPETY_INFO)*CBAT_SW_PORT_NUM);
+	http2cmm_getPortPropetyAll(propety);
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
+	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script src='util.js'></script>\n");
+
+	fprintf(fs, "<script language='javascript'>\n");
+	fprintf(fs, "function btnConfig(portid){\n");
+	fprintf(fs, "	var loc = 'portPropety.cmd?';\n");
+	fprintf(fs, "	loc += 'portid=' + portid;\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");
+	//fprintf(fs, "	\n");
+	
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	var code = 'wecPortPropety.cmd';\n");
+	fprintf(fs, "	location.href = code;\n");
+	fprintf(fs, "}\n");
+	
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	$( '.configBtn' ).button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-home'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#refreshBtn' ).click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
+	
+	fprintf(fs, "</script>\n");
+	
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border='0' cellpadding='5' cellspacing='0'>\n");
+	fprintf(fs, "		<tr><td class='maintitle'><b>Port Properties</b></td></tr>\n");	
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
+	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<br><br>\n");
+	fprintf(fs, "	Through this page, you can view and configure the properties of native Ethernet and coaxial ports, including: speed, duplex status, port flow control and port state property parameters....</br>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<ul>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=1>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=thead width=120>Port</td>\n");
+	fprintf(fs, "			<td class=thead width=120>Link status</td>\n");
+	fprintf(fs, "			<td class=thead width=120>Speed/Duplex</td>\n");
+	fprintf(fs, "			<td class=thead width=50>pri</td>\n");
+	fprintf(fs, "			<td class=thead width=100>Flow Control</td>\n");
+	fprintf(fs, "			<td class=thead width=100>Port status</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=6>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+
+	for( i=0; i<CBAT_SW_PORT_NUM; i++)
+	{
+		if( !boardapi_isDsdtPortValid(i) ) continue;
+		iStyle++;		
+		fprintf(fs, "	<tr>\n");
+		fprintf(fs, "		<td class=%s>\n", (iStyle%2==0)?"cola":"colb");
+		fprintf(fs, "			<button class='configBtn' onClick=btnConfig(%d) style='width:120;'>%s</button>\n", i, boardapi_getDsdtPortName(i));
+		fprintf(fs, "		</td>\n");
+		if( propety[i].linkStatus )
+		{
+			fprintf(fs, "	<td class='%s'><font color=green>Link Up</font></td>\n", (iStyle%2==0)?"cola":"colb");
+		}
+		else
+		{
+			fprintf(fs, "	<td class='%s'><font color=red>Link Down</font></td>\n", (iStyle%2==0)?"cola":"colb");
+		}
+		if( 0 == propety[i].speed )
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>Auto/Auto</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>Auto/HALF</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>Auto/FULL</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		else if( 1 == propety[i].speed )
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>10M/Auto</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>10M/HALF</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>10M/FULL</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		else if( 2 == propety[i].speed )
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>100M/Auto</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>100M/HALF</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>100M/FULL</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		else
+		{
+			if( 0 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>1000M/Auto</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else if( 1 == propety[i].duplex )
+			{
+				fprintf(fs, "	<td class='%s'>1000M/HALF</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+			else
+			{
+				fprintf(fs, "	<td class='%s'>1000M/FULL</td>\n", (iStyle%2==0)?"cola":"colb");
+			}
+		}
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", propety[i].pri);
+		fprintf(fs, "		<td class='%s'>%s</td>\n", (iStyle%2==0)?"cola":"colb", propety[i].flowControl?"Enable":"Disable");
+		fprintf(fs, "		<td class='%s'>%s</td>\n", (iStyle%2==0)?"cola":"colb", propety[i].portStatus?"Enable":"Disable");		
+		fprintf(fs, "	</tr>\n");
+	}
+
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=6>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=listend colspan=6></td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br>\n");	
+	fprintf(fs, "	</ul>\n");	
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id='refreshBtn'>Refresh</button>\n");
+	fprintf(fs, "	</p>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
+	fflush(fs);
+}
+
 void cgiPortStatsView(char *query, FILE *fs) 
 {
-	char action[IFC_LARGE_LEN];
 	int id = 0;
-
-	char strTitle[32];
-	
-	uint32_t packets_Broadcast_rx;
-	uint32_t packets_Unicast_rx;
-	uint32_t packets_Multicast_rx;
-	uint32_t packets_Errors_rx;
-	uint32_t packets_Runts_rx;
-	uint32_t packets_Giants_rx;
-	uint32_t packets_CRCErrors_rx;
-	uint32_t packets_Frame_rx;
-	uint32_t packets_Aborts_rx;
-	uint32_t packets_Ignored_rx;
-
-	uint32_t packets_Broadcast_tx;
-	uint32_t packets_Unicast_tx;
-	uint32_t packets_Multicast_tx;
-	uint32_t packets_Errors_tx;
-	uint32_t packets_Runts_tx;
-	uint32_t packets_Giants_tx;
-	uint32_t packets_CRCErrors_tx;
-	uint32_t packets_Frame_tx;
-	uint32_t packets_Aborts_tx;
-	uint32_t packets_Ignored_tx;
+	char action[IFC_LARGE_LEN];
+	T_CMM_PORT_STATS_INFO stats;
 
 	cgiGetValueByName(query, "portid", action);
 	id = atoi(action);
 
-	packets_Errors_rx = 0;
-	packets_Runts_rx = 0;
-	packets_Giants_rx = 0;
-	packets_CRCErrors_rx = 0;
-	packets_Frame_rx = 0;
-	packets_Aborts_rx = 0;
-	packets_Ignored_rx = 0;
-	packets_Errors_tx = 0;
-	packets_Runts_tx = 0;
-	packets_Giants_tx = 0;
-	packets_CRCErrors_tx = 0;
-	packets_Frame_tx = 0;
-	packets_Aborts_tx = 0;
-	packets_Ignored_tx = 0;
-
-	if( 1 == id )
-	{
-		strcpy(strTitle, "ETH1 Statistics");
-		packets_Broadcast_rx = glbWebVar.eth1rxbc;
-		packets_Unicast_rx = glbWebVar.eth1rxu;
-		packets_Multicast_rx = glbWebVar.eth1rxm;		
-		packets_Broadcast_tx = glbWebVar.eth1txbc;
-		packets_Unicast_tx = glbWebVar.eth1txu;
-		packets_Multicast_tx = glbWebVar.eth1txm;		
-	}
-	else if( 2 == id )
-	{
-		strcpy(strTitle, "ETH2 Statistics");
-		packets_Broadcast_rx = glbWebVar.eth2rxbc;
-		packets_Unicast_rx = glbWebVar.eth2rxu;
-		packets_Multicast_rx = glbWebVar.eth2rxm;
-		packets_Broadcast_tx = glbWebVar.eth2txbc;
-		packets_Unicast_tx = glbWebVar.eth2txu;
-		packets_Multicast_tx = glbWebVar.eth2txm;
-	}
-	else if( 3 == id )
-	{
-		strcpy(strTitle, "Cable1 Statistics");
-		packets_Broadcast_rx = glbWebVar.eth3rxbc;
-		packets_Unicast_rx = glbWebVar.eth3rxu;
-		packets_Multicast_rx = glbWebVar.eth3rxm;
-		packets_Broadcast_tx = glbWebVar.eth3txbc;
-		packets_Unicast_tx = glbWebVar.eth3txu;
-		packets_Multicast_tx = glbWebVar.eth3txm;
-	}
-	else
-	{
-		strcpy(strTitle, "Cable2 Statistics");
-		packets_Broadcast_rx = glbWebVar.eth4rxbc;
-		packets_Unicast_rx = glbWebVar.eth4rxu;
-		packets_Multicast_rx = glbWebVar.eth4rxm;
-		packets_Broadcast_tx = glbWebVar.eth4txbc;
-		packets_Unicast_tx = glbWebVar.eth4txu;
-		packets_Multicast_tx = glbWebVar.eth4txm;
-	}
-
+	bzero((void *)&stats, sizeof(T_CMM_PORT_STATS_INFO));
+	http2cmm_getPortStats(id, &stats);	
+	
 	fprintf(fs, "<html>\n");
 	fprintf(fs, "<head>\n");
 	fprintf(fs, "<title>EoC</title>\n");
@@ -600,7 +638,7 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
 	fprintf(fs, "<script language='javascript'>	\n");
 	fprintf(fs, "function btnReturn(){\n");
-	fprintf(fs, "	var loc = 'wecPortStas.cgi';\n");
+	fprintf(fs, "	var loc = 'wecPortStats.cmd';\n");
 	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 	fprintf(fs, "	//alert(code);\n");
 	fprintf(fs, "	eval(code);\n");
@@ -629,7 +667,7 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "<blockquote>\n");
 	fprintf(fs, "	<br>\n");
 	fprintf(fs, "	<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "		<tr><td class='maintitle'><b>%s</b></td></tr>", strTitle);	
+	fprintf(fs, "		<tr><td class='maintitle'><b>%s Statistics</b></td></tr>", boardapi_getDsdtPortName(id));	
 	fprintf(fs, "	</table>\n");
 	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
 	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr> \n");
@@ -641,15 +679,15 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");	
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata' width=300>Broadcast</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Broadcast_rx);	
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.InBroadcasts);	
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata'>Unicast</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Unicast_rx);	
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.InUnicasts);	
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata'>Multicast</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Multicast_rx);
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.InMulticasts);
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata'>Errors</td>\n");
@@ -686,15 +724,15 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fprintf(fs, "		<table border=0 cellpadding=0 cellspacing=0>\n");	
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata' width=300>Broadcast</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Broadcast_tx);
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.OutBroadcasts);
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata'>Unicast</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Unicast_tx);	
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.OutUnicasts);	
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata'>Multicast</td>\n");
-	fprintf(fs, "				<td class='diagdata'>%u</td>\n", packets_Multicast_tx);
+	fprintf(fs, "				<td class='diagdata'>%u</td>\n", stats.OutMulticasts);
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td class='diagdata'>Errors</td>\n");
@@ -738,488 +776,135 @@ void cgiPortStatsView(char *query, FILE *fs)
 	fflush(fs);
 }
 
-#if 0
-void writePageHeader(FILE *fs) {
-	fprintf(fs, "<html><head>\n");
-	fprintf(fs, "<link rel=stylesheet href='stylemain.css' type='text/css'>\n");
-	fprintf(fs, "<link rel=stylesheet href='colors.css' type='text/css'>\n");
+void cgiPortStatsViewAll(char *query, FILE *fs)
+{
+	int i = 0;
+	int iStyle = 0;
+	T_CMM_PORT_STATS_INFO stats[CBAT_SW_PORT_NUM];	
+
+	bzero(stats, sizeof(T_CMM_PORT_STATS_INFO)*CBAT_SW_PORT_NUM);
+	http2cmm_getPortStatsAll(stats);
+
+	fprintf(fs, "<html>\n");
+	fprintf(fs, "<head>\n");
+	fprintf(fs, "<title>EoC</title>\n");
+	fprintf(fs, "<base target='_self'>\n");
 	fprintf(fs, "<meta http-equiv='Content-Type' content='text/html;charset=utf-8;no-cache'>\n");
-	fprintf(fs, "<title>EoC</title>\n<base target='_self'>\n</head>\n<body>\n<blockquote>\n<form>\n");
-}
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/jquery-ui-1.10.3.custom.min.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='css/redmond/demos.css'/>\n");
+	fprintf(fs, "<link rel='stylesheet' href='stylemain.css' type='text/css'>\n");
+	fprintf(fs, "<link rel='stylesheet' href='colors.css' type='text/css'>\n");
+	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
+	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
+	fprintf(fs, "<script src='util.js'></script>\n");
 
-void cgiCltProfileView(char *query, FILE *fs) 
-{
-	int id = 0;
-	st_dbsCltConf profile;
-	char action[IFC_LARGE_LEN];
-
-	cgiGetValueByName(query, "viewid", action);
-	id = atoi(action);
-
-	writePageHeader(fs);
-
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Profile</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Display the current profile parameters of the CLT which you have selected from the topology.</br>\n<br><br>\n");
-		
-	if( CMM_SUCCESS == dbsGetCltconf(dbsdev, id, &profile) )
-	{
-		fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-		fprintf(fs, "<tr>\n<td class='diagret' width=300>General Information</td>\n");
-		fprintf(fs, "<td class='diagret' width=260>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		
-		fprintf(fs, "<tr>\n<td class='diagdata'>CLT ID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.id);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Additional PIB ID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_base);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Profile Status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_row_sts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Cable Bandwidth Limiting</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>uplink limiting status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_curate?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>uplink limit:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d kbps</td>\n</tr>\n", profile.col_curate);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>downlink limiting status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_cdrate?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>downlink limit:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d kbps</td>\n</tr>\n", profile.col_cdrate);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Bridged Address Aging</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>local bridged table aging:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d minutes</td>\n</tr>\n", profile.col_loagTime);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>remote bridged table aging:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d minutes</td>\n</tr>\n", profile.col_reagTime);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Default CAP</td>\n<td class='diagret'>[Lowest Priority Classification]</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>igmp:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_igmpPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>unicast:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_unicastPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>igmp managed multicast stream:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_avsPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>multicast/broadcast:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_mcastPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Tx Buffer Allocation Based On Priority</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_tbaPriSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Assign Priority Using VLAN Tags</td>\n<td class='diagret'>[High]</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_cosPriSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 0:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos0pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 1:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos1pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 2:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos2pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 3:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos3pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 4:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos4pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 5:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos5pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 6:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos6pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 7:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos7pri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Assign Priority Using Traffic Class</td>\n<td class='diagret'>[Low]</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_tosPriSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 0:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos0pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 1:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos1pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 2:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos2pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 3:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos3pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 4:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos4pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 5:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos5pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 6:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos6pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 7:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos7pri);		
-		
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='listend'></td>\n<td class='listend'></td>\n</tr>\n");
-
-		fprintf(fs, "</table>\n");
-	}
+	fprintf(fs, "<script language='javascript'>\n");
+	fprintf(fs, "function btnClear(){\n");
+	fprintf(fs, "	var loc = 'clearPortStas.cgi';\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");	
+	fprintf(fs, "function btnRefresh(){\n");
+	fprintf(fs, "	var code = 'wecPortStats.cmd';\n");
+	fprintf(fs, "	location.href = code;\n");
+	fprintf(fs, "}\n");
+	fprintf(fs, "function showPortStats(portid){\n");
+	fprintf(fs, "	var loc = 'portStatsDetail.cmd?';\n");
+	fprintf(fs, "	loc += 'portid=' + portid;\n");
+	fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
+	fprintf(fs, "	//alert(code);\n");
+	fprintf(fs, "	eval(code);\n");
+	fprintf(fs, "}\n");	
+	fprintf(fs, "$(function()\n");
+	fprintf(fs, "{\n");
+	fprintf(fs, "	$( '.showBtn' ).button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-home'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#refreshBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-refresh'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#refreshBtn' ).click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnRefresh();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$('#clearBtn').button({\n");
+	fprintf(fs, "		icons: {\n");
+	fprintf(fs, "			primary: 'ui-icon-shuffle'\n");
+	fprintf(fs, "		},\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "	$( '#clearBtn' ).click(function(event){\n");
+	fprintf(fs, "		event.preventDefault();\n");
+	fprintf(fs, "		btnClear();\n");
+	fprintf(fs, "	});\n");
+	fprintf(fs, "});\n");
 	
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"previewTopology.cgi\"' value='Return'></p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
+	fprintf(fs, "</script>\n");
+	
+	fprintf(fs, "</head>\n");
+	fprintf(fs, "<body>\n");
+	fprintf(fs, "<blockquote>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<table border='0' cellpadding='5' cellspacing='0'>\n");
+	fprintf(fs, "		<tr><td class='maintitle'><b>Port Statistics</b></td></tr>\n");	
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=0 width=100%>\n");
+	fprintf(fs, "		<tr><td class='mainline' width=100%></td></tr>\n");
+	fprintf(fs, "	</table>\n");	
+	fprintf(fs, "	<br><br>\n");
+	fprintf(fs, "	Through this page, you can query the Ethernet interface and coaxial interface packet statistics.</br>\n");
+	fprintf(fs, "	<br>\n");
+	fprintf(fs, "	<ul>\n");
+	fprintf(fs, "	<table border=0 cellpadding=0 cellspacing=2>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=thead width=120>Port</td>\n");
+	fprintf(fs, "			<td class=thead width=90>TX Packets</td>\n");
+	fprintf(fs, "			<td class=thead width=140>TX bytes</td>\n");
+	fprintf(fs, "			<td class=thead width=90>RX Packets</td>\n");
+	fprintf(fs, "			<td class=thead width=140>RX bytes</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=5>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+
+	for( i=0; i<CBAT_SW_PORT_NUM; i++)
+	{
+		if( !boardapi_isDsdtPortValid(i) ) continue;
+		iStyle++;		
+		fprintf(fs, "	<tr>\n");
+		fprintf(fs, "		<td class=%s>\n", (iStyle%2==0)?"cola":"colb");
+		fprintf(fs, "			<button class='showBtn' onClick=showPortStats(%d) style='width:120;'>%s</button>\n", i, boardapi_getDsdtPortName(i));
+		fprintf(fs, "		</td>\n");
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].txCtr);
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].OutGoodOctets);
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].rxCtr);
+		fprintf(fs, "		<td class='%s'>%d</td>\n", (iStyle%2==0)?"cola":"colb", stats[i].InGoodOctets);
+		fprintf(fs, "	</tr>\n");
+	}
+
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td colspan=5>&nbsp;</td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "		<tr>\n");
+	fprintf(fs, "			<td class=listend colspan=5></td>\n");
+	fprintf(fs, "		</tr>\n");
+	fprintf(fs, "	</table>\n");
+	fprintf(fs, "	<br>\n");	
+	fprintf(fs, "	</ul>\n");	
+	fprintf(fs, "	<p>\n");
+	fprintf(fs, "		<button id='refreshBtn'>Refresh</button>\n");
+	fprintf(fs, "		<button id='clearBtn'>Clear</button>\n");
+	fprintf(fs, "	</p>\n");
+	fprintf(fs, "</blockquote>\n");
+	fprintf(fs, "</body>\n");
+	fprintf(fs, "</html>\n");
+	
 	fflush(fs);
 }
-
-
-void cgiCnuProfileView(char *query, FILE *fs) 
-{
-	int id = 0;
-	int cltid = 0;
-  	int cnuid = 0;
-	st_dbsProfile profile;
-	char action[IFC_LARGE_LEN];
-
-	cgiGetValueByName(query, "viewid", action);
-	id = atoi(action);
-
-	writePageHeader(fs);
-
-	fprintf(fs, "<br>\n<table border=0 cellpadding=5 cellspacing=0>\n");
-	fprintf(fs, "<tr><td class='maintitle'><b>Profile</b></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n<tr>\n");
-	fprintf(fs, "<td class='mainline' width=800></td>\n</tr>\n</table>\n");
-	fprintf(fs, "<br>Display the current profile parameters of the CNU which you have selected from the topology.</br>\n<br><br>\n");
-		
-	if( CMM_SUCCESS == dbsGetProfile(dbsdev, id, &profile) )
-	{
-		cltid = id/MAX_CNUS_PER_CLT + 1;
-		cnuid = id%MAX_CNUS_PER_CLT;
-		fprintf(fs, "<table border=0 cellpadding=0 cellspacing=0>\n");
-		fprintf(fs, "<tr>\n<td class='diagret' width=300>General Information</td>\n");
-		fprintf(fs, "<td class='diagret' width=260>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		
-		fprintf(fs, "<tr>\n<td class='diagdata'>CNU ID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d/%d</td>\n</tr>\n", cltid, cnuid);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Additional PIB ID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_base);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Profile Status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_row_sts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Mac Address Limiting</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_macLimit?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>MAX Bridged Hosts:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", (profile.col_macLimit==65)?0:profile.col_macLimit);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Cable Bandwidth Limiting</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>uplink limiting status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_curate?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>uplink limit:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d kbps</td>\n</tr>\n", profile.col_curate);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>downlink limiting status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_cdrate?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>downlink limit:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d kbps</td>\n</tr>\n", profile.col_cdrate);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Bridged Address Aging</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>local bridged table aging:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d minutes</td>\n</tr>\n", profile.col_loagTime);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>remote bridged table aging:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d minutes</td>\n</tr>\n", profile.col_reagTime);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Default CAP</td>\n<td class='diagret'>[Lowest Priority Classification]</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>igmp:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_igmpPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>unicast:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_unicastPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>igmp managed multicast stream:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_avsPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>multicast/broadcast:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_mcastPri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Tx Buffer Allocation Based On Priority</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_tbaPriSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Assign Priority Using VLAN Tags</td>\n<td class='diagret'>[High]</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_cosPriSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 0:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos0pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 1:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos1pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 2:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos2pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 3:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos3pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 4:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos4pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 5:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos5pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 6:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos6pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>cos 7:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_cos7pri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Assign Priority Using Traffic Class</td>\n<td class='diagret'>[Low]</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_tosPriSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 0:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos0pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 1:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos1pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 2:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos2pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 3:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos3pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 4:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos4pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 5:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos5pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 6:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos6pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>tos 7:</td>\n");
-		fprintf(fs, "<td class='diagdata'>CAP %d</td>\n</tr>\n", profile.col_tos7pri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Storm Filter Settings</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>broadcast storm filter:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_sfbSts?"Enable":"Disable");
-		fprintf(fs, "<tr>\n<td class='diagdata'>unicast storm filter:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_sfuSts?"Enable":"Disable");
-		fprintf(fs, "<tr>\n<td class='diagdata'>multicast storm filter:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_sfmSts?"Enable":"Disable");
-		fprintf(fs, "<tr>\n<td class='diagdata'>storm filter level:</td>\n");
-		if( 0 == profile.col_sfRate )
-		{			
-			fprintf(fs, "<td class='diagdata'>Disable</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kpps</td>\n</tr>\n", (1<<(profile.col_sfRate-1)));
-		}
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>802.1Q VLAN Settings</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_vlanSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH1 PVID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth1vid);
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH2 PVID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth2vid);
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH3 PVID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth3vid);
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH4 PVID:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth4vid);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Port Priority Settings</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Port Priority Settings:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_portPriSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH1 Priority:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth1pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH2 Priority:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth2pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH3 Priority:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth3pri);
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH4 Priority:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%d</td>\n</tr>\n", profile.col_eth4pri);
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Port Speed Limiting</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Port RX Limiting:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_rxLimitSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>cpu port rx rate:</td>\n");
-		if( (0==profile.col_cpuPortRxRate)||(profile.col_cpuPortRxRate==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_cpuPortRxRate);
-		}
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH1 rx rate:</td>\n");
-		if( (0==profile.col_eth1rx)||(profile.col_eth1rx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth1rx);
-		}
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH2 rx rate:</td>\n");
-		if( (0==profile.col_eth2rx)||(profile.col_eth2rx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth2rx);
-		}
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH3 rx rate:</td>\n");
-		if( (0==profile.col_eth3rx)||(profile.col_eth3rx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth3rx);
-		}
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH4 rx rate:</td>\n");
-		if( (0==profile.col_eth4rx)||(profile.col_eth4rx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth4rx);
-		}
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>Port TX Limiting:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_txLimitSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>cpu port tx rate:</td>\n");
-		if( (0==profile.col_cpuPortTxRate)||(profile.col_cpuPortTxRate==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_cpuPortTxRate);
-		}
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH1 tx rate:</td>\n");
-		if( (0==profile.col_eth1tx)||(profile.col_eth1tx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth1tx);
-		}
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH2 tx rate:</td>\n");
-		if( (0==profile.col_eth2tx)||(profile.col_eth2tx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth2tx);
-		}
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH3 tx rate:</td>\n");
-		if( (0==profile.col_eth3tx)||(profile.col_eth3tx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth3tx);
-		}
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH4 tx rate:</td>\n");
-		if( (0==profile.col_eth4tx)||(profile.col_eth4tx==(32*0x1fff)))
-		{			
-			fprintf(fs, "<td class='diagdata'>* Kbps</td>\n</tr>\n");
-		}
-		else
-		{
-			fprintf(fs, "<td class='diagdata'>%d Kbps</td>\n</tr>\n", profile.col_eth4tx);
-		}
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagret'>Port Link Status Control</td>\n<td class='diagret'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_psctlSts?"Enable":"Disable");
-
-		fprintf(fs, "<tr>\n<td class='diagdata'>cpu port link status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_cpuPortSts?"Enable":"Disable");
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH1 link status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_eth1sts?"Enable":"Disable");
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH2 link status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_eth2sts?"Enable":"Disable");
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH3 link status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_eth3sts?"Enable":"Disable");
-		fprintf(fs, "<tr>\n<td class='diagdata'>ETH4 link status:</td>\n");
-		fprintf(fs, "<td class='diagdata'>%s</td>\n</tr>\n", profile.col_eth4sts?"Enable":"Disable");
-		
-		fprintf(fs, "<tr>\n<td class='diagdata'>&nbsp;</td>\n<td class='diagdata'>&nbsp;</td>\n</tr>\n");
-		fprintf(fs, "<tr>\n<td class='listend'></td>\n<td class='listend'></td>\n</tr>\n");
-
-		fprintf(fs, "</table>\n");		
-		//fprintf(fs, "\n");
-	}
-	
-	fprintf(fs, "<p><input type='button' class='btn2L' onClick='location.href=\"previewTopology.cgi\"' value='Return'></p>\n");
-	fprintf(fs, "</form>\n</blockquote>\n</body>\n</html>\n");
-	fflush(fs);
-}
-
-#endif
 
 void cgiCltProfile(char *query, FILE *fs) 
 {

@@ -163,4 +163,7 @@ int boardapi_setMTParameters(stMTmsgInfo *para);
 *********************************************************************************************/
 uint32_t boardapi_getCltDsdtPortid(uint32_t cltid);
 
+uint32_t boardapi_isDsdtPortValid(uint32_t portid);
+char *boardapi_getDsdtPortName(uint32_t portid);
+
 #endif 

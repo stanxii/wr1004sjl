@@ -474,7 +474,11 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 	if( req->HEADER.usMsgType == CMM_GET_CBAT_TEMPERATURE )
 	{
 		return CMM_SUCCESS;
-	}	
+	}
+	if( req->HEADER.usMsgType == CMM_DEBUG_PRINT_PORT_STAT )
+	{
+		return CMM_SUCCESS;
+	}
 
 	/* 获取系统当前时间*/
 	time(&b_time);
@@ -1654,6 +1658,27 @@ int CMM_ProcessGetPortPropety(BBLOCK_QUEUE *this)
 	return opt_sts;
 }
 
+int CMM_ProcessGetPortPropetyAll(BBLOCK_QUEUE *this)
+{
+	int i = 0;
+
+	T_CMM_PORT_PROPETY_INFO ack_data[CBAT_SW_PORT_NUM];
+
+	for( i=0; i<CBAT_SW_PORT_NUM; i++ )
+	{
+		ack_data[i].linkStatus = cmm2dsdt_getPortLinkStatus(i);
+		ack_data[i].speed = cmm2dsdt_getPortLinkSpeed(i);
+		ack_data[i].duplex = cmm2dsdt_getPortLinkDuplex(i);
+		ack_data[i].pri = cmm2dsdt_getPortPri(i);
+		ack_data[i].flowControl = cmm2dsdt_getPortFlowControl(i);
+		ack_data[i].portStatus = cmm2dsdt_getPortState(i);
+	}		
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(CMM_SUCCESS, this, (uint8_t *)&ack_data, sizeof(T_CMM_PORT_PROPETY_INFO)*CBAT_SW_PORT_NUM);
+	return CMM_SUCCESS;
+}
+
 int CMM_ProcessGetCltPortLinkSts(BBLOCK_QUEUE *this)
 {
 	//int opt_sts = CMM_SUCCESS;
@@ -1734,55 +1759,7 @@ int CMM_ProcessAddAtherosMulticastAddr2CablePort(BBLOCK_QUEUE *this)
 	T_Msg_CMM *msg = (T_Msg_CMM *)(this->b);
 	uint32_t cid = *(uint32_t *)(msg->BUF);
 
-	switch(cid)
-	{
-		case 1:
-		{
-			#ifdef PORT_CABLE1_PORT_ID
-			portid = PORT_CABLE1_PORT_ID;
-			#else
-			portid = PORT_CABLE_PORT_NULL;
-			#endif
-			break;
-		}
-		case 2:
-		{
-			#ifdef PORT_CABLE2_PORT_ID
-			portid = PORT_CABLE2_PORT_ID;
-			#else
-			portid = PORT_CABLE_PORT_NULL;
-			#endif
-			break;
-		}
-		case 3:
-		{
-			#ifdef PORT_CABLE3_PORT_ID
-			portid = PORT_CABLE3_PORT_ID;
-			#else
-			portid = PORT_CABLE_PORT_NULL;
-			#endif
-			break;
-		}
-		case 4:
-		{
-			#ifdef PORT_CABLE4_PORT_ID
-			portid = PORT_CABLE4_PORT_ID;
-			#else
-			portid = PORT_CABLE_PORT_NULL;
-			#endif
-			break;
-		}
-		case PORT_CABLE_PORT_ALL:
-		{
-			portid = PORT_CABLE_PORT_ALL;
-			break;
-		}
-		default:
-		{
-			portid = PORT_CABLE_PORT_NULL;
-			break;
-		}
-	}
+	portid = boardapi_getCltDsdtPortid(cid);	
 
 	/* del atu mac entry before add */
 	if( CMM_SUCCESS == cmm2dsdt_delAtherosMulticastAddressFromAtu() )
@@ -1850,6 +1827,23 @@ int CMM_ProcessGetCbatTemperature(BBLOCK_QUEUE *this)
 	/* 将处理信息发送给请求者 */
 	CMM_ProcessAck(opt_sts, this, (uint8_t *)&ack_data, sizeof(st_temperature));
 	return opt_sts;
+}
+
+int CMM_ProcessGetPortStatsAll(BBLOCK_QUEUE *this)
+{
+	int i = 0;
+
+	T_CMM_PORT_STATS_INFO ack_data[CBAT_SW_PORT_NUM];
+	T_CMM_PORT_STATS_INFO *p = ack_data;
+
+	for( i=0; i<CBAT_SW_PORT_NUM; i++ )
+	{
+		cmm2dsdt_getPortAllCounters(i, p++);
+	}		
+
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(CMM_SUCCESS, this, (uint8_t *)&ack_data, sizeof(T_CMM_PORT_STATS_INFO)*CBAT_SW_PORT_NUM);
+	return CMM_SUCCESS;
 }
 
 int CMM_ProcessGetPortStats(BBLOCK_QUEUE *this)
@@ -2878,6 +2872,16 @@ void cmmProcessManager(void)
 			case CMM_UNDO_CNU_ACL_DROP_MME:
 			{
 				opt_sts = CMM_ProcessUndoCnuAclDropMme(this);
+				break;
+			}
+			case CMM_GET_88E6171R_PORT_PROPETY_ALL:
+			{
+				opt_sts=CMM_ProcessGetPortPropetyAll(this);
+				break;
+			}
+			case CMM_GET_88E6171R_PORT_STATS_ALL:
+			{
+				opt_sts=CMM_ProcessGetPortStatsAll(this);
 				break;
 			}
 			case CMM_CONNET:

@@ -972,12 +972,15 @@ int boardapi_getAlarmLevelByCode(uint32_t alarmCode)
 		case 200907:		/* 链路衰减告警*/
 		case 200908:		/* 物理层速率告警*/				
 		case 200923:		/* can not find clt */
-		{
+		{			
+#ifdef CFG_USE_PLATFORM_WR1004JL
+			return DBS_LOG_NOTICE;
+#endif
 #ifdef CFG_USE_PLATFORM_WR1004SJL 
 			return DBS_LOG_NOTICE;
-#else
-			return DBS_LOG_EMERG;
 #endif
+			return DBS_LOG_EMERG;
+
 		}
 		/*DBS_LOG_ALERT*/
 		case 200904:		/* CBAT管理CPU负载过高告警以及恢复*/
@@ -1120,11 +1123,14 @@ int boardapi_getAlarmLevel(st_dbsAlarmlog *alarm)
 		case 200908:		/* 物理层速率告警*/				
 		case 200923:		/* can not find clt */
 		{
+#ifdef CFG_USE_PLATFORM_WR1004JL 
+			return DBS_LOG_NOTICE;
+#endif
 #ifdef CFG_USE_PLATFORM_WR1004SJL 
 			return DBS_LOG_NOTICE;
-#else
+#endif
 			return DBS_LOG_EMERG;
-#endif		
+		
 		}
 		/*DBS_LOG_ALERT*/
 		case 200904:		/* CBAT管理CPU负载过高告警以及恢复*/
@@ -1209,7 +1215,7 @@ int boardapi_setMTParameters(stMTmsgInfo *para)
 *********************************************************************************************/
 uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
 {	
-#ifdef CFG_USE_PLATFORM_WEC9720EK_C22
+#ifdef CFG_USE_PLATFORM_WEC9720EK
 	switch(cltid)
 	{
 		case 1:
@@ -1223,21 +1229,7 @@ uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
 	}
 #endif
 
-#ifdef CFG_USE_PLATFORM_WEC9720EK_S220
-	switch(cltid)
-	{
-		case 1:
-		{
-			return PORT_CABLE1_PORT_ID;
-		}
-		default:
-		{
-			return PORT_CABLE_PORT_NULL;
-		}
-	}
-#endif
-
-#ifdef CFG_USE_PLATFORM_WEC9720EK_XD25
+#ifdef CFG_USE_PLATFORM_WR1004JL
 	switch(cltid)
 	{
 		case 1:
@@ -1277,4 +1269,93 @@ uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
 	}
 #endif
 }  
+
+uint32_t boardapi_isDsdtPortValid(uint32_t portid)
+{
+	uint32_t ret = 0;
+	uint32_t onused[CBAT_SW_PORT_NUM];
+
+	if( portid >= CBAT_SW_PORT_NUM )
+	{
+		return 0;
+	}
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK
+	onused[0] = 1;
+	onused[1] = 1;
+	onused[2] = 0;
+	onused[3] = 0;
+	onused[4] = 0;
+	onused[5] = 1;
+	onused[6] = 1;
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004JL
+	onused[0] = 1;
+	onused[1] = 1;
+	onused[2] = 1;
+	onused[3] = 1;
+	onused[4] = 1;
+	onused[5] = 1;
+	onused[6] = 0;
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004SJL
+	onused[0] = 1;
+	onused[1] = 1;
+	onused[2] = 1;
+	onused[3] = 1;
+	onused[4] = 1;
+	onused[5] = 1;
+	onused[6] = 1;
+#endif
+
+	ret = onused[portid];
+	return ret;
+}
+
+char *boardapi_getDsdtPortName(uint32_t portid)
+{
+	static char ret[32] = {0};
+	char portName[32][CBAT_SW_PORT_NUM];
+
+	if( portid >= CBAT_SW_PORT_NUM )
+	{
+		strcpy(ret, "NULL");
+		return ret;
+	}
+
+#ifdef CFG_USE_PLATFORM_WEC9720EK
+	strcpy(portName[0], "ETH1");
+	strcpy(portName[1], "ETH2");
+	strcpy(portName[2], "NULL");
+	strcpy(portName[3], "NULL");
+	strcpy(portName[4], "NULL");
+	strcpy(portName[5], "MP");
+	strcpy(portName[6], "CLT/1");
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004JL
+	strcpy(portName[0], "ORT");
+	strcpy(portName[1], "ETH1");
+	strcpy(portName[2], "ETH2");
+	strcpy(portName[3], "ONU/1");
+	strcpy(portName[4], "CLT/1");
+	strcpy(portName[5], "MP");
+	strcpy(portName[6], "NULL");
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004SJL
+	strcpy(portName[0], "ONU/ETH");
+	strcpy(portName[1], "CLT/1");
+	strcpy(portName[2], "CLT/2");
+	strcpy(portName[3], "CLT/3");
+	strcpy(portName[4], "CLT/4");
+	strcpy(portName[5], "MP");
+	strcpy(portName[6], "ORT");
+#endif
+
+	strcpy(ret, portName[portid]);
+	return ret;
+}
   

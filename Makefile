@@ -13,36 +13,30 @@ DIR_INC	 = ${ROOTDIR}/apps/include
 DIR_UBOOT = ${ROOTDIR}/u-boot-1.3.4
 DIR_KERNEL = ${ROOTDIR}/linux-3.4.6
 
-.PHONY: all clean distclean uboot kernel apps apps_clean wr1004sjl wec9720ek_c22 wec9720ek_s220 wec9720ek_xd25
+.PHONY: all clean distclean uboot kernel apps apps_clean wr1004sjl wec9720ek wr1004jl
 
 all:
 	@echo "please choose platform device by make:"
-	@echo "	make wec9720ek_c22"
-	@echo "	make wec9720ek_s220"
-	@echo "	make wec9720ek_xd25"
-	@echo "	make wr1004sjl"
+	@echo "1) make wec9720ek"
+	@echo "2) make wr1004jl"
+	@echo "3) make wr1004sjl"
 	@echo "make execution terminated !"
 
-wec9720ek_c22:wec9720ek_c22_config uboot kernel apps
-wec9720ek_s220:wec9720ek_s220_config uboot kernel apps
-wec9720ek_xd25:wec9720ek_xd25_config uboot kernel apps
+wec9720ek:wec9720ek_config uboot kernel apps
+wr1004jl:wr1004jl_config uboot kernel apps
 wr1004sjl:wr1004sjl_config uboot kernel apps
+
+wec9720ek_config:
+	echo "#define CFG_USE_PLATFORM_WEC9720EK 1" >$(DIR_INC)/config.h
+	@echo "... use platform device wec9720ek"
+
+wr1004jl_config:
+	echo "#define CFG_USE_PLATFORM_WR1004JL 1" >$(DIR_INC)/config.h
+	@echo "... use platform device wr1004jl"
 
 wr1004sjl_config:
 	echo "#define CFG_USE_PLATFORM_WR1004SJL 1" >$(DIR_INC)/config.h
 	@echo "... use platform device wr1004sjl"
-
-wec9720ek_c22_config:
-	echo "#define CFG_USE_PLATFORM_WEC9720EK_C22 1" >$(DIR_INC)/config.h
-	@echo "... use platform device wec9720ek c22"
-
-wec9720ek_s220_config:
-	echo "#define CFG_USE_PLATFORM_WEC9720EK_S220 1" >$(DIR_INC)/config.h
-	@echo "... use platform device wec9720ek s220"
-
-wec9720ek_xd25_config:
-	echo "#define CFG_USE_PLATFORM_WEC9720EK_XD25 1" >$(DIR_INC)/config.h
-	@echo "... use platform device wec9720ek xd25"
 
 apps:
 	make -C $(DIR_APPS)

@@ -14,8 +14,7 @@ int http2cmm_reloadCnu(int id);
 int http2cmm_deleteCnu(int id);
 int http2cmm_permitCnu(int id);
 int http2cmm_undoPermitCnu(int id);
-int http2cmm_doPortStas(PWEB_NTWK_VAR pWebVar);
-int http2cmm_clearPortStas(PWEB_NTWK_VAR pWebVar);
+
 int http2cmm_doLinkDiag( PWEB_NTWK_VAR pWebVar );
 int http2cmm_doWListCtrlSettings( PWEB_NTWK_VAR pWebVar );
 int http2cmm_doSpeedLimitSettings( PWEB_NTWK_VAR pWebVar );
@@ -26,7 +25,11 @@ int http2cmm_doAgTimeSettings( PWEB_NTWK_VAR pWebVar );
 int http2cmm_doMacLimiting( PWEB_NTWK_VAR pWebVar );
 int http2cmm_createCnu( PWEB_NTWK_VAR pWebVar );
 
-int http2cmm_getPortPropetyAll(PWEB_NTWK_VAR pWebVar);
+int http2cmm_clearPortStats(void);
+int http2cmm_getPortStats(int port, T_CMM_PORT_STATS_INFO *stats);
+int http2cmm_getPortStatsAll(T_CMM_PORT_STATS_INFO *stats);
+int http2cmm_getPortPropety(int port, T_CMM_PORT_PROPETY_INFO *propety);
+int http2cmm_getPortPropetyAll(T_CMM_PORT_PROPETY_INFO *propety);
 int http2cmm_getCbatTemperature(st_temperature *temp_data);
 int http2cmm_sysReboot(void);
 int http2cmm_restoreDefault(void);

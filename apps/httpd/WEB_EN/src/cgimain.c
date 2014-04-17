@@ -43,7 +43,6 @@ int glbUploadMode;     // used for web page upload image or updating settings.
 extern void do_ej(char *path, FILE *stream);
 extern void do_file(char *path, FILE *stream);
 
-
 void do_cgi(char *path, FILE *fs) {
    extern void destroy(void);
    char filename[WEB_BUF_SIZE_MAX];
@@ -105,10 +104,6 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(glbWebVar.returnUrl, "wecSnmpCfg.html");
 		glbWebVar.wecOptCode = (ret?1:0);
 		strcpy(filename, "/webs/wecOptResult2.html");
-	}
-	else if ( strstr(filename, "wecPortPropety.html") != NULL )
-	{
-		http2cmm_getPortPropetyAll(&glbWebVar);
 	}
 	else if ( strstr(filename, "wecSaveDbInfo.html") != NULL )
 	{
@@ -517,39 +512,13 @@ void do_cgi(char *path, FILE *fs) {
 		http2dbs_writeOptlog(ret, logmsg);
 		sprintf(filename, "linkDiagResult.cmd");
 	}
-	else if ( strstr(filename, "wecPortStas.html") != NULL )
-	{
-		ret = http2cmm_doPortStas(&glbWebVar);
-	}
 	else if ( strstr(filename, "clearPortStas.html") != NULL )
 	{
-		ret = http2cmm_clearPortStas(&glbWebVar);
-		strcpy(filename, "/webs/wecPortStas.html");
+		ret = http2cmm_clearPortStats();
+		strcpy(filename, "wecPortStats.cmd");
 		/*opt-log*/			
 		http2dbs_writeOptlog(ret, "clear port statistics counter");
-	}	
-	else if ( strstr(filename, "portPropety.html") != NULL )
-	{
-		if( glbWebVar.portid == 1 )
-		{
-			strcpy(logmsg, "do port ETH1 proprty settings");
-		}
-		else if( glbWebVar.portid == 2 )
-		{
-			strcpy(logmsg, "do port ETH2 proprty settings");
-		}
-		else if( glbWebVar.portid == 3 )
-		{
-			strcpy(logmsg, "do port Cable1 proprty settings");
-		}
-		else
-		{
-			strcpy(logmsg, "do port Cable4 proprty settings");
-		}
-		/*opt-log*/			
-		http2dbs_writeOptlog(0, logmsg);
-		sprintf(filename, "portPropety.cmd?portid=%d", glbWebVar.portid);
-	}	
+	}
 	else if ( strstr(filename, "previewTopology.html") != NULL )
 	{
 		strcpy(glbWebVar.frmloadUrl, "wecTopology.cmd");
@@ -714,79 +683,7 @@ CGI_ITEM CgiGetTable[] = {
    { "upgStep", (void *)&glbWebVar.upgStep, CGI_TYPE_NUM },
    { "upgErrCode", (void *)&glbWebVar.upgErrCode, CGI_TYPE_NUM },
 
-   { "eth1txbc", (void *)&glbWebVar.eth1txbc, CGI_TYPE_NUM },
-   { "eth1txu", (void *)&glbWebVar.eth1txu, CGI_TYPE_NUM },
-   { "eth1txm", (void *)&glbWebVar.eth1txm, CGI_TYPE_NUM },
-   { "eth1txp", (void *)&glbWebVar.eth1txp, CGI_TYPE_NUM },
-   { "eth1txb", (void *)&glbWebVar.eth1txb, CGI_TYPE_NUM },
-   { "eth1rxbc", (void *)&glbWebVar.eth1rxbc, CGI_TYPE_NUM },
-   { "eth1rxu", (void *)&glbWebVar.eth1rxu, CGI_TYPE_NUM },
-   { "eth1rxm", (void *)&glbWebVar.eth1rxm, CGI_TYPE_NUM },
-   { "eth1rxp", (void *)&glbWebVar.eth1rxp, CGI_TYPE_NUM },
-   { "eth1rxb", (void *)&glbWebVar.eth1rxb, CGI_TYPE_NUM },
-   
-   { "eth2txbc", (void *)&glbWebVar.eth2txbc, CGI_TYPE_NUM },
-   { "eth2txu", (void *)&glbWebVar.eth2txu, CGI_TYPE_NUM },
-   { "eth2txm", (void *)&glbWebVar.eth2txm, CGI_TYPE_NUM },
-   { "eth2txp", (void *)&glbWebVar.eth2txp, CGI_TYPE_NUM },
-   { "eth2txb", (void *)&glbWebVar.eth2txb, CGI_TYPE_NUM },
-   { "eth2rxbc", (void *)&glbWebVar.eth2rxbc, CGI_TYPE_NUM },
-   { "eth2rxu", (void *)&glbWebVar.eth2rxu, CGI_TYPE_NUM },
-   { "eth2rxm", (void *)&glbWebVar.eth2rxm, CGI_TYPE_NUM },
-   { "eth2rxp", (void *)&glbWebVar.eth2rxp, CGI_TYPE_NUM },
-   { "eth2rxb", (void *)&glbWebVar.eth2rxb, CGI_TYPE_NUM },
-   
-   { "eth3txbc", (void *)&glbWebVar.eth3txbc, CGI_TYPE_NUM },
-   { "eth3txu", (void *)&glbWebVar.eth3txu, CGI_TYPE_NUM },
-   { "eth3txm", (void *)&glbWebVar.eth3txm, CGI_TYPE_NUM },
-   { "eth3txp", (void *)&glbWebVar.eth3txp, CGI_TYPE_NUM },
-   { "eth3txb", (void *)&glbWebVar.eth3txb, CGI_TYPE_NUM },
-   { "eth3rxbc", (void *)&glbWebVar.eth3rxbc, CGI_TYPE_NUM },
-   { "eth3rxu", (void *)&glbWebVar.eth3rxu, CGI_TYPE_NUM },
-   { "eth3rxm", (void *)&glbWebVar.eth3rxm, CGI_TYPE_NUM },
-   { "eth3rxp", (void *)&glbWebVar.eth3rxp, CGI_TYPE_NUM },
-   { "eth3rxb", (void *)&glbWebVar.eth3rxb, CGI_TYPE_NUM },
-
-   { "eth4txbc", (void *)&glbWebVar.eth4txbc, CGI_TYPE_NUM },
-   { "eth4txu", (void *)&glbWebVar.eth4txu, CGI_TYPE_NUM },
-   { "eth4txm", (void *)&glbWebVar.eth4txm, CGI_TYPE_NUM },
-   { "eth4txp", (void *)&glbWebVar.eth4txp, CGI_TYPE_NUM },
-   { "eth4txb", (void *)&glbWebVar.eth4txb, CGI_TYPE_NUM },
-   { "eth4rxbc", (void *)&glbWebVar.eth4rxbc, CGI_TYPE_NUM },
-   { "eth4rxu", (void *)&glbWebVar.eth4rxu, CGI_TYPE_NUM },
-   { "eth4rxm", (void *)&glbWebVar.eth4rxm, CGI_TYPE_NUM },
-   { "eth4rxp", (void *)&glbWebVar.eth4rxp, CGI_TYPE_NUM },
-   { "eth4rxb", (void *)&glbWebVar.eth4rxb, CGI_TYPE_NUM },   
-
    { "portid", (void *)&glbWebVar.portid, CGI_TYPE_NUM }, 
-
-   { "eth1speed", (void *)&glbWebVar.eth1speed, CGI_TYPE_NUM }, 
-   { "eth1duplex", (void *)&glbWebVar.eth1duplex, CGI_TYPE_NUM }, 
-   { "eth1pri", (void *)&glbWebVar.eth1pri, CGI_TYPE_NUM }, 
-   { "eth1fc", (void *)&glbWebVar.eth1fc, CGI_TYPE_NUM }, 
-   { "eth1sts", (void *)&glbWebVar.eth1sts, CGI_TYPE_NUM }, 
-   { "eth1linksts", (void *)&glbWebVar.eth1linksts, CGI_TYPE_NUM }, 
-
-   { "eth2speed", (void *)&glbWebVar.eth2speed, CGI_TYPE_NUM }, 
-   { "eth2duplex", (void *)&glbWebVar.eth2duplex, CGI_TYPE_NUM }, 
-   { "eth2pri", (void *)&glbWebVar.eth2pri, CGI_TYPE_NUM }, 
-   { "eth2fc", (void *)&glbWebVar.eth2fc, CGI_TYPE_NUM }, 
-   { "eth2sts", (void *)&glbWebVar.eth2sts, CGI_TYPE_NUM }, 
-   { "eth2linksts", (void *)&glbWebVar.eth2linksts, CGI_TYPE_NUM }, 
-
-   { "eth3speed", (void *)&glbWebVar.eth3speed, CGI_TYPE_NUM }, 
-   { "eth3duplex", (void *)&glbWebVar.eth3duplex, CGI_TYPE_NUM }, 
-   { "eth3pri", (void *)&glbWebVar.eth3pri, CGI_TYPE_NUM }, 
-   { "eth3fc", (void *)&glbWebVar.eth3fc, CGI_TYPE_NUM }, 
-   { "eth3sts", (void *)&glbWebVar.eth3sts, CGI_TYPE_NUM }, 
-   { "eth3linksts", (void *)&glbWebVar.eth3linksts, CGI_TYPE_NUM }, 
-
-   { "eth4speed", (void *)&glbWebVar.eth4speed, CGI_TYPE_NUM }, 
-   { "eth4duplex", (void *)&glbWebVar.eth4duplex, CGI_TYPE_NUM }, 
-   { "eth4pri", (void *)&glbWebVar.eth4pri, CGI_TYPE_NUM }, 
-   { "eth4fc", (void *)&glbWebVar.eth4fc, CGI_TYPE_NUM }, 
-   { "eth4sts", (void *)&glbWebVar.eth4sts, CGI_TYPE_NUM }, 
-   { "eth4linksts", (void *)&glbWebVar.eth4linksts, CGI_TYPE_NUM }, 
 
    { "wecSysupHours", (void *)&glbWebVar.wecSysupHours, CGI_TYPE_NUM }, 
    { "wecSysupMins", (void *)&glbWebVar.wecSysupMins, CGI_TYPE_NUM }, 
@@ -1107,30 +1004,6 @@ CGI_ITEM CgiSetTable[] = {
    { "upgErrCode", (void *)&glbWebVar.upgErrCode, CGI_TYPE_NUM },
 
    { "portid", (void *)&glbWebVar.portid, CGI_TYPE_NUM }, 
-
-   { "eth1speed", (void *)&glbWebVar.eth1speed, CGI_TYPE_NUM }, 
-   { "eth1duplex", (void *)&glbWebVar.eth1duplex, CGI_TYPE_NUM }, 
-   { "eth1pri", (void *)&glbWebVar.eth1pri, CGI_TYPE_NUM }, 
-   { "eth1fc", (void *)&glbWebVar.eth1fc, CGI_TYPE_NUM }, 
-   { "eth1sts", (void *)&glbWebVar.eth1sts, CGI_TYPE_NUM }, 
-
-   { "eth2speed", (void *)&glbWebVar.eth2speed, CGI_TYPE_NUM }, 
-   { "eth2duplex", (void *)&glbWebVar.eth2duplex, CGI_TYPE_NUM }, 
-   { "eth2pri", (void *)&glbWebVar.eth2pri, CGI_TYPE_NUM }, 
-   { "eth2fc", (void *)&glbWebVar.eth2fc, CGI_TYPE_NUM }, 
-   { "eth2sts", (void *)&glbWebVar.eth2sts, CGI_TYPE_NUM }, 
-
-   { "eth3speed", (void *)&glbWebVar.eth3speed, CGI_TYPE_NUM }, 
-   { "eth3duplex", (void *)&glbWebVar.eth3duplex, CGI_TYPE_NUM }, 
-   { "eth3pri", (void *)&glbWebVar.eth3pri, CGI_TYPE_NUM }, 
-   { "eth3fc", (void *)&glbWebVar.eth3fc, CGI_TYPE_NUM }, 
-   { "eth3sts", (void *)&glbWebVar.eth3sts, CGI_TYPE_NUM }, 
-
-   { "eth4speed", (void *)&glbWebVar.eth4speed, CGI_TYPE_NUM }, 
-   { "eth4duplex", (void *)&glbWebVar.eth4duplex, CGI_TYPE_NUM }, 
-   { "eth4pri", (void *)&glbWebVar.eth4pri, CGI_TYPE_NUM }, 
-   { "eth4fc", (void *)&glbWebVar.eth4fc, CGI_TYPE_NUM }, 
-   { "eth4sts", (void *)&glbWebVar.eth4sts, CGI_TYPE_NUM }, 
 
    { "wecWlistStatus", (void *)&glbWebVar.wecWlistStatus, CGI_TYPE_NUM }, 
 

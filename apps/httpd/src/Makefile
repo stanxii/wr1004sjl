@@ -1,4 +1,3 @@
-
 TARGET=arm-linux
 CROSS_COMPILE=arm-linux-
 STRIP	= $(CROSS_COMPILE)strip
