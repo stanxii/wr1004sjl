@@ -1270,6 +1270,12 @@ uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
 #endif
 }  
 
+/********************************************************************************************
+*	函数名称:boardapi_isDsdtPortValid
+*	函数功能:定义端口的有效属性
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
 uint32_t boardapi_isDsdtPortValid(uint32_t portid)
 {
 	uint32_t ret = 0;
@@ -1281,39 +1287,45 @@ uint32_t boardapi_isDsdtPortValid(uint32_t portid)
 	}
 
 #ifdef CFG_USE_PLATFORM_WEC9720EK
-	onused[0] = 1;
-	onused[1] = 1;
-	onused[2] = 0;
-	onused[3] = 0;
-	onused[4] = 0;
-	onused[5] = 1;
-	onused[6] = 1;
+	onused[0] = BOOL_TRUE;
+	onused[1] = BOOL_TRUE;
+	onused[2] = BOOL_FALSE;
+	onused[3] = BOOL_FALSE;
+	onused[4] = BOOL_FALSE;
+	onused[5] = BOOL_TRUE;
+	onused[6] = BOOL_TRUE;
 #endif
 
 #ifdef CFG_USE_PLATFORM_WR1004JL
-	onused[0] = 1;
-	onused[1] = 1;
-	onused[2] = 1;
-	onused[3] = 1;
-	onused[4] = 1;
-	onused[5] = 1;
-	onused[6] = 0;
+	onused[0] = BOOL_TRUE;
+	onused[1] = BOOL_TRUE;
+	onused[2] = BOOL_TRUE;
+	onused[3] = BOOL_TRUE;
+	onused[4] = BOOL_TRUE;
+	onused[5] = BOOL_TRUE;
+	onused[6] = BOOL_FALSE;
 #endif
 
 #ifdef CFG_USE_PLATFORM_WR1004SJL
-	onused[0] = 1;
-	onused[1] = 1;
-	onused[2] = 1;
-	onused[3] = 1;
-	onused[4] = 1;
-	onused[5] = 1;
-	onused[6] = 1;
+	onused[0] = BOOL_TRUE;
+	onused[1] = BOOL_TRUE;
+	onused[2] = BOOL_TRUE;
+	onused[3] = BOOL_TRUE;
+	onused[4] = BOOL_TRUE;
+	onused[5] = BOOL_TRUE;
+	onused[6] = BOOL_TRUE;
 #endif
 
 	ret = onused[portid];
 	return ret;
 }
 
+/********************************************************************************************
+*	函数名称:boardapi_isDsdtPortValid
+*	函数功能:定义端口的名称
+*	作者:frank
+*	时间:2010-08-19
+*********************************************************************************************/
 char *boardapi_getDsdtPortName(uint32_t portid)
 {
 	static char ret[32] = {0};
