@@ -3,7 +3,7 @@ ifndef ERASE_FCT
 ERASE_FCT=rm -f
 endif
 ifndef CROSS_COMPILE
-CROSS_COMPILE=arm-elf-
+CROSS_COMPILE=arm-linux-
 endif
 
 TOOLCHAIN=gcc
@@ -37,8 +37,8 @@ NM= $(CROSS_COMPILE)nm
 SIZE=$(CROSS_COMPILE)size
 OBJCOPY=$(CROSS_COMPILE)objcopy
 OBJDUMP=$(CROSS_COMPILE)objdump
-CCFLAGS=-g -mcpu=arm926ej-s -Os -Wall -D$(TARGET) -I$(INCL)
-ASFLAGS=-g -mcpu=arm926ej-s -c -Os -Wall -D$(TARGET) -I$(INCL) -DTOP_OF_MEM=$(TOP_OF_MEMORY)
+CCFLAGS=-g -mcpu=arm926ej-s  -Wall -D$(TARGET) -I$(INCL)
+ASFLAGS=-g -mcpu=arm926ej-s -c  -Wall -D$(TARGET) -I$(INCL) -DTOP_OF_MEM=$(TOP_OF_MEMORY)
 
 # Linker flags.
 #  -Wl,...:     tell GCC to pass this to linker.
