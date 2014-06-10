@@ -156,10 +156,10 @@
  #define PORT_CABLE1_PORT_ADDR	0x16
 
   /* CLT2 port */
- #define PORT_CABLE1_PHY_ID		1
- #define PORT_CABLE1_PHY_ADDR		1
- #define PORT_CABLE1_PORT_ID		1
- #define PORT_CABLE1_PORT_ADDR	0x11
+ #define PORT_CABLE2_PHY_ID		1
+ #define PORT_CABLE2_PHY_ADDR		1
+ #define PORT_CABLE2_PORT_ID		1
+ #define PORT_CABLE2_PORT_ADDR	0x11
  
 #endif
 
