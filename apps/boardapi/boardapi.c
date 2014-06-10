@@ -979,6 +979,9 @@ int boardapi_getAlarmLevelByCode(uint32_t alarmCode)
 #ifdef CFG_USE_PLATFORM_WR1004SJL 
 			return DBS_LOG_NOTICE;
 #endif
+#ifdef CFG_USE_PLATFORM_WR1004JLD
+			return DBS_LOG_NOTICE;
+#endif
 			return DBS_LOG_EMERG;
 
 		}
@@ -1129,6 +1132,9 @@ int boardapi_getAlarmLevel(st_dbsAlarmlog *alarm)
 #ifdef CFG_USE_PLATFORM_WR1004SJL 
 			return DBS_LOG_NOTICE;
 #endif
+#ifdef CFG_USE_PLATFORM_WR1004JLD 
+			return DBS_LOG_NOTICE;
+#endif
 			return DBS_LOG_EMERG;
 		
 		}
@@ -1268,6 +1274,21 @@ uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
 		}
 	}
 #endif
+
+#ifdef CFG_USE_PLATFORM_WR1004JLD
+	switch(cltid)
+	{
+		case 1:
+		{
+			return PORT_CABLE1_PORT_ID;
+		}
+		default:
+		{
+			return PORT_CABLE_PORT_NULL;
+		}
+	}
+#endif
+
 }  
 
 /********************************************************************************************
@@ -1307,6 +1328,16 @@ uint32_t boardapi_isDsdtPortValid(uint32_t portid)
 #endif
 
 #ifdef CFG_USE_PLATFORM_WR1004SJL
+	onused[0] = BOOL_TRUE;
+	onused[1] = BOOL_TRUE;
+	onused[2] = BOOL_TRUE;
+	onused[3] = BOOL_TRUE;
+	onused[4] = BOOL_TRUE;
+	onused[5] = BOOL_TRUE;
+	onused[6] = BOOL_TRUE;
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004JLD
 	onused[0] = BOOL_TRUE;
 	onused[1] = BOOL_TRUE;
 	onused[2] = BOOL_TRUE;
@@ -1365,6 +1396,16 @@ char *boardapi_getDsdtPortName(uint32_t portid)
 	strcpy(portName[4], "CLT/4");
 	strcpy(portName[5], "MP");
 	strcpy(portName[6], "ORT");
+#endif
+
+#ifdef CFG_USE_PLATFORM_WR1004JLD
+	strcpy(portName[0], "ONU/1");
+	strcpy(portName[1], "CLT/2");
+	strcpy(portName[2], "ETH1");
+	strcpy(portName[3], "ETH2");
+	strcpy(portName[4], "ORT");
+	strcpy(portName[5], "MP");
+	strcpy(portName[6], "CLT/1");
 #endif
 
 	strcpy(ret, portName[portid]);

@@ -281,6 +281,7 @@ enum
 	WR1004SJL,			/* 4*clt + 1*onu module */
 	WEC_3702I_E4,		/* cnu ar6400+rtl8306e */
 	WEC701_E4,			/* cnu ar7411+rtl8306e */
+	WR1004JLD,			/* 2*clt + 1*onu module */
 
 	/* 请在中间增加其他枚举定义 */
 	WEC_INVALID = 0xFE,

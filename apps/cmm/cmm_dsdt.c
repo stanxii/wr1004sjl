@@ -952,6 +952,11 @@ int cmm2dsdt_addAtherosMulticastAddressToAllCablePort(void)
 						|(1 << PORT_CABLE4_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
 #endif
 
+#ifdef CFG_USE_PLATFORM_WR1004SJLD
+	macEntry.portVec = (1 << PORT_CABLE1_PORT_ID)
+						|(1 << PORT_CABLE2_PORT_ID);     /* clt Port number. 7bits are used for portVector. */
+#endif
+
 	macEntry.prio = 0;            /* Priority (2bits). When these bits are used they override
                                 any other priority determined by the frame's data. This value is
                                 meaningful only if the device does not support extended priority

@@ -13,18 +13,20 @@ DIR_INC	 = ${ROOTDIR}/apps/include
 DIR_UBOOT = ${ROOTDIR}/u-boot-1.3.4
 DIR_KERNEL = ${ROOTDIR}/linux-3.4.6
 
-.PHONY: all clean distclean uboot kernel apps apps_clean wr1004sjl wec9720ek wr1004jl
+.PHONY: all clean distclean uboot kernel apps apps_clean wr1004sjl wec9720ek wr1004jl wr1004jld
 
 all:
 	@echo "please choose platform device by make:"
 	@echo "1) make wec9720ek"
 	@echo "2) make wr1004jl"
 	@echo "3) make wr1004sjl"
+	@echo "4) make wr1004jld"
 	@echo "make execution terminated !"
 
 wec9720ek:wec9720ek_config uboot kernel apps
 wr1004jl:wr1004jl_config uboot kernel apps
 wr1004sjl:wr1004sjl_config uboot kernel apps
+wr1004jld:wr1004jld_config uboot kernel apps
 
 wec9720ek_config:
 	echo "#define CFG_USE_PLATFORM_WEC9720EK 1" >$(DIR_INC)/config.h
@@ -37,6 +39,10 @@ wr1004jl_config:
 wr1004sjl_config:
 	echo "#define CFG_USE_PLATFORM_WR1004SJL 1" >$(DIR_INC)/config.h
 	@echo "... use platform device wr1004sjl"
+
+wr1004jld_config:
+	echo "#define CFG_USE_PLATFORM_WR1004JLD 1" >$(DIR_INC)/config.h
+	@echo "... use platform device wr1004jld"
 
 apps:
 	make -C $(DIR_APPS)
