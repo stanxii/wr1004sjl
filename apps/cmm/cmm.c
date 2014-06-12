@@ -1200,7 +1200,7 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
 	
 	//st_rtl8306eSettings ack_data;
-
+	printf("\n---------------------->>>into CMM_ProcessCnuSwitchConfigWrite\n");
 	if( (req_data->node.cnu<1)||(req_data->node.cnu > MAX_CNU_AMOUNT_LIMIT))
 	{
 		printf("\n#ERROR[01]\n");
@@ -1221,7 +1221,7 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 		printf("\n#ERROR[04]\n");
 		opt_sts = CMM_FAILED;
 	}
-
+	printf("\n---------------------->>>start gen mod\n");
 	//gen mod
 	len = rtl8306e_gen_mod(&req_data->rtl8306eConfig, mod);
 	if( len == 0 )
@@ -1229,7 +1229,7 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 		printf("\n#ERROR[05]\n");
 		opt_sts = CMM_FAILED;
 	}
-
+	printf("\n---------------------->>>start send to mmead!!\n");
 	//**************send to mmead*************//
 	if( CMM_SUCCESS != mmead_write_rtl8306e_mod(bMac, mod, len) )
 	{
