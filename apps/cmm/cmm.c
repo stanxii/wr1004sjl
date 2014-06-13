@@ -1198,6 +1198,21 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 	
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+
+	//add bys tan for savedb
+	st_dbsProfile *req_data_db = (st_dbsProfile *)(req->BUF + sizeof(rtl8306eWriteInfo));
+
+	//printf("\r\n\r\n  CMM_ProcessCnuVlanConfig(%d)\n", req_data->id);
+	
+	opt_sts = cmmTmWriteCnuProfile(1, req_data_db->id, req_data_db);
+	//CMM_ProcessAck(opt_sts, this, NULL, 0);
+	//return opt_sts;
+	//add by stan for savedb
+	if(CMM_SUCCESS != opt_sts){
+		opt_sts = CMM_FAILED;
+		printf("\n----------tmp write cnu profile to dbs error\n");
+		return opt_sts;
+	}
 	
 	//st_rtl8306eSettings ack_data;
 	printf("\n---------------------->>>into CMM_ProcessCnuSwitchConfigWrite\n");
@@ -1236,6 +1251,7 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 		opt_sts = CMM_FAILED;
 	}	
 
+	
 	/* 将处理信息发送给请求者 */
 	CMM_ProcessAck(opt_sts, this, NULL, 0);
 
