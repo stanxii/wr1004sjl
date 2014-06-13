@@ -1181,11 +1181,103 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	
 	//T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
 
+	/* add by stan for save dbs  begin */
+	st_dbsProfile profile;
+	
+
+	/* 如果该PROFILE 槽位无效则禁止配置*/
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
+	{
+		return CMM_FAILED;
+	}	
+	else if( 0 == profile.col_row_sts )
+	{
+		return CMM_FAILED;
+	}
+
+	profile.col_vlanSts = (uint32_t) req_data->rtl8306eConfig.vlanConfig.vlan_enable;
+	if( profile.col_vlanSts == 0 )
+	{
+		profile.col_eth1vid = 1;
+		profile.col_eth2vid = 1;
+		profile.col_eth3vid = 1;
+		profile.col_eth4vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid= 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid= 1;						
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid= 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid= 1;		
+	}
+	else
+	{
+		profile.col_eth1vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid;
+		profile.col_eth2vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid;
+		profile.col_eth3vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid
+		profile.col_eth4vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid
+	}
+
+	/* 防止端口PVID 被设置为0 */
+	if( 0 == profile.col_eth1vid )
+	{
+		profile.col_eth1vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid = 1;
+	}
+	if( 0 == profile.col_eth2vid )
+	{
+		profile.col_eth2vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid = 1;
+	}
+	if( 0 == profile.col_eth3vid )
+	{
+		profile.col_eth3vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid = 1;
+	}
+	if( 0 == profile.col_eth4vid )
+	{
+		profile.col_eth4vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid = 1;
+	}
+
+	/* CHECK VID */
+	if( (profile.col_eth1vid < 1) || (profile.col_eth1vid > 4094) )
+	{
+		return CMM_FAILED;
+	}
+	if( (profile.col_eth2vid < 1) || (profile.col_eth2vid > 4094) )
+	{
+		return CMM_FAILED;
+	}
+	if( (profile.col_eth3vid < 1) || (profile.col_eth3vid > 4094) )
+	{
+		return CMM_FAILED;
+	}
+	if( (profile.col_eth4vid < 1) || (profile.col_eth4vid > 4094) )
+	{
+		return CMM_FAILED;
+	}	
+	
+	
+
+	/* add by stan for save dbs  end */
+	
+
 	req->HEADER.usSrcMID = MID_HTTP;
 	req->HEADER.usDstMID = MID_CMM;
 	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
-	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo);
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo) + sizeof(st_dbsProfile);
 	req->HEADER.fragment = 0;
+
+	/*add by stan */
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		printf("add by stan too len rtl8306 body + profile len\n");
+		return CMM_FAILED;
+	}
+
+	memcpy(req->BUF + sizeof(rtl8306eWriteInfo), &profile, sizeof(st_dbsProfile));
+
+	/*add by stan end  */
+	
 
 	req_data->node.clt = 1;
 	req_data->node.cnu = node->cnu;
