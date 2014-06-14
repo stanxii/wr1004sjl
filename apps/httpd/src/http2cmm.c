@@ -1195,6 +1195,11 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 		return CMM_FAILED;
 	}
 
+		//stan.....
+		printf("json set valn enable=%d  \n", req_data->rtl8306eConfig.vlanConfig.vlan_enable);
+					printf("json set valn1=%d  ,  vlan2=%d, vlan3=%d, vlan4=%d =\n", req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid,  req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid,  req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid,  req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid);
+	      //stan 
+
 	profile.col_vlanSts = (uint32_t) req_data->rtl8306eConfig.vlanConfig.vlan_enable;
 	if( profile.col_vlanSts == 0 )
 	{
