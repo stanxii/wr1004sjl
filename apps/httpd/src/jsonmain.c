@@ -405,6 +405,14 @@ int jsonSetCnuProfile(FILE * fs)
 		}
 		
 		rtl8306e.vlanConfig.vlan_enable = (1==glbJsonVar.cnuVlanSts)?1:0;
+
+		//stan.....
+
+		printf("json set valn enable=%d  \n", rtl8306e.vlanConfig.vlan_enable);
+		printf("json set valn1=%d  ,  vlan2=%d, vlan3=%d, vlan4=%d =\n", glbJsonVar.cnuEth1Vid, glbJsonVar.cnuEth2Vid, glbJsonVar.cnuEth3Vid, glbJsonVar.cnuEth4Vid);
+
+		///stan....
+		
 		if(rtl8306e.vlanConfig.vlan_enable)
 		{
 			rtl8306e.vlanConfig.vlan_tag_aware = 1;

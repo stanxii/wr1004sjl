@@ -1186,7 +1186,8 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, pWebVar->cnuid,  &profile) )
+	
+	if( CMM_SUCCESS != http2dbs_getProfile(iNode.cnu, &profile) )
 	{
 		return CMM_FAILED;
 	}	
@@ -1211,8 +1212,8 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	{
 		profile.col_eth1vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid;
 		profile.col_eth2vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid;
-		profile.col_eth3vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid
-		profile.col_eth4vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid
+		profile.col_eth3vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid;
+		profile.col_eth4vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid;
 	}
 
 	/* 防止端口PVID 被设置为0 */
