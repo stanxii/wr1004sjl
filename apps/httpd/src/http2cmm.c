@@ -879,7 +879,7 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 
 	/*add by stan end  */
 
-	req_data->node.clt = 1;
+	req_data->node.clt = pWebVar->cltid;
 	req_data->node.cnu = pWebVar->cnuid;
 
 	//port control
@@ -1187,7 +1187,7 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
 	
-	if( CMM_SUCCESS != http2dbs_getProfile(iNode.cnu, &profile) )
+	if( CMM_SUCCESS != http2dbs_getProfile(node->cnu, &profile) )
 	{
 		return CMM_FAILED;
 	}	
@@ -1196,46 +1196,49 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 		return CMM_FAILED;
 	}
 
-	profile.col_vlanSts = (uint32_t) req_data->rtl8306eConfig.vlanConfig.vlan_enable;
+
+	
+
+	profile.col_vlanSts = (uint32_t) rtl8306e->vlanConfig.vlan_enable;
 	if( profile.col_vlanSts == 0 )
 	{
 		profile.col_eth1vid = 1;
 		profile.col_eth2vid = 1;
 		profile.col_eth3vid = 1;
 		profile.col_eth4vid = 1;
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid= 1;
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid= 1;						
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid= 1;
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid= 1;		
+		rtl8306e->vlanConfig.vlan_port[0].pvid= 1;
+		rtl8306e->vlanConfig.vlan_port[1].pvid= 1;						
+		rtl8306e->vlanConfig.vlan_port[2].pvid= 1;
+		rtl8306e->vlanConfig.vlan_port[3].pvid= 1;		
 	}
 	else
 	{
-		profile.col_eth1vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid;
-		profile.col_eth2vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid;
-		profile.col_eth3vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid;
-		profile.col_eth4vid = req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid;
+		profile.col_eth1vid = rtl8306e->vlanConfig.vlan_port[0].pvid;
+		profile.col_eth2vid = rtl8306e->vlanConfig.vlan_port[1].pvid;
+		profile.col_eth3vid = rtl8306e->vlanConfig.vlan_port[2].pvid;
+		profile.col_eth4vid = rtl8306e->vlanConfig.vlan_port[3].pvid;
 	}
 
 	/* 防止端口PVID 被设置为0 */
 	if( 0 == profile.col_eth1vid )
 	{
 		profile.col_eth1vid = 1;
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid = 1;
+		rtl8306e->vlanConfig.vlan_port[0].pvid = 1;
 	}
 	if( 0 == profile.col_eth2vid )
 	{
 		profile.col_eth2vid = 1;
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid = 1;
+		rtl8306e->vlanConfig.vlan_port[1].pvid = 1;
 	}
 	if( 0 == profile.col_eth3vid )
 	{
 		profile.col_eth3vid = 1;
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid = 1;
+		rtl8306e->vlanConfig.vlan_port[2].pvid = 1;
 	}
 	if( 0 == profile.col_eth4vid )
 	{
 		profile.col_eth4vid = 1;
-		req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid = 1;
+		rtl8306e->vlanConfig.vlan_port[3].pvid = 1;
 	}
 
 	/* CHECK VID */
@@ -1280,7 +1283,7 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	/*add by stan end  */
 	
 
-	req_data->node.clt = 1;
+	req_data->node.clt = node->clt;
 	req_data->node.cnu = node->cnu;
 	memcpy(&(req_data->rtl8306eConfig), rtl8306e, sizeof(st_rtl8306eSettings));
 	
