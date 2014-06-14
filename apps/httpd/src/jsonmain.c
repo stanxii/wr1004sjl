@@ -406,7 +406,6 @@ int jsonSetCnuProfile(FILE * fs)
 		
 		rtl8306e.vlanConfig.vlan_enable = (1==glbJsonVar.cnuVlanSts)?1:0;
 
-	
 		
 		if(rtl8306e.vlanConfig.vlan_enable)
 		{
