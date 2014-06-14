@@ -418,11 +418,11 @@ int jsonSetCnuProfile(FILE * fs)
 			rtl8306e.vlanConfig.vlan_port[2].pvid = glbJsonVar.cnuEth3Vid;
 			rtl8306e.vlanConfig.vlan_port[3].pvid = glbJsonVar.cnuEth4Vid;
 			rtl8306e.vlanConfig.vlan_port[4].pvid = 1;
-			rtl8306e.vlanConfig.vlan_port[0].egress_mode = 1;
-			rtl8306e.vlanConfig.vlan_port[1].egress_mode = 1;
-			rtl8306e.vlanConfig.vlan_port[2].egress_mode = 1;
-			rtl8306e.vlanConfig.vlan_port[3].egress_mode = 1;
-			rtl8306e.vlanConfig.vlan_port[4].egress_mode = 2;
+			if(1 != rtl8306e.vlanConfig.vlan_port[0].pvid ) rtl8306e.vlanConfig.vlan_port[0].egress_mode = 2; else rtl8306e.vlanConfig.vlan_port[0].egress_mode = 1;
+			if(1 != rtl8306e.vlanConfig.vlan_port[1].pvid ) rtl8306e.vlanConfig.vlan_port[1].egress_mode = 2; else rtl8306e.vlanConfig.vlan_port[1].egress_mode = 1;
+			if(1 != rtl8306e.vlanConfig.vlan_port[2].pvid ) rtl8306e.vlanConfig.vlan_port[2].egress_mode = 2; else rtl8306e.vlanConfig.vlan_port[2].egress_mode = 1;
+			if(1 != rtl8306e.vlanConfig.vlan_port[3].pvid ) rtl8306e.vlanConfig.vlan_port[3].egress_mode = 2; else rtl8306e.vlanConfig.vlan_port[3].egress_mode = 1;
+			rtl8306e.vlanConfig.vlan_port[4].egress_mode = 3;
 			rtl8306e.vlanConfig.vlan_port[0].admit_control = 0;
 			rtl8306e.vlanConfig.vlan_port[1].admit_control = 0;
 			rtl8306e.vlanConfig.vlan_port[2].admit_control = 0;
