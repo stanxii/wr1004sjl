@@ -278,7 +278,7 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 			switch(CUSTOM_LOGO_ID)
 			{				
 				case CUSTOM_LOGO_PX:
-					return "PX 7402";
+					return "PX 7403";
 				case CUSTOM_LOGO_ALCOTEL:
 					return "EOC-MO350-2G";
 				case CUSTOM_LOGO_DEMO:
@@ -299,6 +299,8 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		{
 			switch(CUSTOM_LOGO_ID)
 			{
+				case CUSTOM_LOGO_PX:
+					return "PX 7404";
 				case CUSTOM_LOGO_ALCOTEL:
 					return "EOC-MI350-2G";
 				default:
@@ -339,7 +341,15 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WEC_3501I_XD25:
 		{
-			return "WEC-3501I XD25";
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_PX:
+					return "PX 6403";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3501I XD25";
+			 }
 		}
 		case WEC9720EK_XD25:
 		{
@@ -357,19 +367,75 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 		}
 		case WR1004JL:
 		{
-			return "WR1004JL";
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_PX:
+					return "PX 7405";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WR1004JL";
+		        }
 		}
 		case WR1004SJL:
 		{
-			return "WR1004SJL";
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_PX:
+					return "PX 7406";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WR1004SJL";
+			}
 		}
 		case WEC_3702I_E4:
 		{
-			return "WEC-3702I E4";
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_PX:
+					return "PX 64E";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC-3702I E4";
+			}
 		}
 		case WEC701_E4:
 		{
-			return "WEC701 E4";
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_PX:
+					return "PX 74E";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC701 E4";
+			}
+		}
+		case WEC701_L4:
+		{
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_PX:
+					return "PX 74L";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC701 L4";
+			}
+		}
+		case WEC701_W4:
+		{
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_PX:
+					return "PX 74W";
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WEC701 W4";
+			}
 		}
 		default:
 		{
@@ -468,6 +534,12 @@ const char *boardapi_getCnuHfid(uint32_t devType)
 		case WEC701_E4:
 			user_HFID = "WEC701-E4";
 			break;
+		case WEC701_L4:
+			user_HFID = "WEC701-L4";
+			break;
+		case WEC701_W4:
+			user_HFID = "WEC701-W4";
+			break;
 		default :
 			user_HFID = "Intellon Enabled Product";
 			break;
@@ -511,6 +583,8 @@ int boardapi_isCnuTrusted(uint32_t DevType)
 		case WEC701_C4:		/* WEC701 C4 */
 		case WEC_3702I_E4:	/* WEC-3702I E4 */
 		case WEC701_E4:		/* WEC701 E4 */
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			return BOOL_TRUE;
 		}		
@@ -547,6 +621,8 @@ int boardapi_isAr7400Device(uint32_t DevType)
 		case WEC701_C2:
 		case WEC701_C4:
 		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			return BOOL_TRUE;
 		}		
@@ -787,6 +863,14 @@ int boardapi_mapDevModel(int model)
 		{
 			return 43;
 		}
+		case WEC701_L4:
+		{
+			return 44;
+		}
+		case WEC701_W4:
+		{
+			return 45;
+		}
 		default:
 		{
 			return 256;
@@ -903,6 +987,14 @@ int boardapi_umapDevModel(int model)
 		case 43:
 		{
 			return WEC701_E4;
+		}
+		case 44:
+		{
+			return WEC701_L4;
+		}
+		case 45:
+		{
+			return WEC701_W4;
 		}
 		default:
 		{

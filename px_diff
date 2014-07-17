@@ -1,0 +1,243 @@
+diff --git a/apps/boardapi/boardapi.c b/apps/boardapi/boardapi.c
+index 98839da..bd00f97 100755
+--- a/apps/boardapi/boardapi.c
++++ b/apps/boardapi/boardapi.c
+@@ -278,7 +278,7 @@ char * boardapi_getDeviceModelStr(uint32_t model)
+ 			switch(CUSTOM_LOGO_ID)
+ 			{				
+ 				case CUSTOM_LOGO_PX:
+-					return "PX 7402";
++					return "PX 7403";
+ 				case CUSTOM_LOGO_ALCOTEL:
+ 					return "EOC-MO350-2G";
+ 				case CUSTOM_LOGO_DEMO:
+@@ -299,6 +299,8 @@ char * boardapi_getDeviceModelStr(uint32_t model)
+ 		{
+ 			switch(CUSTOM_LOGO_ID)
+ 			{
++				case CUSTOM_LOGO_PX:
++					return "PX 7404";
+ 				case CUSTOM_LOGO_ALCOTEL:
+ 					return "EOC-MI350-2G";
+ 				default:
+@@ -339,7 +341,15 @@ char * boardapi_getDeviceModelStr(uint32_t model)
+ 		}
+ 		case WEC_3501I_XD25:
+ 		{
+-			return "WEC-3501I XD25";
++			switch(CUSTOM_LOGO_ID)
++			{
++				case CUSTOM_LOGO_PX:
++					return "PX 6403";
++				case CUSTOM_LOGO_DEMO:
++				case CUSTOM_LOGO_PREVAIL:
++				default:
++					return "WEC-3501I XD25";
++			 }
+ 		}
+ 		case WEC9720EK_XD25:
+ 		{
+@@ -357,20 +367,76 @@ char * boardapi_getDeviceModelStr(uint32_t model)
+ 		}
+ 		case WR1004JL:
+ 		{
+-			return "WR1004JL";
++			switch(CUSTOM_LOGO_ID)
++			{
++				case CUSTOM_LOGO_PX:
++					return "PX 7405";
++				case CUSTOM_LOGO_DEMO:
++				case CUSTOM_LOGO_PREVAIL:
++				default:
++					return "WR1004JL";
++		        }
+ 		}
+ 		case WR1004SJL:
+ 		{
+-			return "WR1004SJL";
++			switch(CUSTOM_LOGO_ID)
++			{
++				case CUSTOM_LOGO_PX:
++					return "PX 7406";
++				case CUSTOM_LOGO_DEMO:
++				case CUSTOM_LOGO_PREVAIL:
++				default:
++					return "WR1004SJL";
++			}
+ 		}
+ 		case WEC_3702I_E4:
+ 		{
+-			return "WEC-3702I E4";
++			switch(CUSTOM_LOGO_ID)
++			{
++				case CUSTOM_LOGO_PX:
++					return "PX 64E";
++				case CUSTOM_LOGO_DEMO:
++				case CUSTOM_LOGO_PREVAIL:
++				default:
++					return "WEC-3702I E4";
++			}
+ 		}
+ 		case WEC701_E4:
+ 		{
+-			return "WEC701 E4";
++			switch(CUSTOM_LOGO_ID)
++			{
++				case CUSTOM_LOGO_PX:
++					return "PX 74E";
++				case CUSTOM_LOGO_DEMO:
++				case CUSTOM_LOGO_PREVAIL:
++				default:
++					return "WEC701 E4";
++			}
+ 		}
++		case WEC701_L4:
++		{
++			switch(CUSTOM_LOGO_ID)
++			{
++				case CUSTOM_LOGO_PX:
++					return "PX 74L";
++				case CUSTOM_LOGO_DEMO:
++				case CUSTOM_LOGO_PREVAIL:
++				default:
++					return "WEC701 L4";
++			}
++		}
++		case WEC701_W4:
++		{
++			switch(CUSTOM_LOGO_ID)
++			{
++				case CUSTOM_LOGO_PX:
++					return "PX 74W";
++				case CUSTOM_LOGO_DEMO:
++				case CUSTOM_LOGO_PREVAIL:
++				default:
++					return "WEC701 W4";
++			}
++		}
+ 		default:
+ 		{
+ 			return "UNKNOWN";
+@@ -468,6 +534,12 @@ const char *boardapi_getCnuHfid(uint32_t devType)
+ 		case WEC701_E4:
+ 			user_HFID = "WEC701-E4";
+ 			break;
++		case WEC701_L4:
++			user_HFID = "WEC701-L4";
++			break;
++		case WEC701_W4:
++			user_HFID = "WEC701-W4";
++			break;
+ 		default :
+ 			user_HFID = "Intellon Enabled Product";
+ 			break;
+@@ -511,6 +583,8 @@ int boardapi_isCnuTrusted(uint32_t DevType)
+ 		case WEC701_C4:		/* WEC701 C4 */
+ 		case WEC_3702I_E4:	/* WEC-3702I E4 */
+ 		case WEC701_E4:		/* WEC701 E4 */
++		case WEC701_L4:
++		case WEC701_W4:
+ 		{
+ 			return BOOL_TRUE;
+ 		}		
+@@ -546,7 +620,9 @@ int boardapi_isAr7400Device(uint32_t DevType)
+ 		case WEC701_M0:
+ 		case WEC701_C2:
+ 		case WEC701_C4:
+-		case WEC701_E4:
++		case WEC701_E4:
++		case WEC701_L4:
++		case WEC701_W4:
+ 		{
+ 			return BOOL_TRUE;
+ 		}		
+@@ -787,6 +863,14 @@ int boardapi_mapDevModel(int model)
+ 		{
+ 			return 43;
+ 		}
++		case WEC701_L4:
++		{
++			return 44;
++		}
++		case WEC701_W4:
++		{
++			return 45;
++		}
+ 		default:
+ 		{
+ 			return 256;
+@@ -904,6 +988,14 @@ int boardapi_umapDevModel(int model)
+ 		{
+ 			return WEC701_E4;
+ 		}
++		case 44:
++		{
++			return WEC701_L4;
++		}
++		case 45:
++		{
++			return WEC701_W4;
++		}
+ 		default:
+ 		{
+ 			return WEC_INVALID;
+diff --git a/apps/httpd/Makefile b/apps/httpd/Makefile
+index 3602309..98b7550 100755
+--- a/apps/httpd/Makefile
++++ b/apps/httpd/Makefile
+@@ -12,8 +12,8 @@ CFLAGS +=-g -O2
+ 
+ 
+ # Web language select [ZH|EN]
+-HTTPD_GUI_LANGUAGE = ZH
+-# HTTPD_GUI_LANGUAGE = EN
++#HTTPD_GUI_LANGUAGE = ZH
++ HTTPD_GUI_LANGUAGE = EN
+ 
+ ROOTFSDIR	=	${ROOTDIR}/apps/rootfs
+ SRCDIR 		=	${ROOTDIR}/apps/httpd/src
+diff --git a/apps/httpd/WEB_EN/html/logo_corp.gif b/apps/httpd/WEB_EN/html/logo_corp.gif
+index 9359fb2..4e57ff8 100755
+Binary files a/apps/httpd/WEB_EN/html/logo_corp.gif and b/apps/httpd/WEB_EN/html/logo_corp.gif differ
+diff --git a/apps/include/public.h b/apps/include/public.h
+index e524d04..6dd1655 100755
+--- a/apps/include/public.h
++++ b/apps/include/public.h
+@@ -49,7 +49,7 @@ enum
+ 	CUSTOM_LOGO_PX,
+ 	CUSTOM_LOGO_ALCOTEL
+ };
+-#define CUSTOM_LOGO_ID CUSTOM_LOGO_DEMO
++#define CUSTOM_LOGO_ID CUSTOM_LOGO_PX
+ /********************************************************/
+ 
+ /********************************************************/
+@@ -282,7 +282,8 @@ enum
+ 	WEC_3702I_E4,		/* cnu ar6400+rtl8306e */
+ 	WEC701_E4,			/* cnu ar7411+rtl8306e */
+ 	WR1004JLD,			/* 2*clt + 1*onu module */
+-
++	WEC701_L4,			/* cnu ar7411L+rtl8306e */
++	WEC701_W4,                      /* cnu ar7411L+AR9331+rtl8306e*/
+ 	/* 请在中间增加其他枚举定义 */
+ 	WEC_INVALID = 0xFE,
+ 	WEC_XXXXX = 0xFF
+diff --git a/apps/mmead/mmeapi.c b/apps/mmead/mmeapi.c
+index 2c7d3ea..ceccbfc 100755
+--- a/apps/mmead/mmeapi.c
++++ b/apps/mmead/mmeapi.c
+@@ -3432,6 +3432,14 @@ int MME_Atheros_MsgGetPibSpec
+ 			{
+ 				pDevInfo->DevType = WEC_3702I_E4;
+ 			}
++			else if( strcmp(HFID_USER, "WEC701-L4") == 0)
++			{
++				pDevInfo->DevType = WEC701_L4;
++			}
++			else if( strcmp(HFID_USER, "WEC701-W4") == 0)
++			{
++				pDevInfo->DevType = WEC701_W4;
++			}
+ 			else
+ 			{
+ 				/* 非法设备*/

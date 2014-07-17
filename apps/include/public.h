@@ -49,7 +49,7 @@ enum
 	CUSTOM_LOGO_PX,
 	CUSTOM_LOGO_ALCOTEL
 };
-#define CUSTOM_LOGO_ID CUSTOM_LOGO_DEMO
+#define CUSTOM_LOGO_ID CUSTOM_LOGO_PX
 /********************************************************/
 
 /********************************************************/
@@ -282,7 +282,8 @@ enum
 	WEC_3702I_E4,		/* cnu ar6400+rtl8306e */
 	WEC701_E4,			/* cnu ar7411+rtl8306e */
 	WR1004JLD,			/* 2*clt + 1*onu module */
-
+	WEC701_L4,			/* cnu ar7411L+rtl8306e */
+	WEC701_W4,                      /* cnu ar7411L+AR9331+rtl8306e*/
 	/* 请在中间增加其他枚举定义 */
 	WEC_INVALID = 0xFE,
 	WEC_XXXXX = 0xFF

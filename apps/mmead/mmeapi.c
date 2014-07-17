@@ -3432,6 +3432,14 @@ int MME_Atheros_MsgGetPibSpec
 			{
 				pDevInfo->DevType = WEC_3702I_E4;
 			}
+			else if( strcmp(HFID_USER, "WEC701-L4") == 0)
+			{
+				pDevInfo->DevType = WEC701_L4;
+			}
+			else if( strcmp(HFID_USER, "WEC701-W4") == 0)
+			{
+				pDevInfo->DevType = WEC701_W4;
+			}
 			else
 			{
 				/* 非法设备*/
