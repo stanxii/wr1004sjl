@@ -2472,7 +2472,7 @@ int CMM_ProcessDoCnuAclDropMme(BBLOCK_QUEUE *this)
 		opt_sts = CMM_FAILED;
 	}
 	/*Enable CPU port function, Enable inserting CPU TAG, Enable removing CPU TAG */
-	else if( CMM_SUCCESS != rtl8306e_cpu_port_set(bMac, 0, 1, 1))
+	else if( CMM_SUCCESS != rtl8306e_cpu_port_set(bMac, 0, 0, 1))
 	{
 		opt_sts = CMM_FAILED;
 	}

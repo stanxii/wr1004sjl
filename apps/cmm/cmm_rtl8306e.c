@@ -902,7 +902,7 @@ uint32_t rtl8306e_acl_register_prepare(void)
 	entry.data = 0x88e1;	/*HomePlug av*/
 
 	ret += rtl8306e_cpu_port_disable(0);
-	ret += rtl8306e_cpu_tag_insert_enable(1);
+	ret += rtl8306e_cpu_tag_insert_enable(0);
 	ret += rtl8306e_cpu_tag_remove_enable(1);
 	ret += rtl8306e_acl_set(&entry);
 
