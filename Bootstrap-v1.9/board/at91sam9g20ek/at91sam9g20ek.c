@@ -234,23 +234,23 @@ void df_hw_init(void)
 /* \brief This function erases NandFlash Block 0 if BP4 is pressed 		*/
 /*        during boot sequence							*/
 /*------------------------------------------------------------------------------*/
-static void nand_recovery(void)
-{
+//static void nand_recovery(void)
+//{
 	/* Configure PIOs */
-	const struct pio_desc bp4_pio[] = {
-		{"BP4", AT91C_PIN_PA(31), 0, PIO_PULLUP, PIO_INPUT},
-		{(char *) 0, 0, 0, PIO_DEFAULT, PIO_PERIPH_A},
-	};
+//	const struct pio_desc bp4_pio[] = {
+//		{"BP4", AT91C_PIN_PA(31), 0, PIO_PULLUP, PIO_INPUT},
+//		{(char *) 0, 0, 0, PIO_DEFAULT, PIO_PERIPH_A},
+//	};
 
 	/* Configure the PIO controller */
-	writel((1 << AT91C_ID_PIOA), PMC_PCER + AT91C_BASE_PMC);
-	pio_setup(bp4_pio);
+//	writel((1 << AT91C_ID_PIOA), PMC_PCER + AT91C_BASE_PMC);
+//	pio_setup(bp4_pio);
 	
 	/* If BP4 is pressed during Boot sequence */
 	/* Erase NandFlash block 0*/
-	if (!pio_get_value(AT91C_PIN_PA(31)) )
-		AT91F_NandEraseBlock0();
-}
+//	if (!pio_get_value(AT91C_PIN_PA(31)) )
+//		AT91F_NandEraseBlock0();
+//}
 
 /*------------------------------------------------------------------------------*/
 /* \fn    nandflash_hw_init							*/
@@ -279,7 +279,7 @@ void nandflash_hw_init(void)
 	writel((1 << AT91C_ID_PIOC), PMC_PCER + AT91C_BASE_PMC);
 	pio_setup(nand_pio);
 	
-	nand_recovery();
+//	nand_recovery();
 }
 
 /*------------------------------------------------------------------------------*/
