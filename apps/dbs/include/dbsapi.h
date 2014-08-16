@@ -11,6 +11,7 @@ int dbsGetClt(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsClt *row);
 int dbsGetCltconf(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsCltConf *row);
 int dbsGetCnu(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsCnu *row);
 int dbsGetDepro(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsCnuDefaultProfile *row);
+int dbsGetTemplate(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsTemplate  *row);
 int dbsGetNetwork(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsNetwork *row);
 int dbsGetProfile(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsProfile *row);
 int dbsGetSnmp(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsSnmp *row);

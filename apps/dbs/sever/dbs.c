@@ -57,6 +57,7 @@ BBLOCK_QUEUE * dbs_getRowClt(BBLOCK_QUEUE *this);
 BBLOCK_QUEUE * dbs_getRowCltconf(BBLOCK_QUEUE *this);
 BBLOCK_QUEUE * dbs_getRowCnu(BBLOCK_QUEUE *this);
 BBLOCK_QUEUE * dbs_getRowDepro(BBLOCK_QUEUE *this);
+BBLOCK_QUEUE * dbs_getRowTemplate(BBLOCK_QUEUE *this);
 BBLOCK_QUEUE * dbs_getRowNetwork(BBLOCK_QUEUE *this);
 BBLOCK_QUEUE * dbs_getRowProfile(BBLOCK_QUEUE *this);
 BBLOCK_QUEUE * dbs_getRowSnmp(BBLOCK_QUEUE *this);
@@ -970,6 +971,53 @@ BBLOCK_QUEUE * dbs_getRowDepro(BBLOCK_QUEUE *this)
 	return this;
 }
 
+BBLOCK_QUEUE * dbs_getRowTemplate(BBLOCK_QUEUE *this)
+{
+	assert(NULL != this);
+	
+	uint8_t *buf = gBuf_dbs;
+	bzero(buf, MAX_UDP_SIZE);
+
+	T_DB_MSG_PACKET_REQ *req = (T_DB_MSG_PACKET_REQ *)(this->b);
+	uint16_t *req_cell = (uint16_t *)(req->BUF);
+	
+	T_DB_MSG_PACKET_ACK *ack = (T_DB_MSG_PACKET_ACK *)buf;	
+	st_dbsTemplate *ack_cell = (st_dbsTemplate *)(ack->BUF);
+
+	ack_cell->id = *req_cell;
+
+	ack->HEADER.usSrcMID = MID_DBS;
+	ack->HEADER.usDstMID = req->HEADER.usSrcMID;
+	ack->HEADER.usMsgType = req->HEADER.usMsgType;
+	ack->HEADER.fragment = 0;
+	ack->HEADER.ulBodyLength = 0;
+	ack->HEADER.result = CMM_FAILED;
+
+	/* 获取数据库的数据*/
+	if( SQLITE_OK != dbs_underlayer_get_row_template(ack_cell) )
+	{
+		dbs_syslog(DBS_LOG_ALERT, "dbs_getRowTemplate: CMM_DB_ACCESS_ERROR");
+		dbs_err(this, CMM_DB_ACCESS_ERROR);
+	}
+	else
+	{
+		ack->HEADER.ulBodyLength = sizeof(st_dbsTemplate);
+		this->blen = sizeof(ack->HEADER) + ack->HEADER.ulBodyLength;
+		ack->HEADER.result = CMM_SUCCESS;
+		
+		if( this->blen > MAX_UDP_SIZE )
+		{
+			dbs_syslog(DBS_LOG_ALERT, "dbs_getRowTemplate: CMM_BUFFER_OVERFLOW");
+			dbs_err(this, CMM_BUFFER_OVERFLOW);
+		}
+		else
+		{
+			memcpy(this->b, ack, this->blen);			
+		}
+	}	
+	return this;
+}
+
 BBLOCK_QUEUE * dbs_getRowNetwork(BBLOCK_QUEUE *this)
 {
 	assert(NULL != this);
@@ -1493,6 +1541,40 @@ BBLOCK_QUEUE * dbs_updateRowProfile(BBLOCK_QUEUE *this)
 	return this;
 }
 
+BBLOCK_QUEUE * dbs_updateRowTemplate(BBLOCK_QUEUE *this)
+{
+	assert(NULL != this);
+	
+	uint8_t *buf = gBuf_dbs;
+	bzero(buf, MAX_UDP_SIZE);
+
+	T_DB_MSG_PACKET_REQ *req = (T_DB_MSG_PACKET_REQ *)(this->b);
+	st_dbsTemplate  *req_cell = (st_dbsTemplate *)(req->BUF);
+
+	T_DB_MSG_PACKET_ACK *ack = (T_DB_MSG_PACKET_ACK *)buf;	
+
+	ack->HEADER.usSrcMID = MID_DBS;
+	ack->HEADER.usDstMID = req->HEADER.usSrcMID;
+	ack->HEADER.usMsgType = req->HEADER.usMsgType;
+	ack->HEADER.fragment = 0;
+	ack->HEADER.ulBodyLength = 0;
+	ack->HEADER.result = CMM_FAILED;
+
+	/* 更新数据库的数据*/
+	if( SQLITE_OK != dbs_underlayer_update_row_template(req_cell) )
+	{
+		dbs_syslog(DBS_LOG_ALERT, "dbs_updateRowTemplate: CMM_DB_ACCESS_ERROR");
+		dbs_err(this, CMM_DB_ACCESS_ERROR);
+	}
+	else
+	{
+		this->blen = sizeof(ack->HEADER) + ack->HEADER.ulBodyLength;
+		ack->HEADER.result = CMM_SUCCESS;
+		memcpy(this->b, ack, this->blen);
+	}	
+	return this;
+}
+	
 BBLOCK_QUEUE * dbs_updateRowSnmp(BBLOCK_QUEUE *this)
 {
 	assert(NULL != this);
@@ -2305,6 +2387,9 @@ void dbs_process(BBLOCK_QUEUE *this)
 			case DB_GET_ROW_DEPRO:
 				dbs_ack(dbs_getRowDepro(this));
 				break;
+			case DB_GET_ROW_TEMPLATE:	
+				dbs_ack(dbs_getRowTemplate(this));
+				break;
 			case DB_UPDATE_ROW_DEPRO:
 				dbs_ack(dbs_updateRowDepro(this));
 				break;
@@ -2319,6 +2404,9 @@ void dbs_process(BBLOCK_QUEUE *this)
 				break;
 			case DB_UPDATE_ROW_PROFILE:
 				dbs_ack(dbs_updateRowProfile(this));
+				break;
+			case DB_UPDATE_ROW_TEMPLATE:
+				dbs_ack(dbs_updateRowTemplate(this));
 				break;
 			case DB_GET_ROW_SNMP:
 				dbs_ack(dbs_getRowSnmp(this));

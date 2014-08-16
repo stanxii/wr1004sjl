@@ -65,7 +65,7 @@ enum
 /********************************************************/
 //bootstrap.uboot.kernel.version-cr(Revised number)
 /********************************************************/
-#define SYSINFO_APP_VERSION		"v1.3.6.2-cr20-r3"
+#define SYSINFO_APP_VERSION		"v1.3.6.2-cr20-r4"
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
@@ -685,8 +685,8 @@ typedef enum
 #define DBS_COL_MAX_LEN	256
 
 /* 定义system.db中数据表的数量*/
-#define DBS_SYS_TBL_TOTAL_NUM		10
-/* 定义system.db中数据表的数量*/
+#define DBS_SYS_TBL_TOTAL_NUM		11
+/* 定义log.db中数据表的数量*/
 #define DBS_LOG_TBL_TOTAL_NUM		4
 
 /* 定义数据表的总列数*/
@@ -700,6 +700,7 @@ typedef enum
 #define DBS_SYS_TBL_COLS_SNMPINFO		8
 #define DBS_SYS_TBL_COLS_SWMGMT		6
 #define DBS_SYS_TBL_COLS_SYSINFO		16
+#define DBS_SYS_TBL_COLS_TEMPLATE           15
 
 /*      定义system.db中数据表的索引号   */
 #define DBS_SYS_TBL_ID_CLIROLE		0
@@ -712,6 +713,7 @@ typedef enum
 #define DBS_SYS_TBL_ID_SNMPINFO	7
 #define DBS_SYS_TBL_ID_SWMGMT	8
 #define DBS_SYS_TBL_ID_SYSINFO		9
+#define DBS_SYS_TBL_ID_TEMPLATE		10
 
 
 
@@ -955,6 +957,24 @@ typedef enum
 #define DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD		14
 #define DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD		15
 
+/* 定义数据表列元素索引*/
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ID			0
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS	1
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_CURTEMP	2
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS		3
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART		4
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTOP		5
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS		6
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTART		7
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTOP		8
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANADDSTS		9
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTART		10
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTOP	        11
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANADDSTS	        12
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTART		13
+#define DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTOP		14
+
+
 /*      定义log.db中数据表的索引号   */
 #define DBS_LOG_TBL_ID_ALARM		0
 #define DBS_LOG_TBL_ID_OPT			1
@@ -1089,6 +1109,8 @@ enum
 	DB_CREATE_WL_DE2_PROFILE,
 	DB_CREATE_BL_DE2_PROFILE,
 	DB_SELECT_CNU_INDEX_BY_MAC,
+	DB_GET_ROW_TEMPLATE,
+	DB_UPDATE_ROW_TEMPLATE,
 	
 	/* 请在中间添加其他命令字*/	
 	DB_CMD_OTHER = 0xFF
@@ -2521,6 +2543,27 @@ typedef struct
 	uint32_t	col_eth3sts;
 	uint32_t	col_eth4sts;
 }st_dbsCnuDefaultProfile;
+
+typedef struct
+{
+	uint32_t	id;
+	uint32_t	col_tempAutoSts;
+	uint32_t	col_curTemp;
+	uint32_t	col_eth1VlanAddSts;
+	uint32_t	col_eth1VlanStart;
+	uint32_t	col_eth1VlanStop;
+	uint32_t	col_eth2VlanAddSts;
+	uint32_t	col_eth2VlanStart;
+	uint32_t	col_eth2VlanStop;
+	uint32_t	col_eth3VlanAddSts;
+	uint32_t	col_eth3VlanStart;
+	uint32_t	col_eth3VlanStop;
+	uint32_t	col_eth4VlanAddSts;
+	uint32_t	col_eth4VlanStart;
+	uint32_t	col_eth4VlanStop;
+}st_dbsTemplate;
+
+
 
 /* tbl_network */
 typedef struct

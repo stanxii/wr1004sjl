@@ -22,6 +22,7 @@ int http2dbs_setProfile(uint16_t id, st_dbsProfile * profile)
 	return dbsUpdateProfile(dbsdev, id, profile);
 }
 
+
 int http2dbs_getCnu(uint16_t id, st_dbsCnu * cnu)
 {
 	return dbsGetCnu(dbsdev, id, cnu);
@@ -62,6 +63,41 @@ int http2dbs_doCltAgTimeSettings(PWEB_NTWK_VAR pWebVar)
 		return CMM_SUCCESS;
 	}
 }
+
+int http2dbs_saveTemplate(PWEB_NTWK_VAR pWebVar)
+{
+	int flag = 0;
+	st_dbsTemplate row;
+
+	if( CMM_SUCCESS != dbsGetTemplate(dbsdev, pWebVar->cltid, &row) )
+	{
+		return CMM_FAILED;
+	}
+
+	row.col_tempAutoSts = pWebVar->col_tempAutoSts;
+	row.col_curTemp = pWebVar->col_curTemp;
+	row.col_eth1VlanAddSts = pWebVar->col_eth1VlanAddSts;
+	row.col_eth1VlanStart = pWebVar->col_eth1VlanStart;
+	row.col_eth1VlanStop = pWebVar->col_eth1VlanStop;
+	row.col_eth2VlanAddSts = pWebVar->col_eth2VlanAddSts;
+	row.col_eth2VlanStart = pWebVar->col_eth2VlanStart;
+	row.col_eth2VlanStop = pWebVar->col_eth2VlanStop;
+	row.col_eth3VlanAddSts = pWebVar->col_eth3VlanAddSts;
+	row.col_eth3VlanStart = pWebVar->col_eth3VlanStart;
+	row.col_eth4VlanAddSts = pWebVar->col_eth4VlanAddSts;
+	row.col_eth4VlanStart = pWebVar->col_eth4VlanStart;
+	row.col_eth4VlanStop = pWebVar->col_eth4VlanStop;
+	
+	if( pWebVar->isupdate)
+	{
+		return dbsUpdateTemplate(dbsdev, pWebVar->templateid, &row);
+	}
+	else
+	{
+		return CMM_SUCCESS;
+	}
+}
+
 
 int http2dbs_doCltDecapSettings(PWEB_NTWK_VAR pWebVar)
 {
@@ -121,6 +157,8 @@ int http2dbs_doCltQosEnable(PWEB_NTWK_VAR pWebVar)
 
 	return CMM_SUCCESS;
 }
+
+
 
 
 int http2dbs_doCltQosSettings(PWEB_NTWK_VAR pWebVar)

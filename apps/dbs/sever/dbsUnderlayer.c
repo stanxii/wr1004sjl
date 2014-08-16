@@ -26,7 +26,8 @@ DBS_DB_DESC db_system[DBS_SYS_TBL_TOTAL_NUM] =
 	{DBS_SYS_TBL_ID_CNUPRO,	"tbl_profile",	DBS_SYS_TBL_COLS_CNUPRO},
 	{DBS_SYS_TBL_ID_SNMPINFO,	"tbl_snmp",	DBS_SYS_TBL_COLS_SNMPINFO},
 	{DBS_SYS_TBL_ID_SWMGMT,	"tbl_swmgmt",	DBS_SYS_TBL_COLS_SWMGMT},
-	{DBS_SYS_TBL_ID_SYSINFO,	"tbl_sysinfo",	DBS_SYS_TBL_COLS_SYSINFO}
+	{DBS_SYS_TBL_ID_SYSINFO,	"tbl_sysinfo",	DBS_SYS_TBL_COLS_SYSINFO},
+	{DBS_SYS_TBL_ID_TEMPLATE,	"tbl_template",	DBS_SYS_TBL_COLS_TEMPLATE}	
 };
 
 /* 描述数据表设计的结构体，实际数据库设计
@@ -319,6 +320,29 @@ DBS_TBL_DESIGN tbl_sysinfo[DBS_SYS_TBL_COLS_SYSINFO] =
 	{DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_p6txdelay"}
 };
 
+/* 描述数据表设计的结构体，实际数据库设计
+** 时需要与该表描述一致*/
+DBS_TBL_DESIGN tbl_template[DBS_SYS_TBL_COLS_TEMPLATE] = 
+{
+	/*	类型，	长度，	主键，允许空，	列名*/
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ID,		SQLITE_INTEGER,	4,	BOOL_TRUE,	BOOL_FALSE,	"id"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_tempAutoSts"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_CURTEMP,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_curTemp"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth1VlanAddSts"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth1VlanStart"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTOP,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth1VlanStop"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth2VlanAddSts"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTART,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth2VlanStart"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTOP,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth2VlanStop"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANADDSTS,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eht3VlanAddSts"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTART,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth3VlanStart"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTOP,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth3VlanStop"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANADDSTS,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth4VlanAddSts"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTART,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth4VlanStart"},
+	{DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTOP,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth4VlanStop"}
+	
+};
+
 
 #define __dbsUnderlayerSQL(...);	\
 {	\
@@ -591,7 +615,7 @@ int __dbs_underlayer_sql_exec(uint8_t *sql)
 		{
 			fprintf(stderr, "\r\n\r\n  ERROR: [__dbs_underlayer_sql_exec] [%s] [%s]\n", sql, err_msg);
 			return SQLITE_ERROR;
-		}
+		}		
 	}while( SQLITE_BUSY == ret );
 	
 	return ret;
@@ -1280,7 +1304,7 @@ int __dbs_underlayer_SQLGetRowCnuDepro(uint32_t id, uint8_t *sql)
 	assert( NULL != sql );
 
 	/* 判断行数量是否超出定义*/
-	if( (id>=1)&&(id<=2))
+	if( (id>=1)&&(id<=12))
 	{
 		sprintf(sql, "SELECT * FROM [%s] WHERE [id]=%d",
 			db_system[DBS_SYS_TBL_ID_CNUDEPRO].tbl_name, id);
@@ -1288,7 +1312,25 @@ int __dbs_underlayer_SQLGetRowCnuDepro(uint32_t id, uint8_t *sql)
 	}
 	else
 	{
-		fprintf(stderr, "ERROR: __dbs_underlayer_SQLGetRowCnuDepro : id !\n");
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLGetRowCnuDepro : id=%d !\n", id);
+		return SQLITE_ERROR;
+	}
+}
+
+int __dbs_underlayer_SQLGetRowCnuTemplate(uint32_t id, uint8_t *sql)
+{
+	assert( NULL != sql );
+
+	/* 判断行数量是否超出定义*/
+	if( (id>=1)&&(id<=1))
+	{
+		sprintf(sql, "SELECT * FROM [%s] WHERE [id]=%d",
+			db_system[DBS_SYS_TBL_ID_TEMPLATE].tbl_name, id);
+		return SQLITE_OK;
+	}
+	else
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLGetRowCnuTemplate : id=%d !\n", id);
 		return SQLITE_ERROR;
 	}
 }
@@ -2009,6 +2051,54 @@ int __dbs_underlayer_SQLUpdateRowProfile(st_dbsProfile *row, uint8_t *sql)
 	else
 	{
 		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowProfile : id !\n");
+		return SQLITE_ERROR;
+	}
+}
+
+int __dbs_underlayer_SQLUpdateRowTemplate(st_dbsTemplate *row, uint8_t *sql)
+{
+	assert( NULL != sql );
+	assert( NULL != row );
+
+	/* 判断行数量是否超出定义*/
+	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
+	{
+		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d  WHERE [id]=%d", 
+			db_system[DBS_SYS_TBL_ID_TEMPLATE].tbl_name, 			
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS].col_name, 
+			row->col_tempAutoSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_CURTEMP].col_name, 
+			row->col_curTemp, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS].col_name, 
+			row->col_eth1VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART].col_name, 
+			row->col_eth1VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTOP].col_name, 
+			row->col_eth1VlanStop, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS].col_name, 
+			row->col_eth2VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTART].col_name, 
+			row->col_eth2VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTOP].col_name, 
+			row->col_eth2VlanStop, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANADDSTS].col_name, 
+			row->col_eth3VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTART].col_name, 
+			row->col_eth3VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTOP].col_name, 
+			row->col_eth3VlanStop, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANADDSTS].col_name, 
+			row->col_eth4VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTART].col_name, 
+			row->col_eth4VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTOP].col_name, 
+			row->col_eth4VlanStop, 
+			row->id );
+		return SQLITE_OK;
+	}
+	else
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowTemplate : id !\n");
 		return SQLITE_ERROR;
 	}
 }
@@ -3831,6 +3921,172 @@ int __dbs_underlayer_get_row_depro(st_dbsCnuDefaultProfile *row)
 	return ret;
 }
 
+int __dbs_underlayer_get_row_template(st_dbsTemplate *row)
+{
+	int ret = SQLITE_ERROR;
+	//char sql[DBS_SQL_SMALL_LEN] = {0};
+	uint8_t *sql = gBuf_dbsUnderlayer;
+	bzero(sql, DBS_SQL_LARGE_LEN);
+	sqlite3_stmt *stmt = NULL;
+	const char *err_msg = NULL;
+	
+	assert( NULL != row );
+
+	/* 组装SQL语句*/
+	if( SQLITE_OK != __dbs_underlayer_SQLGetRowCnuTemplate(row->id, sql) )
+	{
+		return SQLITE_ERROR;
+	}
+	
+	__dbsUnderlayerSQL(sql);
+
+	if( SQLITE_OK != sqlite3_prepare(dbsSystemFileHandle, sql, -1, &stmt, &err_msg))
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_get_row_template->sqlite3_prepare !\n");
+		ret = SQLITE_ERROR;
+	}
+	else if(SQLITE_ROW == sqlite3_step(stmt))
+	{
+		/* SQLITE_INTEGER	| col_tempAutoSts */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS) )
+		{
+			row->col_tempAutoSts = 0;			
+		}
+		else
+		{
+			row->col_tempAutoSts = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS);
+		}
+		/* SQLITE_INTEGER	| col_curTemp */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_CURTEMP) )
+		{
+			row->col_curTemp = 0;
+		}
+		else
+		{
+			row->col_curTemp = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_CURTEMP);
+		}
+		/* SQLITE_INTEGER	| col_eth1VlanAddSts */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS) )
+		{
+			row->col_eth1VlanAddSts = 0;
+		}
+		else
+		{
+			row->col_eth1VlanAddSts = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS);
+		}
+		/* SQLITE_INTEGER	| col_eth1VlanStart */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS) )
+		{
+			row->col_eth1VlanStart = 0;
+		}
+		else
+		{
+			row->col_eth1VlanStart = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS);
+		}
+		/* SQLITE_INTEGER	| col_eth1VlanStop */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART) )
+		{
+			row->col_eth1VlanStop = 0;
+		}
+		else
+		{
+			row->col_eth1VlanStop = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART);
+		}
+		/* SQLITE_INTEGER	| col_eth2VlanAddSts */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS) )
+		{
+			row->col_eth2VlanAddSts = 0;
+		}
+		else
+		{
+			row->col_eth2VlanAddSts = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS);
+		}
+		/* SQLITE_INTEGER	| col_eth2VlanStart */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTART) )
+		{
+			row->col_eth2VlanStart = 0;
+		}
+		else
+		{
+			row->col_eth2VlanStart = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTART);
+		}
+		/* SQLITE_INTEGER	| col_eth2VlanStop */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTOP) )
+		{
+			row->col_eth2VlanStop = 0;
+		}
+		else
+		{
+			row->col_eth2VlanStop = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTOP);
+		}
+		/* SQLITE_INTEGER	| col_eth3VlanAddSts */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANADDSTS) )
+		{
+			row->col_eth3VlanAddSts = 0;
+		}
+		else
+		{
+			row->col_eth3VlanAddSts = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANADDSTS);
+		}
+		/* SQLITE_INTEGER	| col_eth3VlanStart */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTART) )
+		{
+			row->col_eth3VlanStart = 0;
+		}
+		else
+		{
+			row->col_eth3VlanStart = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTART);
+		}
+		/* SQLITE_INTEGER	| col_eth3VlanStop */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTOP) )
+		{
+			row->col_eth3VlanStop = 0;
+		}
+		else
+		{
+			row->col_eth3VlanStop = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTOP);
+		}
+		/* SQLITE_INTEGER	| col_eth4VlanAddSts */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANADDSTS) )
+		{
+			row->col_eth4VlanAddSts = 0;
+		}
+		else
+		{
+			row->col_eth4VlanAddSts = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANADDSTS);
+		}
+		/* SQLITE_INTEGER	| col_eth4VlanStart */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTART) )
+		{
+			row->col_eth4VlanStart = 0;
+		}
+		else
+		{
+			row->col_eth4VlanStart = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTART);
+		}
+		/* SQLITE_INTEGER	| col_eth4VlanStop */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTOP) )
+		{
+			row->col_eth4VlanStop = 0;
+		}
+		else
+		{
+			row->col_eth4VlanStop = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTOP);
+		}
+		
+		ret = SQLITE_OK;		
+	}
+	else
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_get_row_template->sqlite3_step\n");
+		ret = SQLITE_ERROR;
+	}
+	
+	/* 释放sqlite3_stmt */
+	sqlite3_finalize(stmt); 	
+	return ret;
+}
+
 int __dbs_underlayer_get_row_network(st_dbsNetwork *row)
 {
 	int ret = SQLITE_ERROR;
@@ -5124,6 +5380,25 @@ int __dbs_underlayer_update_row_profile(st_dbsProfile *row)
 	}
 }
 
+int __dbs_underlayer_update_row_template(st_dbsTemplate *row)
+{
+	//char sql[DBS_SQL_LARGE_LEN] = {0};
+	uint8_t *sql = gBuf_dbsUnderlayer;
+	bzero(sql, DBS_SQL_LARGE_LEN);
+
+	assert( NULL != row );
+
+	if( SQLITE_OK == __dbs_underlayer_SQLUpdateRowTemplate(row, sql) )
+	{
+		__dbsUnderlayerSQL(sql);
+		return __dbs_underlayer_sql_exec(sql);
+	}
+	else
+	{
+		return SQLITE_ERROR;
+	}
+}
+
 int __dbs_underlayer_update_row_snmp(st_dbsSnmp *row)
 {
 	//char sql[DBS_SQL_BIG_LEN] = {0};
@@ -5825,6 +6100,12 @@ int dbs_underlayer_get_row_depro(st_dbsCnuDefaultProfile *row)
 	return __dbs_underlayer_get_row_depro(row);
 }
 
+int dbs_underlayer_get_row_template(st_dbsTemplate *row)
+{
+	assert( NULL != row );	
+	return __dbs_underlayer_get_row_template(row);
+}
+
 int dbs_underlayer_get_row_network(st_dbsNetwork *row)
 {
 	assert( NULL != row );	
@@ -5902,6 +6183,12 @@ int dbs_underlayer_update_row_profile(st_dbsProfile *row)
 {
 	assert( NULL != row );	
 	return __dbs_underlayer_update_row_profile(row);
+}
+
+int dbs_underlayer_update_row_template(st_dbsTemplate *row)
+{
+	assert( NULL != row );	
+	return __dbs_underlayer_update_row_template(row);
 }
 
 int dbs_underlayer_update_row_snmp(st_dbsSnmp *row)

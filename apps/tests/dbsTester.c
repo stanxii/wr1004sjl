@@ -1080,6 +1080,35 @@ int TEST_DBS_GET_ALL_INTEGER(T_DBS_DEV_INFO *dev)
 			}
 			break;
 		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			for( i=1;i<=1;i++)
+			{
+				for( j=0;j<DBS_SYS_TBL_COLS_TEMPLATE;j++ )
+				{					
+					v.ci.row = i;
+					v.ci.col = j;
+					if( 0 == dbsGetInteger(dev, &v) )
+					{
+						if( DBS_NULL == v.ci.colType )
+						{
+							printf("-->ack : tbl = %d, row = %d, col = %d, value = (null)\n", 
+								v.ci.tbl, v.ci.row, v.ci.col);
+						}
+						else
+						{
+							printf("-->ack : tbl = %d, row = %d, col = %d, value = %d\n", 
+								v.ci.tbl, v.ci.row, v.ci.col, v.integer);
+						}
+					}
+					else
+					{
+						printf("-->ack : tbl = %d, row = %d, col = %d failed !\n", v.ci.tbl, v.ci.row, v.ci.col);
+					}
+				}
+			}
+			break;
+		}
 		default:
 		{
 			printf("input error !\n\n");
@@ -1542,6 +1571,36 @@ int TEST_DBS_UPDATE_ALL_INTEGER(T_DBS_DEV_INFO *dev)
 			}
 			break;
 		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			for( i=1;i<=1;i++)
+			{
+				for( j=0;j<DBS_SYS_TBL_COLS_TEMPLATE;j++ )
+				{					
+					v.ci.row = i;
+					v.ci.col = j;
+					if( 0 == dbsGetInteger(dev, &v) )
+					{
+						if( DBS_NULL == v.ci.colType )
+						{
+							printf("-->ack : tbl = %d, row = %d, col = %d, value = (null)\n", 
+								v.ci.tbl, v.ci.row, v.ci.col);
+						}
+						else
+						{
+							printf("-->ack : tbl = %d, row = %d, col = %d, value = %d\n", 
+								v.ci.tbl, v.ci.row, v.ci.col, v.integer);
+						}
+					}
+					else
+					{
+						printf("-->ack : tbl = %d, row = %d, col = %d failed !\n", v.ci.tbl, v.ci.row, v.ci.col);
+					}
+				}
+			}
+			break;
+		}
+		
 		default:
 		{
 			printf("input error !\n\n");
@@ -1873,7 +1932,7 @@ int TEST_DBS_GET_ALL_TEXT(T_DBS_DEV_INFO *dev)
 				}
 			}
 			break;
-		}
+		}		
 		default:
 		{
 			printf("input error !\n\n");
@@ -2195,7 +2254,7 @@ int TEST_DBS_UPDATE_ALL_TEXT(T_DBS_DEV_INFO *dev)
 				}
 			}
 			break;
-		}
+		}		
 		default:
 		{
 			printf("input error !\n\n");

@@ -12,6 +12,7 @@ int dbs_underlayer_get_row_clt(st_dbsClt *row);
 int dbs_underlayer_get_row_cltconfig(st_dbsCltConf *row);
 int dbs_underlayer_get_row_cnu(st_dbsCnu *row);
 int dbs_underlayer_get_row_depro(st_dbsCnuDefaultProfile *row);
+int dbs_underlayer_get_row_template(st_dbsTemplate *row);
 int dbs_underlayer_get_row_network(st_dbsNetwork *row);
 int dbs_underlayer_get_row_profile(st_dbsProfile *row);
 int dbs_underlayer_get_row_snmp(st_dbsSnmp *row);
