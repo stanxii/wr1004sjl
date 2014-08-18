@@ -843,6 +843,10 @@ int boardapi_mapDevModel(int model)
 		{
 			return 27;
 		}
+		case WR1004JLD:
+		{
+			return 28;
+		}
 		case WEC701_M0:
 		{
 			return 36;
@@ -967,6 +971,10 @@ int boardapi_umapDevModel(int model)
 		case 27:
 		{
 			return WR1004SJL;
+		}
+		case 28:
+		{
+			return WR1004JLD;
 		}
 		case 36:
 		{
