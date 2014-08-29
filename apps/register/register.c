@@ -1405,7 +1405,11 @@ void ProcessRegist(void)
 				//还原标志位
 				cltFlags[i] = 0;				
 				/* 发送MME重启CLT */
-				msg_reg_mmead_reset_eoc(topEntry.tb_clt[i].DevType, topEntry.tb_clt[i].Mac);
+				/* stan  如果mme CLT重启不成功 reboot 主控板 */
+				if(0 != msg_reg_mmead_reset_eoc(topEntry.tb_clt[i].DevType, topEntry.tb_clt[i].Mac))
+				{
+					return msg_reg_2_cmm_resetMp();
+				}
 				/* 设备下线 */
 				ProcessTopologyChange(cltid, NULL);				
 			}

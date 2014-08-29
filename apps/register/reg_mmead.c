@@ -253,6 +253,23 @@ int msg_reg_mmead_reset_eoc(uint32_t devType, uint8_t ODA[])
 	return __msg_reg_mmead_communicate(buf, sizeof(h));
 }
 
+int msg_reg_2_cmm_resetMp(void)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+
+	req->HEADER.usSrcMID = MID_REGISTER;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CBAT_RESET;
+	req->HEADER.ulBodyLength = 0;
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	return __msg_reg_mmead_communicate(buf, len);
+}
+
+
 int msg_mmead_destroy(void)
 {
 	T_UDP_SK_INFO *sk = &SK_MMEAD;
