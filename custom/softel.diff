@@ -1,0 +1,69 @@
+frank@stan-06:~/work/project/wr1004sjl_master/wr1004sjl/apps/httpd$ git diff
+frank@stan-06:~/work/project/wr1004sjl_master/wr1004sjl/apps/httpd$ git whatchanged -p
+commit a12c896f7bee0a4d1d0302900b98a661d5ca0847
+Author: Chen Liang <frank@126.com>
+Date:   Tue Sep 2 09:38:47 2014 +0800
+
+    version for SOFTEL
+
+diff --git a/apps/boardapi/boardapi.c b/apps/boardapi/boardapi.c
+index 18f577c..ba71553 100755
+--- a/apps/boardapi/boardapi.c
++++ b/apps/boardapi/boardapi.c
+@@ -314,7 +314,9 @@ char * boardapi_getDeviceModelStr(uint32_t model)
+                                case CUSTOM_LOGO_PX:
+                                        return "PX 7401";
+                                case CUSTOM_LOGO_ALCOTEL:
+-                                       return "EOC-MI350D-2G";
++                                       return "EOC-MI350D-2G";
++                               case CUSTOM_LOGO_SOFTEL:
++                                       return "EM101";
+                                case CUSTOM_LOGO_DEMO:
+                                case CUSTOM_LOGO_PREVAIL:
+                                default:
+@@ -332,7 +334,9 @@ char * boardapi_getDeviceModelStr(uint32_t model)
+                                case CUSTOM_LOGO_PX:
+                                        return "PX 74";
+                                case CUSTOM_LOGO_ALCOTEL:
+-                                       return "EOC-S100-4F";
++                                       return "EOC-S100-4F";
++                               case CUSTOM_LOGO_SOFTEL:
++                                       return "ES-401";
+                                case CUSTOM_LOGO_DEMO:
+                                case CUSTOM_LOGO_PREVAIL:
+                                default:
+@@ -431,6 +435,8 @@ char * boardapi_getDeviceModelStr(uint32_t model)
+                        {
+                                case CUSTOM_LOGO_PX:
+                                        return "PX 74W";
++                               case CUSTOM_LOGO_SOFTEL:
++                                       return "ES-402-W";
+                                case CUSTOM_LOGO_DEMO:
+                                case CUSTOM_LOGO_PREVAIL:
+                                default:
+@@ -462,6 +468,7 @@ const char *boardapi_getCltStandardStr(void)
+                        break;
+                case CUSTOM_LOGO_DEMO:
+                case CUSTOM_LOGO_PREVAIL:
++               case CUSTOM_LOGO_SOFTEL:
+                default:
+                        pStandardStr = "AR7410";
+                        break;
+@@ -485,6 +492,9 @@ const char *boardapi_getMenufactoryStr(void)
+                case CUSTOM_LOGO_PX:
+                        pMenufactoryStr = "PX";
+                        break;
++               case CUSTOM_LOGO_SOFTEL:
++                       pMenufactoryStr = "SOFTEL";
++                       break;
+                case CUSTOM_LOGO_PREVAIL:
+                        pMenufactoryStr = "Prevail";
+                        break;
+diff --git a/apps/httpd/Makefile b/apps/httpd/Makefile
+index 3602309..6bcdf0d 100755
+--- a/apps/httpd/Makefile
++++ b/apps/httpd/Makefile
+@@ -12,7 +12,7 @@ CFLAGS +=-g -O2
+
+
+
