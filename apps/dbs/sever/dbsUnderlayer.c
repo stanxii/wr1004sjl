@@ -265,7 +265,13 @@ DBS_TBL_DESIGN tbl_profile[DBS_SYS_TBL_COLS_CNUPRO] =
 	{DBS_SYS_TBL_PROFILE_COL_ID_ETH1STS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth1sts"},
 	{DBS_SYS_TBL_PROFILE_COL_ID_ETH2STS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth2sts"},
 	{DBS_SYS_TBL_PROFILE_COL_ID_ETH3STS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth3sts"},
-	{DBS_SYS_TBL_PROFILE_COL_ID_ETH4STS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth4sts"}
+	{DBS_SYS_TBL_PROFILE_COL_ID_ETH4STS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth4sts"},
+	{DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVID,  SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_uplinkvid"},
+	{DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVMODE,  SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_uplinkVMode"},
+	{DBS_SYS_TBL_PROFILE_COL_ID_ETH1VMODE,  SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth1VMode"},
+	{DBS_SYS_TBL_PROFILE_COL_ID_ETH2VMODE,  SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth2VMode"},
+	{DBS_SYS_TBL_PROFILE_COL_ID_ETH3VMODE,  SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth3VMode"},
+	{DBS_SYS_TBL_PROFILE_COL_ID_ETH4VMODE,  SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_eth4VMode"}
 };
 
 /* 描述数据表设计的结构体，实际数据库设计
@@ -1877,7 +1883,7 @@ int __dbs_underlayer_SQLUpdateRowProfile(st_dbsProfile *row, uint8_t *sql)
 	/* 判断行数量是否超出定义*/
 	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
 	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d WHERE [id]=%d", 
+		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNUPRO].tbl_name, 			
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ROWSTS].col_name, 
 			row->col_row_sts, 
@@ -2003,6 +2009,18 @@ int __dbs_underlayer_SQLUpdateRowProfile(st_dbsProfile *row, uint8_t *sql)
 			row->col_eth3sts,
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH4STS].col_name, 
 			row->col_eth4sts, 
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVID].col_name, 
+			row->col_uplinkvid,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVMODE].col_name, 
+			row->col_uplinkVMode,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH1VMODE].col_name, 
+			row->col_eth1VMode,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH2VMODE].col_name, 
+			row->col_eth2VMode,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH3VMODE].col_name, 
+			row->col_eth3VMode,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH4VMODE].col_name, 
+			row->col_eth4VMode,
 			row->id );
 		return SQLITE_OK;
 	}
@@ -2313,7 +2331,7 @@ int __dbs_underlayer_SQLDestroyRowProfile(uint16_t id, uint8_t *sql)
 	/* 判断行数量是否超出定义*/
 	if( (id >= 1) && (id <= MAX_CNU_AMOUNT_LIMIT))
 	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=0, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null WHERE [id]=%d", 
+		sprintf(sql, "UPDATE [%s] SET [%s]=0, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNUPRO].tbl_name, 			
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ROWSTS].col_name, 
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_BASE].col_name, 
@@ -2353,7 +2371,7 @@ int __dbs_underlayer_SQLDestroyRowProfile(uint16_t id, uint8_t *sql)
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH1VID].col_name, 
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH2VID].col_name, 
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH3VID].col_name, 
-			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH4VID].col_name, 
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH4VID].col_name,
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_PORTPRISTS].col_name, 
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH1PRI].col_name, 
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH2PRI].col_name, 
@@ -2377,6 +2395,12 @@ int __dbs_underlayer_SQLDestroyRowProfile(uint16_t id, uint8_t *sql)
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH2STS].col_name, 
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH3STS].col_name, 
 			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH4STS].col_name, 
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVID].col_name,	
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVMODE].col_name,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH1VMODE].col_name,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH2VMODE].col_name,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH3VMODE].col_name,
+			tbl_profile[DBS_SYS_TBL_PROFILE_COL_ID_ETH4VMODE].col_name,
 			id );
 		return SQLITE_OK;
 	}
@@ -4531,6 +4555,60 @@ int __dbs_underlayer_get_row_profile(st_dbsProfile *row)
 		else
 		{
 			row->col_eth4sts = sqlite3_column_int(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH4STS);
+		}
+		/* SQLITE_INTEGER	| col_uplinkvid */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVID) )
+		{
+			row->col_uplinkvid = 0;
+		}
+		else
+		{
+			row->col_uplinkvid = sqlite3_column_int(stmt, DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVID);
+		}
+		/* SQLITE_INTEGER	| col_uplinkvmod */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVMODE) )
+		{
+			row->col_uplinkVMode = 3;
+		}
+		else
+		{
+			row->col_uplinkVMode = sqlite3_column_int(stmt, DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVMODE);
+		}
+		/* SQLITE_INTEGER	| col_eth1vmod */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH1VMODE) )
+		{
+			row->col_eth1VMode = 3;
+		}
+		else
+		{
+			row->col_eth1VMode = sqlite3_column_int(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH1VMODE);
+		}
+		/* SQLITE_INTEGER	| col_eth2vmod */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH2VMODE) )
+		{
+			row->col_eth2VMode = 3;
+		}
+		else
+		{
+			row->col_eth2VMode = sqlite3_column_int(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH2VMODE);
+		}
+			/* SQLITE_INTEGER	| col_eth3kvmod */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH3VMODE) )
+		{
+			row->col_eth3VMode = 3;
+		}
+		else
+		{
+			row->col_eth3VMode = sqlite3_column_int(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH3VMODE);
+		}
+			/* SQLITE_INTEGER	| col_eth1kvmod */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH4VMODE) )
+		{
+			row->col_eth4VMode = 3;
+		}
+		else
+		{
+			row->col_eth4VMode = sqlite3_column_int(stmt, DBS_SYS_TBL_PROFILE_COL_ID_ETH4VMODE);
 		}
 		
 		ret = SQLITE_OK;		

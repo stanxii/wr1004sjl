@@ -371,9 +371,9 @@ function isValidBctrlValue(value) {
             return false;
        }
 	value = parseInt(value);
-	if ( value < 0 || value > 1526 )
+	if ( value < 0 || value > 2047 )
 	{
-            msg = 'Bandwidth value "' + value + '" is out of range [0-1526].';
+            msg = 'Bandwidth value "' + value + '" is out of range [0-2047].';
             alert(msg);
             return false;
        }

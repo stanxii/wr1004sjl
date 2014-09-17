@@ -853,12 +853,33 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 	{
 		return CMM_FAILED;
 	}	
-	
-
-	
-	
-	
-
+	profile.col_rxLimitSts = pWebVar->swRxRateLimitEnable;
+	profile.col_txLimitSts = pWebVar->swTxRateLimitEnable;
+	profile.col_eth1rx = pWebVar->swEth1RxRate;
+	profile.col_eth2rx = pWebVar->swEth2RxRate;
+	profile.col_eth3rx = pWebVar->swEth3RxRate;
+	profile.col_eth4rx = pWebVar->swEth4RxRate;
+	profile.col_cpuPortRxRate = pWebVar->swUplinkRxRate;
+	profile.col_eth1tx = pWebVar->swEth1TxRate;
+	profile.col_eth2tx = pWebVar->swEth2TxRate;
+	profile.col_eth3tx = pWebVar->swEth3TxRate;
+	profile.col_eth4tx = pWebVar->swEth4TxRate;
+	profile.col_cpuPortTxRate = pWebVar->swUplinkTxRate;
+	profile.col_cpuPortSts = pWebVar->cnuPermition;
+	profile.col_eth1sts = pWebVar->col_eth1sts;
+	profile.col_eth2sts = pWebVar->col_eth2sts;
+	profile.col_eth3sts = pWebVar->col_eth3sts;
+	profile.col_eth4sts = pWebVar->col_eth4sts;
+	profile.col_sfbSts = pWebVar->swSfDisBroadcast;
+	profile.col_sfuSts = pWebVar->swSfDisUnknown;
+	profile.col_sfmSts = pWebVar->swSfDisMulticast;
+	profile.col_macLimit = pWebVar->swMlSysThresholt;
+	profile.col_uplinkvid = pWebVar->swUplinkPortVid;
+	profile.col_eth1VMode = pWebVar->swEth1PortVMode;
+	profile.col_eth2VMode = pWebVar->swEth2PortVMode;
+	profile.col_eth3VMode = pWebVar->swEth3PortVMode;
+	profile.col_eth4VMode = pWebVar->swEth4PortVMode;
+	profile.col_uplinkVMode = pWebVar->swUplinkPortVMode;
 	/* add by stan for save dbs  end */
 
 	req->HEADER.usSrcMID = MID_HTTP;
@@ -881,7 +902,6 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 
 	req_data->node.clt = pWebVar->cltid;
 	req_data->node.cnu = pWebVar->cnuid;
-
 	//port control
 	req_data->rtl8306eConfig.portControl.port[4].enable = pWebVar->cnuPermition;
 	req_data->rtl8306eConfig.portControl.port[0].enable = pWebVar->col_eth1sts;

@@ -597,7 +597,7 @@ uint32_t rtl8306e_setPortBandWidth(uint16_t port, uint16_t n64Kbps, uint16_t dir
 	uint32_t ret = 0;
 	uint16_t regval;
     
-	if ((port > 4) || (n64Kbps > 0x5F6) || (direction > 1))
+	if ((port > 4) || (n64Kbps > 0x7FF) || (direction > 1))
 		return CMM_FAILED;    
 
 	//RTL8306_PORT_RX
@@ -751,10 +751,9 @@ uint32_t rtl8306e_vlan_register_prepare(st_cnuSwitchVlanConfig *vlan)
 	ret += rtl8306e_tag_aware(vlan->vlan_tag_aware);
 	ret += rtl8306e_ingress_filter(vlan->ingress_filter);
 	ret += rtl8306e_admit_control(vlan->g_admit_control);
-	
+
 	/*clear vlan table*/
 	ret += rtl8306e_clearVtu();
-	
 	for(i=0;i<=4;i++)
 	{
 		if( i < 4 )	/* LAN port */
@@ -776,6 +775,7 @@ uint32_t rtl8306e_vlan_register_prepare(st_cnuSwitchVlanConfig *vlan)
 			ret += rtl8306e_addVlanPortMember(vlan->vlan_port[i].pvid, i);
 			ret += rtl8306e_setPortEgressMode(i, vlan->vlan_port[i].egress_mode);
 			ret += rtl8306e_setPortAcceptFrameType(i, 0);
+
 		}		
 	}
 
@@ -963,7 +963,6 @@ uint32_t rtl8306e_register_prepare(st_rtl8306eSettings *rtl8306e)
 	ret += rtl8306e_mac_limit_register_prepare(macLimit);
 	ret += rtl8306e_acl_register_prepare();
 	ret += rtl8306e_port_control_register_prepare(portControl);
-
 	return ret;
 }
 
