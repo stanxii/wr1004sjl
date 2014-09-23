@@ -9,6 +9,7 @@ int msg_reg_mmead_wr_user_mod(uint32_t devType, uint8_t ODA[]);
 int msg_reg_mmead_wr_user_pib(uint32_t devType, uint8_t ODA[]);
 int msg_reg_mmead_bootout_dev(uint8_t ODA[], uint8_t CNU_MAC[]);
 int msg_reg_mmead_get_clt(T_CLT_INFO *clt);
+int reg_mmead_get_rtl8306e_configs(uint8_t ODA[], st_rtl8306eSettings *rtl8306e);
 int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist);
 int msg_reg_mmead_reset_eoc(uint32_t devType, uint8_t ODA[]);
 int msg_mmead_destroy(void);

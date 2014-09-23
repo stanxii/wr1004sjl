@@ -202,6 +202,35 @@ int msg_reg_mmead_get_clt(T_CLT_INFO *clt)
 	return CMM_FAILED;
 }
 
+int reg_mmead_get_rtl8306e_configs(uint8_t ODA[], st_rtl8306eSettings *rtl8306e)
+{
+	assert( NULL != rtl8306e );
+	
+	int len = 0;
+	uint8_t buf[MAX_UDP_SIZE];
+	
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *MMETS_ACK = (T_MMETS_ACK_MSG *)buf;
+	st_rtl8306eSettings *MMETS_ACK_DATA = (st_rtl8306eSettings *)(MMETS_ACK->body);
+	
+	MMETS_REQ->header.M_TYPE = 0xCC08;
+	MMETS_REQ->header.DEV_TYPE = WEC701_E4;	
+	MMETS_REQ->header.MM_TYPE = MMEAD_GET_RTL8306E_CONFIG;
+	MMETS_REQ->header.fragment = 0;
+	MMETS_REQ->header.LEN = 0;
+	memcpy(MMETS_REQ->header.ODA, ODA, 6);
+
+	len = sizeof(T_MMETS_REQ_MSG) + MMETS_REQ->header.LEN;
+
+	if( 0 == __msg_reg_mmead_communicate(buf, len) )
+	{
+		memcpy(rtl8306e, MMETS_ACK_DATA, sizeof(st_rtl8306eSettings));
+		return CMM_SUCCESS;
+	}
+	return CMM_FAILED;
+}
+
+
 int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};

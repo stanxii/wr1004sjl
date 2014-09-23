@@ -454,6 +454,9 @@ void MME_ProcessResetDevice(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		default:
 		{
 			MME_Atheros_ProcessResetDevice(this, MME_SK);
@@ -487,6 +490,9 @@ void MME_ProcessGetSwVer(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			MME_Atheros_ProcessGetSwVer(this, MME_SK);
 			break;
@@ -588,6 +594,10 @@ void MME_ProcessGetManufacturerInfo(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *M
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
+			
 		{
 			MME_Atheros_ProcessGetManufacturerInfo(this, MME_SK);
 			break;
@@ -690,6 +700,9 @@ void MME_ProcessMdioRead(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC_604:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:	
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgGetPhyReg(MME_SK, h->ODA, &v), 
@@ -729,6 +742,9 @@ void MME_ProcessMdioWrite(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC_604:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgSetPhyReg(MME_SK, h->ODA, &v), 
@@ -923,6 +939,9 @@ void MME_ProcessReadModuleOperation(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *M
 		case WEC_604:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgReadModule(MME_SK, h->ODA, request, &comfirm), 
@@ -959,6 +978,9 @@ void MME_ProcessWriteModuleOperation(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *
 		case WEC_604:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgWriteModule(MME_SK, h->ODA), this, NULL, 0);
@@ -1035,6 +1057,9 @@ void MME_ProcessReadModuleOperationCrc(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE
 		case WEC_604:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:	
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgGetModuleCrc(MME_SK, h->ODA, &ModCrc), 
@@ -1073,6 +1098,9 @@ void MME_ProcessReadPibCrc(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgGetPibCrc(MME_SK, h->ODA, &ModCrc), 
@@ -1111,6 +1139,9 @@ void MME_ProcessReadPib(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgReadPib(MME_SK, h->ODA), 
@@ -1148,6 +1179,9 @@ void MME_ProcessWritePib(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		case WEC701_M0:
 		case WEC701_C2:
 		case WEC701_C4:
+		case WEC701_E4:
+		case WEC701_L4:
+		case WEC701_W4:
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(MME_Atheros_MsgWritePib(MME_SK, h->ODA), this, NULL, 0);
