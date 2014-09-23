@@ -870,9 +870,9 @@ int http2cmm_writeSwitchSettings(PWEB_NTWK_VAR pWebVar)
 	profile.col_eth2sts = pWebVar->col_eth2sts;
 	profile.col_eth3sts = pWebVar->col_eth3sts;
 	profile.col_eth4sts = pWebVar->col_eth4sts;
-	profile.col_sfbSts = pWebVar->swSfDisBroadcast;
-	profile.col_sfuSts = pWebVar->swSfDisUnknown;
-	profile.col_sfmSts = pWebVar->swSfDisMulticast;
+	profile.col_sfbSts = !(pWebVar->swSfDisBroadcast);
+	profile.col_sfuSts = !(pWebVar->swSfDisUnknown);
+	profile.col_sfmSts = !(pWebVar->swSfDisMulticast);
 	profile.col_macLimit = pWebVar->swMlSysThresholt;
 	profile.col_uplinkvid = pWebVar->swUplinkPortVid;
 	profile.col_eth1VMode = pWebVar->swEth1PortVMode;
