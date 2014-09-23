@@ -371,9 +371,9 @@ function isValidBctrlValue(value) {
             return false;
        }
 	value = parseInt(value);
-	if ( value < 0 || value > 1526 )
+	if ( value < 0 || value > 2047 )
 	{
-            msg = '带宽值 "' + value + '" 的有效范围为[0-1526]！';
+            msg = '带宽值 "' + value + '" 的有效范围为[0-2047]！';
             alert(msg);
             return false;
        }

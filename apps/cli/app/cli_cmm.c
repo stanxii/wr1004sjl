@@ -2,6 +2,7 @@
 #include "../cli_pub.h"
 #include "../util/cli_io.h"
 #include "cli_cmm.h"
+#include <boardapi.h>
 
 static T_UDP_SK_INFO SK_CLI2CMM;
 
@@ -61,7 +62,7 @@ int __cli2cmm_receive(unsigned short MsgType, unsigned char *buf, int len)
 	tv.tv_sec = 15;
 	tv.tv_usec = 0;
 
-	//检测socket
+	//录矛虏芒socket
 	ret = select(sk->sk + 1, &fdsr, NULL, NULL, &tv);
 	if( ret <= 0 )
 	{
@@ -149,7 +150,7 @@ int __cli2cmm_upgrade_comm(uint8_t *buf, uint32_t len)
 
 		select_times++;
 
-		//检测socket
+		//录矛虏芒socket
 		ret = select(sk->sk + 1, &fdsr, NULL, NULL, &tv);
 		if( ret <= 0 )
 		{
@@ -224,7 +225,7 @@ int __cli2cmm_comm(uint8_t *buf, uint32_t len)
 		tv.tv_sec = 18;
 		tv.tv_usec = 0;
 
-		//检测socket
+		//录矛虏芒socket
 		ret = select(sk->sk + 1, &fdsr, NULL, NULL, &tv);
 		if( ret <= 0 )
 		{
@@ -270,19 +271,19 @@ int __cli2cmm_comm(uint8_t *buf, uint32_t len)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_reloadCltProfile
-*	函数功能:强制重新加载配置文件
+*	潞炉脢媒脙没鲁脝:cli2cmm_reloadCltProfile
+*	潞炉脢媒鹿娄脛脺:脟驴脰脝脰脴脨脗录脫脭脴脜盲脰脙脦脛录镁
 *********************************************************************************************/
 int cli2cmm_reloadCltProfile(uint16_t cltid)
 {
-	/* 暂时没有实现*/
+	/* 脭脻脢卤脙禄脫脨脢碌脧脰*/
 	IO_Print("\r\n\r\n  CMD TBD !");
 	return CMM_FAILED;
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_reloadCnuProfile
-*	函数功能:强制重新加载配置文件
+*	潞炉脢媒脙没鲁脝:cli2cmm_reloadCnuProfile
+*	潞炉脢媒鹿娄脛脺:脟驴脰脝脰脴脨脗录脫脭脴脜盲脰脙脦脛录镁
 *********************************************************************************************/
 int cli2cmm_reloadCnuProfile(uint16_t cltid, uint16_t cnuid)
 {
@@ -313,8 +314,8 @@ int cli2cmm_reloadCnuProfile(uint16_t cltid, uint16_t cnuid)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_permitCnu
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_permitCnu
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_permitCnu(uint16_t cltid, uint16_t cnuid)
 {
@@ -345,8 +346,8 @@ int cli2cmm_permitCnu(uint16_t cltid, uint16_t cnuid)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_UndoPermitCnu
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_UndoPermitCnu
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_UndoPermitCnu(uint16_t cltid, uint16_t cnuid)
 {
@@ -377,8 +378,8 @@ int cli2cmm_UndoPermitCnu(uint16_t cltid, uint16_t cnuid)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_DeleteCnu
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_DeleteCnu
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_DeleteCnu(uint16_t cltid, uint16_t cnuid)
 {
@@ -409,8 +410,8 @@ int cli2cmm_DeleteCnu(uint16_t cltid, uint16_t cnuid)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_CreateCnu
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_CreateCnu
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_CreateCnu(uint8_t mac[])
 {
@@ -437,8 +438,8 @@ int cli2cmm_CreateCnu(uint8_t mac[])
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_DoWlistControl
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_DoWlistControl
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_DoWlistControl(uint16_t status)
 {
@@ -462,8 +463,8 @@ int cli2cmm_DoWlistControl(uint16_t status)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_DoWdtControl
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_DoWdtControl
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_DoWdtControl(uint16_t status)
 {
@@ -487,8 +488,8 @@ int cli2cmm_DoWdtControl(uint16_t status)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_DoHBControl
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_DoHBControl
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_DoHBControl(uint16_t status)
 {
@@ -512,8 +513,8 @@ int cli2cmm_DoHBControl(uint16_t status)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_readAr8236Reg
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_readAr8236Reg
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_getCbatTemperature(st_temperature *temp_data)
 {
@@ -547,8 +548,8 @@ int cli2cmm_getCbatTemperature(st_temperature *temp_data)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_readAr8236Reg
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_readAr8236Reg
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_readAr8236Reg(T_szAr8236Reg *szAr8236Reg)
 {
@@ -583,8 +584,8 @@ int cli2cmm_readAr8236Reg(T_szAr8236Reg *szAr8236Reg)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_writeAr8236Reg
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_writeAr8236Reg
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_writeAr8236Reg(T_szAr8236Reg *szAr8236Reg)
 {
@@ -611,8 +612,8 @@ int cli2cmm_writeAr8236Reg(T_szAr8236Reg *szAr8236Reg)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_readAr8236Phy
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_readAr8236Phy
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_readAr8236Phy(T_szAr8236Phy *szAr8236Phy)
 {
@@ -647,8 +648,8 @@ int cli2cmm_readAr8236Phy(T_szAr8236Phy *szAr8236Phy)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_writeAr8236Phy
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_writeAr8236Phy
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_writeAr8236Phy(T_szAr8236Phy *szAr8236Phy)
 {
@@ -676,8 +677,8 @@ int cli2cmm_writeAr8236Phy(T_szAr8236Phy *szAr8236Phy)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_readCnuSwitchRegister
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_readCnuSwitchRegister
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_readCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings)
 {
@@ -712,8 +713,8 @@ int cli2cmm_readCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_writeCnuSwitchRegister
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_writeCnuSwitchRegister
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_writeCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings)
 {
@@ -742,8 +743,8 @@ int cli2cmm_writeCnuSwitchRegister(T_szSwRtl8306eConfig *rtl8306eSettings)
 
 
 /********************************************************************************************
-*	函数名称:cli2cmm_mdioReadPhy
-*	函数功能:获取外接PHY寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_mdioReadPhy
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆脥芒陆脫PHY录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_mdioReadPhy(T_szAr8236Phy *szAr8236Phy)
 {
@@ -778,8 +779,8 @@ int cli2cmm_mdioReadPhy(T_szAr8236Phy *szAr8236Phy)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_mdioWritePhy
-*	函数功能:获取外接PHY寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_mdioWritePhy
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆脥芒陆脫PHY录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_mdioWritePhy(T_szAr8236Phy *szAr8236Phy)
 {
@@ -807,8 +808,8 @@ int cli2cmm_mdioWritePhy(T_szAr8236Phy *szAr8236Phy)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_getRgmiiTimingDelay
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_getRgmiiTimingDelay
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_setRgmiiTimingDelay(st_dsdtRgmiiTimingDelay *pdelay)
 {
@@ -836,8 +837,8 @@ int cli2cmm_setRgmiiTimingDelay(st_dsdtRgmiiTimingDelay *pdelay)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_setRgmiiTimingDelay
-*	函数功能:获取AR8236寄存器值
+*	潞炉脢媒脙没鲁脝:cli2cmm_setRgmiiTimingDelay
+*	潞炉脢媒鹿娄脛脺:禄帽脠隆AR8236录脛麓忙脝梅脰碌
 *********************************************************************************************/
 int cli2cmm_getRgmiiTimingDelay(st_dsdtRgmiiTimingDelay *pdelay)
 {
@@ -902,7 +903,7 @@ int cli2cmm_shutdownConfig(st_dbsProfile *profile)
 	return __cli2cmm_comm(buf, len);
 }
 
-int cli2cmm_macLimitConfig(st_dbsProfile *profile)
+int cli2cmm_macLimitConfig1(st_dbsProfile *profile)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
 	uint32_t len = 0;
@@ -931,7 +932,31 @@ int cli2cmm_macLimitConfig(st_dbsProfile *profile)
 	return __cli2cmm_comm(buf, len);
 }
 
-int cli2cmm_stormFilterConfig(st_dbsProfile *profile)
+int cli2cmm_macLimitConfig2(rtl8306eWriteInfo *req_data1, st_dbsProfile *profile)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	memcpy(req_data,req_data1,sizeof(rtl8306eWriteInfo));
+	
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo) + sizeof(st_dbsProfile);
+	req->HEADER.fragment = 0;
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE)
+	{
+		printf("cli send rtl8306 body and profile to cmm error\n");
+		return CMM_FAILED;
+	} 
+	memcpy(req->BUF + sizeof(rtl8306eWriteInfo), profile, sizeof(st_dbsProfile));
+	return __cli2cmm_comm(buf, len);
+}
+
+int cli2cmm_stormFilterConfig1(st_dbsProfile *profile)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
 	uint32_t len = 0;
@@ -959,8 +984,30 @@ int cli2cmm_stormFilterConfig(st_dbsProfile *profile)
 	
 	return __cli2cmm_comm(buf, len);
 }
+int cli2cmm_stormFilterConfig2(rtl8306eWriteInfo *req_data1, st_dbsProfile *profile)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
 
-int cli2cmm_rateLimitConfig(st_dbsProfile *profile)
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	memcpy(req_data,req_data1,sizeof(rtl8306eWriteInfo));
+	
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo) + sizeof(st_dbsProfile);
+	req->HEADER.fragment = 0;
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE)
+	{
+		printf("cli send rtl8306 body and profile to cmm error\n");
+		return CMM_FAILED;
+	} 
+	memcpy(req->BUF + sizeof(rtl8306eWriteInfo), profile, sizeof(st_dbsProfile));
+	return __cli2cmm_comm(buf, len);
+}
+int cli2cmm_rateLimitConfig1(st_dbsProfile *profile)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
 	uint32_t len = 0;
@@ -985,11 +1032,37 @@ int cli2cmm_rateLimitConfig(st_dbsProfile *profile)
 	}
 
 	memcpy(req->BUF, profile, req->HEADER.ulBodyLength);
+	return __cli2cmm_comm(buf, len);
+}
+int cli2cmm_rateLimitConfig2(rtl8306eWriteInfo *req_data1, st_dbsProfile *profile)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	memcpy(req_data,req_data1,sizeof(rtl8306eWriteInfo));
 	
+	if( 0 == profile->col_row_sts )
+	{
+		return CMM_FAILED;
+	}
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo) + sizeof(st_dbsProfile);
+	req->HEADER.fragment = 0;
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE)
+	{
+		printf("cli send rtl8306 body and profile to cmm error\n");
+		return CMM_FAILED;
+	} 
+	memcpy(req->BUF + sizeof(rtl8306eWriteInfo), profile, sizeof(st_dbsProfile));
 	return __cli2cmm_comm(buf, len);
 }
 
-int cli2cmm_vlanConfig(st_dbsProfile *profile)
+int cli2cmm_vlanConfig1(st_dbsProfile *profile)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
 	uint32_t len = 0;
@@ -999,8 +1072,8 @@ int cli2cmm_vlanConfig(st_dbsProfile *profile)
 	{
 		return CMM_FAILED;
 	}
-
-	/* 防止端口PVID 被设置为0 */
+	
+	/* 路脌脰鹿露脣驴脷PVID 卤禄脡猫脰脙脦陋0 */
 	if( 0 == profile->col_eth1vid )
 	{
 		profile->col_eth1vid = 1;
@@ -1035,7 +1108,7 @@ int cli2cmm_vlanConfig(st_dbsProfile *profile)
 	{
 		return CMM_FAILED;
 	}
-
+	
 	req->HEADER.usSrcMID = MID_CLI;
 	req->HEADER.usDstMID = MID_CMM;
 	req->HEADER.usMsgType = CMM_CNU_VLAN_CONFIG;
@@ -1044,13 +1117,78 @@ int cli2cmm_vlanConfig(st_dbsProfile *profile)
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
 	if( len > MAX_UDP_SIZE )
-	{
+	{	
 		IO_Print("\r\n\r\n	Memery Error !");
 		return CMM_FAILED;
 	}
 
 	memcpy(req->BUF, profile, req->HEADER.ulBodyLength);
+	return __cli2cmm_comm(buf, len);	
+}
+
+int cli2cmm_vlanConfig2(rtl8306eWriteInfo *req_data1, st_dbsProfile *profile)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
 	
+	memcpy(req_data,req_data1,sizeof(rtl8306eWriteInfo));
+	
+	if( 0 == profile->col_row_sts )
+	{
+		return CMM_FAILED;
+	}
+	if( 0 == profile->col_eth1vid )
+	{
+		profile->col_eth1vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[0].pvid = 1;
+	}
+	if( 0 == profile->col_eth2vid )
+	{
+		profile->col_eth2vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[1].pvid = 1;
+	}
+	if( 0 == profile->col_eth3vid )
+	{
+		profile->col_eth3vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[2].pvid = 1;
+	}
+	if( 0 == profile->col_eth4vid )
+	{
+		profile->col_eth4vid = 1;
+		req_data->rtl8306eConfig.vlanConfig.vlan_port[3].pvid = 1;
+	}
+	if( (profile->col_eth1vid < 1) || (profile->col_eth1vid > 4094) )
+	{
+		return CMM_FAILED;
+	}
+	if( (profile->col_eth2vid < 1) || (profile->col_eth2vid > 4094) )
+	{
+		return CMM_FAILED;
+	}
+	if( (profile->col_eth3vid < 1) || (profile->col_eth3vid > 4094) )
+	{
+		return CMM_FAILED;
+	}
+	if( (profile->col_eth4vid < 1) || (profile->col_eth4vid > 4094) )
+	{
+		return CMM_FAILED;
+	}
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo) + sizeof(st_dbsProfile);
+	req->HEADER.fragment = 0;
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE)
+	{
+		printf("cli send rtl8306 body and profile to cmm error\n");
+		return CMM_FAILED;
+	} 
+	memcpy(req->BUF + sizeof(rtl8306eWriteInfo), profile, sizeof(st_dbsProfile));
 	return __cli2cmm_comm(buf, len);
 }
 
@@ -1143,8 +1281,8 @@ int cli2cmm_debug(st_ModuleDebugCtl *debug)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_Dump
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_Dump
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_Dump(uint16_t cltid, uint16_t cunid, uint16_t flag)
 {
@@ -1193,8 +1331,8 @@ int cli2cmm_Dump(uint16_t cltid, uint16_t cunid, uint16_t flag)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_DoWdtControl
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_DoWdtControl
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_DebugPrintAllDsdtPortStats(int port)
 {
@@ -1222,8 +1360,8 @@ int cli2cmm_DebugPrintAllDsdtPortStats(int port)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_DoWdtControl
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_DoWdtControl
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_ClearDsdtPortStats(void)
 {
@@ -1247,8 +1385,8 @@ int cli2cmm_ClearDsdtPortStats(void)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_DoPortMirroring
-*	函数功能:设置端口镜像
+*	潞炉脢媒脙没鲁脝:cli2cmm_DoPortMirroring
+*	潞炉脢媒鹿娄脛脺:脡猫脰脙露脣驴脷戮碌脧帽
 *********************************************************************************************/
 int cli2cmm_DoPortMirroring(st_dsdtPortMirroring *pMirrorInfo)
 {
@@ -1299,8 +1437,8 @@ int cli2cmm_DoDsdtMacBinding(stDsdtMacBinding *macBindingInfo)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_do_aclDropMme
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_do_aclDropMme
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_do_aclDropMme(uint16_t cltid, uint16_t cnuid)
 {
@@ -1328,8 +1466,8 @@ int cli2cmm_do_aclDropMme(uint16_t cltid, uint16_t cnuid)
 }
 
 /********************************************************************************************
-*	函数名称:cli2cmm_undo_aclDropMme
-*	函数功能:
+*	潞炉脢媒脙没鲁脝:cli2cmm_undo_aclDropMme
+*	潞炉脢媒鹿娄脛脺:
 *********************************************************************************************/
 int cli2cmm_undo_aclDropMme(uint16_t cltid, uint16_t cnuid)
 {
@@ -1410,7 +1548,7 @@ int init_cli_cmm(void)
 	}	
 
 	SK_CLI2CMM.skaddr.sin_family = PF_INET;
-	SK_CLI2CMM.skaddr.sin_port = htons(CMM_LISTEN_PORT);		/* 目的端口号*/
+	SK_CLI2CMM.skaddr.sin_port = htons(CMM_LISTEN_PORT);		/* 脛驴碌脛露脣驴脷潞脜*/
 	SK_CLI2CMM.skaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	return TBS_SUCCESS;

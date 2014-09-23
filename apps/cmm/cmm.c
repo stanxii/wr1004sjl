@@ -1201,8 +1201,7 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 
 	//add bys tan for savedb
 	st_dbsProfile *req_data_db = (st_dbsProfile *)(req->BUF + sizeof(rtl8306eWriteInfo));
-
-	//printf("\r\n\r\n  CMM_ProcessCnuVlanConfig(%d)\n", req_data->id);
+//	printf("\r\n\r\n  CMM_ProcessCnuVlanConfig(%d)\n", req_data->id);
 	
 	opt_sts = cmmTmWriteCnuProfile(1, req_data_db->id, req_data_db);
 	//CMM_ProcessAck(opt_sts, this, NULL, 0);

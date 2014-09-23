@@ -283,7 +283,8 @@ enum
 	WEC_3702I_E4,		/* cnu ar6400+rtl8306e */
 	WEC701_E4,			/* cnu ar7411+rtl8306e */
 	WR1004JLD,			/* 2*clt + 1*onu module */
-	WEC701_L4,			/* cnu ar7411L+rtl8306e */
+
+	WEC701_L4,			/* cnu ar7411L+rtl8306e */
 	WEC701_W4,                      /* cnu ar7411L+AR9331+rtl8306e*/
 	/* 请在中间增加其他枚举定义 */
 	WEC_INVALID = 0xFE,
@@ -696,7 +697,7 @@ typedef enum
 #define DBS_SYS_TBL_COLS_CNU			13
 #define DBS_SYS_TBL_COLS_CNUDEPRO	62
 #define DBS_SYS_TBL_COLS_NETWORK		9
-#define DBS_SYS_TBL_COLS_CNUPRO		63
+#define DBS_SYS_TBL_COLS_CNUPRO		69
 #define DBS_SYS_TBL_COLS_SNMPINFO		8
 #define DBS_SYS_TBL_COLS_SWMGMT		6
 #define DBS_SYS_TBL_COLS_SYSINFO		16
@@ -903,7 +904,7 @@ typedef enum
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH3PRI		43
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH4PRI		44
 #define DBS_SYS_TBL_PROFILE_COL_ID_RXLIMITSTS	45
-#define DBS_SYS_TBL_PROFILE_COL_ID_CPURX			46
+#define DBS_SYS_TBL_PROFILE_COL_ID_CPURX		46
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH1RX		47
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH2RX		48
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH3RX		49
@@ -920,6 +921,12 @@ typedef enum
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH2STS		60
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH3STS		61
 #define DBS_SYS_TBL_PROFILE_COL_ID_ETH4STS		62
+#define DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVID	63
+#define DBS_SYS_TBL_PROFILE_COL_ID_UPLINKVMODE	64
+#define DBS_SYS_TBL_PROFILE_COL_ID_ETH1VMODE	65
+#define DBS_SYS_TBL_PROFILE_COL_ID_ETH2VMODE	66
+#define DBS_SYS_TBL_PROFILE_COL_ID_ETH3VMODE	67
+#define DBS_SYS_TBL_PROFILE_COL_ID_ETH4VMODE	68
 
 /* 定义数据表列元素索引*/
 #define DBS_SYS_TBL_SNMP_COL_ID_ID		0
@@ -2644,6 +2651,12 @@ typedef struct
 	uint32_t	col_eth2sts;
 	uint32_t	col_eth3sts;
 	uint32_t	col_eth4sts;
+	uint32_t    col_uplinkvid;
+	uint32_t 	col_uplinkVMode;
+	uint32_t   	col_eth1VMode;
+	uint32_t    col_eth2VMode;
+	uint32_t   	col_eth3VMode;
+	uint32_t    col_eth4VMode;
 }st_dbsProfile;
 
 /* tbl_snmp */
