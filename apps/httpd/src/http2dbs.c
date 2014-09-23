@@ -311,7 +311,7 @@ int http2dbs_getCltNumber(char *varValue)
 
 int http2dbs_getCnuStations(char *varValue)
 {
-	sprintf(varValue, "%d", MAX_CNU_AMOUNT_LIMIT);
+	sprintf(varValue, "%d", MAX_CNUS_PER_CLT);
 	return 0;
 }
 
