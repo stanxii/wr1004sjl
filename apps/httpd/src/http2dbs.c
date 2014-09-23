@@ -69,7 +69,7 @@ int http2dbs_saveTemplate(PWEB_NTWK_VAR pWebVar)
 	int flag = 0;
 	st_dbsTemplate row;
 
-	if( CMM_SUCCESS != dbsGetTemplate(dbsdev, pWebVar->cltid, &row) )
+	if( CMM_SUCCESS != dbsGetTemplate(dbsdev, pWebVar->col_curTemp, &row) )
 	{
 		return CMM_FAILED;
 	}
@@ -78,24 +78,20 @@ int http2dbs_saveTemplate(PWEB_NTWK_VAR pWebVar)
 	row.col_curTemp = pWebVar->col_curTemp;
 	row.col_eth1VlanAddSts = pWebVar->col_eth1VlanAddSts;
 	row.col_eth1VlanStart = pWebVar->col_eth1VlanStart;
-	row.col_eth1VlanStop = pWebVar->col_eth1VlanStop;
+	row.col_eth1VlanStop = 0;
 	row.col_eth2VlanAddSts = pWebVar->col_eth2VlanAddSts;
 	row.col_eth2VlanStart = pWebVar->col_eth2VlanStart;
-	row.col_eth2VlanStop = pWebVar->col_eth2VlanStop;
+	row.col_eth2VlanStop = 0;
 	row.col_eth3VlanAddSts = pWebVar->col_eth3VlanAddSts;
 	row.col_eth3VlanStart = pWebVar->col_eth3VlanStart;
+	row.col_eth3VlanStop = 0;
 	row.col_eth4VlanAddSts = pWebVar->col_eth4VlanAddSts;
 	row.col_eth4VlanStart = pWebVar->col_eth4VlanStart;
-	row.col_eth4VlanStop = pWebVar->col_eth4VlanStop;
+	row.col_eth4VlanStop = 0;
 	
-	if( pWebVar->isupdate)
-	{
-		return dbsUpdateTemplate(dbsdev, pWebVar->templateid, &row);
-	}
-	else
-	{
-		return CMM_SUCCESS;
-	}
+
+	return dbsUpdateTemplate(dbsdev, pWebVar->col_curTemp, &row);
+	
 }
 
 

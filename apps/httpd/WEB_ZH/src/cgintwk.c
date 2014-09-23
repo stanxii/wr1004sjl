@@ -3513,22 +3513,12 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	st_dbsTemplate template;
 
 		
-	char action[IFC_LARGE_LEN];
+	
 
 	memset(&template, 0, sizeof(st_dbsTemplate));
-	
-	
-
-	memset(action, 0 , IFC_LARGE_LEN);
-	cgiGetValueByName(query, "templateid", action);	
-	id = atoi(action);
-
-	printf("000XXXXXXXquery fuck cgi string= %s ===templateid=%d=\n", query, id);
-	printf("000XXXXXXXXXXcol_v1 starts ===%d=====\n", glbWebVar.col_eth1VlanStart);
-	printf("000XXXXXXXXXXcol_tv2 start toSts ===%d=====\n", glbWebVar.col_eth2VlanStart);
-		//get 1 row is templage management row
+		
+	//get 1 row is templage management row
 	dbsGetTemplate(dbsdev, 1, &template);
-			
 	
 	fprintf(fs, "<html>\n");
 	fprintf(fs, "<title>EoC</title>\n");
@@ -3541,24 +3531,40 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "<script src='js/jquery-1.9.1.js'></script>\n");
 	fprintf(fs, "<script src='js/jquery-ui-1.10.3.custom.min.js'></script>\n");
 	fprintf(fs, "<script language='javascript' src='util.js'></script>\n");
-	fprintf(fs, "<script language='javascript'>\n");	
+	fprintf(fs, "<script language='javascript'>\n");
 	fprintf(fs, "function frmLoad(){\n");
 	fprintf(fs, "	$('#col_tempAutoSts').val(%d);\n", template.col_tempAutoSts);
 	fprintf(fs, "	$('#col_curTemp').val(%d);\n", template.col_curTemp);
 	fprintf(fs, "	$('#col_eth1VlanAddSts').val(%d);\n", template.col_eth1VlanAddSts);
 	fprintf(fs, "	$('#col_eth1VlanStart').val(%d);\n", template.col_eth1VlanStart);
-	fprintf(fs, "	$('#col_eth1VlanStop').val(%d);\n", template.col_eth1VlanStop);
 	fprintf(fs, "	$('#col_eth2VlanAddSts').val(%d);\n", template.col_eth2VlanAddSts);
 	fprintf(fs, "	$('#col_eth2VlanStart').val(%d);\n", template.col_eth2VlanStart);
-	fprintf(fs, "	$('#col_eth2VlanStop').val(%d);\n", template.col_eth2VlanStop);
 	fprintf(fs, "	$('#col_eth3VlanAddSts').val(%d);\n", template.col_eth3VlanAddSts);
 	fprintf(fs, "	$('#col_eth3VlanStart').val(%d);\n", template.col_eth3VlanStart);
-	fprintf(fs, "	$('#col_eth3VlanStop').val(%d);\n", template.col_eth3VlanStop);
 	fprintf(fs, "	$('#col_eth4VlanAddSts').val(%d);\n", template.col_eth4VlanAddSts);
 	fprintf(fs, "	$('#col_eth4VlanStart').val(%d);\n", template.col_eth4VlanStart);
-	fprintf(fs, "	$('#col_eth4VlanStop').val(%d);\n", template.col_eth4VlanStop);
+	fprintf(fs, "   $('#col_tempAutoSts').change(function(){\n");  
+	fprintf(fs, "     if($('#col_tempAutoSts').val() != 0){\n");  	  
+	fprintf(fs, "        $('#col_eth1VlanAddSts').removeAttr('disabled');\n");  
+	fprintf(fs, "        $('#col_eth1VlanStart').removeAttr('disabled');\n");  
+    fprintf(fs, "        $('#col_eth2VlanAddSts').removeAttr('disabled');\n");  
+    fprintf(fs, "        $('#col_eth2VlanStart').removeAttr('disabled');\n");  
+    fprintf(fs, "        $('#col_eth3VlanAddSts').removeAttr('disabled');\n");  
+    fprintf(fs, "        $('#col_eth3VlanStart').removeAttr('disabled');\n");  
+    fprintf(fs, "        $('#col_eth4VlanAddSts').removeAttr('disabled');\n");  
+    fprintf(fs, "        $('#col_eth4VlanStart').removeAttr('disabled');\n");  
+    fprintf(fs, "	  }else{\n");  
+    fprintf(fs, "        $('#col_eth1VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "        $('#col_eth1VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "        $('#col_eth2VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "        $('#col_eth2VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "        $('#col_eth3VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "        $('#col_eth3VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "        $('#col_eth4VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "        $('#col_eth4VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "     }\n");  
+    fprintf(fs, "   });\n");
 	fprintf(fs, "}\n");
-
 	fprintf(fs, "function hidePortStatusInfo(hide){\n");
 	fprintf(fs, "	if( hide ) $('#PortStatusInfo').hide();\n");
 	fprintf(fs, "	else $('#PortStatusInfo').show();\n");
@@ -3620,51 +3626,41 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "}\n");
 	fprintf(fs, "function Write(){\n");
 	fprintf(fs, "	var msg;\n");
+	//fprintf(fs, "	var loc = 'wecTemplateSave.cmd?';\n");
 	fprintf(fs, "	var loc = 'saveTemplate.cgi?';\n");
-	fprintf(fs, "		loc += 'isupdate=1';\n");
-	fprintf(fs, "		loc += '&templateid=1';\n");
 	fprintf(fs, "	if($('#col_tempAutoSts').val() != 0){\n");
-	fprintf(fs, "		loc += '&col_tempAutoSts=1';\n");
-	fprintf(fs, "		loc += '&col_curTemp=' + $('#col_curTemp').val();\n");	
+	fprintf(fs, "		loc += 'col_tempAutoSts=1';\n");
+	fprintf(fs, "		loc += '&col_curTemp=1';\n");	
 	fprintf(fs, "	}else{\n");	
-	fprintf(fs, "		loc += '&col_tempAutoSts=0';\n");
-	fprintf(fs, "		loc += '&col_curTemp=0';\n");
+	fprintf(fs, "		loc += 'col_tempAutoSts=0';\n");
+	fprintf(fs, "		loc += '&col_curTemp=1';\n");
 	fprintf(fs, "	}\n");
 	fprintf(fs, "	if($('#col_eth1VlanAddSts').val() != 0){\n");
 	fprintf(fs, "		loc += '&col_eth1VlanAddSts=1';\n");
-	fprintf(fs, "		loc += '&col_eth1VlanStart=' + $('#col_eth1VlanStart').val();\n");		
-	fprintf(fs, "		loc += '&col_eth1VlanStop=' + $('#col_eth1VlanStop').val();\n");	
-	fprintf(fs, "	}else{\n");	
+	fprintf(fs, "	}else{\n");		
 	fprintf(fs, "		loc += '&col_eth1VlanAddSts=0';\n");
-	fprintf(fs, "		loc += '&col_eth1VlanStart=0';\n");
-	fprintf(fs, "		loc += '&col_eth1VlanStop=0';\n");
 	fprintf(fs, "	}\n");	
+	fprintf(fs, "   loc += '&col_eth1VlanStart=' + $('#col_eth1VlanStart').val();\n");		
 	fprintf(fs, "	if($('#col_eth2VlanAddSts').val() != 0){\n");
 	fprintf(fs, "		loc += '&col_eth2VlanAddSts=1';\n");
-	fprintf(fs, "		loc += '&col_eth2VlanStart=' + $('#col_eth2VlanStart').val();\n");		
-	fprintf(fs, "		loc += '&col_eth2VlanStop=' + $('#col_eth2VlanStop').val();\n");	
+	fprintf(fs, "		loc += '&col_eth2VlanStart=' + $('#col_eth2VlanStart').val();\n");			
 	fprintf(fs, "	}else{\n");	
 	fprintf(fs, "		loc += '&col_eth2VlanAddSts=0';\n");
-	fprintf(fs, "		loc += '&col_eth2VlanStart=0';\n");
-	fprintf(fs, "		loc += '&col_eth2VlanStop=0';\n");
+	fprintf(fs, "		loc += '&col_eth2VlanStart=' + $('#col_eth2VlanStart').val();\n");			
 	fprintf(fs, "	}\n");	
 	fprintf(fs, "	if($('#col_eth3VlanAddSts').val() != 0){\n");
 	fprintf(fs, "		loc += '&col_eth3VlanAddSts=1';\n");
 	fprintf(fs, "		loc += '&col_eth3VlanStart=' + $('#col_eth3VlanStart').val();\n");		
-	fprintf(fs, "		loc += '&col_eth3VlanStop=' + $('#col_eth3VlanStop').val();\n");	
 	fprintf(fs, "	}else{\n");	
 	fprintf(fs, "		loc += '&col_eth3VlanAddSts=0';\n");
-	fprintf(fs, "		loc += '&col_eth3VlanStart=0';\n");
-	fprintf(fs, "		loc += '&col_eth3VlanStop=0';\n");
+	fprintf(fs, "		loc += '&col_eth3VlanStart=' + $('#col_eth3VlanStart').val();\n");		
 	fprintf(fs, "	}\n");	
 	fprintf(fs, "	if($('#col_eth4VlanAddSts').val() != 0){\n");
 	fprintf(fs, "		loc += '&col_eth4VlanAddSts=1';\n");
 	fprintf(fs, "		loc += '&col_eth4VlanStart=' + $('#col_eth4VlanStart').val();\n");		
-	fprintf(fs, "		loc += '&col_eth4VlanStop=' + $('#col_eth4VlanStop').val();\n");	
 	fprintf(fs, "	}else{\n");	
 	fprintf(fs, "		loc += '&col_eth4VlanAddSts=0';\n");
-	fprintf(fs, "		loc += '&col_eth4VlanStart=0';\n");
-	fprintf(fs, "		loc += '&col_eth4VlanStop=0';\n");
+	fprintf(fs, "		loc += '&col_eth4VlanStart=' + $('#col_eth4VlanStart').val();\n");		
 	fprintf(fs, "	}\n");	
 	fprintf(fs, "	$('#btn_read').attr('disabled', true);\n");
 	fprintf(fs, "	$('#btn_write').attr('disabled', true);\n");
@@ -3777,22 +3773,6 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "					<option value='1'>启用</option>\n");
 	fprintf(fs, "				</select>\n");
 	fprintf(fs, "			</td>\n");
-	fprintf(fs, "			<td class='diagdata'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;启用模板ID</td>\n");
-	fprintf(fs, "			<td class='diagdata' >\n");
-	fprintf(fs, "				<select id='col_curTemp' size=1>\n");
-	fprintf(fs, "					<option value='0'>0</option>\n");
-	fprintf(fs, "					<option value='3'>3</option>\n");
-	fprintf(fs, "					<option value='4'>4</option>\n");
-	fprintf(fs, "					<option value='5'>5</option>\n");
-	fprintf(fs, "					<option value='6'>6</option>\n");
-	fprintf(fs, "					<option value='7'>7</option>\n");
-	fprintf(fs, "					<option value='8'>8</option>\n");
-	fprintf(fs, "					<option value='9'>9</option>\n");	
-	fprintf(fs, "					<option value='10'>10</option>\n");	
-	fprintf(fs, "					<option value='11'>11</option>\n");	
-	fprintf(fs, "					<option value='12'>12</option>\n");	
-	fprintf(fs, "				</select>\n");
-	fprintf(fs, "			</td>\n");
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "		<tr><td class='diagdata' colspan=3>&nbsp;</td></tr>\n");
 	fprintf(fs, "		<tr><td class='diagdata' colspan=3>&nbsp;</td></tr>\n");
@@ -3803,7 +3783,6 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "			<td class='diagdata' width=150>端口</td>\n");
 	fprintf(fs, "			<td class='diagdata' width=150>VLAN自增</td>\n");	
 	fprintf(fs, "			<td class='diagdata' width=220 display>&nbsp;起始VLAN ID</td>\n");
-	fprintf(fs, "			<td class='diagdata' width=220>&nbsp;终止VLAN ID</td>\n");
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "		<tr>\n");
 	fprintf(fs, "			<td class='diagdata'>ETH1</td>\n");
@@ -3813,8 +3792,7 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "					<option value='1'>启用</option>\n");
 	fprintf(fs, "				</select>\n");
 	fprintf(fs, "			</td>\n");	
-	fprintf(fs, "			<td class='diagdata' width=220 ><input id='col_eth1VlanStart' type='text' value='0'  size='8'>[范围：2~4030]</td>\n");
-	fprintf(fs, "			<td class='diagdata' width=220 readonly='true'><input id='col_eth1VlanStop' type='text' value='0' size='8'>[范围：< Start Vlan + 64]</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=220 ><input id='col_eth1VlanStart' type='text' value='0'  size='8'>[范围：1~4030]</td>\n");	
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "		<tr>\n");
 	fprintf(fs, "			<td class='diagdata'>ETH2</td>\n");
@@ -3824,8 +3802,7 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "					<option value='1'>启用</option>\n");
 	fprintf(fs, "				</select>\n");
 	fprintf(fs, "			</td>\n");		
-	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth2VlanStart' size='8'>[范围：1~4094]</td>\n");
-	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth2VlanStop' size='8'>[范围：1~4094]</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth2VlanStart' size='8'>[范围：1~4030]</td>\n");	
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "		<tr>\n");
 	fprintf(fs, "			<td class='diagdata'>ETH3</td>\n");
@@ -3835,8 +3812,7 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "					<option value='1'>启用</option>\n");
 	fprintf(fs, "				</select>\n");
 	fprintf(fs, "			</td>\n");		
-	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth3VlanStart' size='8'>[范围：2~4060]</td>\n");
-	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth3VlanStop' size='8'>[范围：<起始VLAN+64]</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth3VlanStart' size='8'>[范围：1~4030]</td>\n");
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "		<tr>\n");
 	fprintf(fs, "			<td class='diagdata'>ETH4</td>\n");
@@ -3846,21 +3822,19 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "					<option value='1'>启用</option>\n");
 	fprintf(fs, "				</select>\n");
 	fprintf(fs, "			</td>\n");		
-	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth4VlanStart' size='8'>[范围：1~4094]</td>\n");
-	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth4VlanStop' size='8'>[范围：1~4094]</td>\n");
+	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth4VlanStart' size='8'>[范围：1~4030]</td>\n");
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "	</table>\n");
 	fprintf(fs, "</div>\n");
 	fprintf(fs, "<p>\n");
-	fprintf(fs, "	<button id='btn_return'>返 回</button>\n");
-	fprintf(fs, "	<button id='btn_read'>读 取</button>\n");
 	fprintf(fs, "	<button id='btn_write'>确 定</button>\n");
 	fprintf(fs, "	<button id='opener'>帮助</button>\n");
 	fprintf(fs, "</p>\n");
 	fprintf(fs, "<div id='dialog' title='帮助信息'>\n");
-	fprintf(fs, "通过本页面，您可以查看和修改用户端口的配置。<br><br>\n");
-	fprintf(fs, "1. 点击 '读取' 按钮可以获取该用户端口的当前配置信息；<br>\n");
-	fprintf(fs, "2. 点击 '应用' 按钮可以将您修改的配置信息加载到设备上<br>\n");
+	fprintf(fs, "通过本页面，您可以查看和修改模板自动下发及VLAN自增功能。<br><br>\n");
+	fprintf(fs, "1. 如果启用自动下发，则发现新在线用户终端将自动下发VLAN配置；<br>\n");
+	fprintf(fs, "2. 如果启用VLAN自增功能，将从起始VLAN开始每发现一个终端上线，则VLAN自动加一，并下发<br>\n");
+	fprintf(fs, "3. 如果禁止VLAN自增功能，将从使用配置的端口VLAN开始每发现一个终端上线，并自动下发<br>\n");
 	fprintf(fs, "</div>\n");
 	fprintf(fs, "</blockquote>\n");
 	fprintf(fs, "</body>\n");

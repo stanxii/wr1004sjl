@@ -285,6 +285,65 @@ void refresh_signon_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 	}
 }
 
+void do_cnu_template_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO *activeCnu)
+{
+	st_dbsTemplate template;
+	DB_INTEGER_V iValue;
+
+	memset(&template, 0, sizeof(st_dbsTemplate));
+		
+	//get 1 row is templage management row
+	if(CMM_SUCCESS != dbsGetTemplate(dbsdev, 1, &template))
+	{
+		perror("ERROR: do_cnu_template_auto_config->dbsGetTemplate !\n");
+		return;
+	}else{
+	       //port 1
+	       if(1 == template.col_eth1VlanAddSts)
+		{
+		    if(template.col_eth1VlanStart > 1 && template.col_eth1VlanStart <= 4030 ){
+				//ok now auto template config
+				if(template.col_eth1VlanStop <= template.col_eth1VlanStart|| template.col_eth1VlanStop >= 4030 )	
+					template.col_eth1VlanStop = template.col_eth1VlanStart  + 1;					
+				else
+				      template.col_eth1VlanStop++;
+
+				
+				
+				
+				//config send to cnu now and save profile db vlan
+				
+					
+		    	}
+	       	}else{
+	       	   //eth1 disable auto 
+	       	       if(template.col_eth1VlanStart > 1 && template.col_eth1VlanStart <= 4030 ){
+
+			}
+	       	}
+			
+		//port 2	
+		 if(1 == template.col_eth2VlanAddSts)
+		{
+	       	}else{
+	       	}
+			
+		//port 3	
+		 if(1 == template.col_eth3VlanAddSts)
+		{
+	       	}else{
+	       	}
+			
+	         //port 4
+		 if(1 == template.col_eth4VlanAddSts)
+		{
+	       	}else{
+	       	}
+		   
+	}
+	
+}
+
 void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO *activeCnu)
 {
 	uint32_t PIB_CRC = 0;
@@ -781,6 +840,29 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 			return;
 		}
 		#endif
+		/* 获取全局自动模板下发VLAN自增使能状态*/
+		if( CMM_SUCCESS != db_get_template_auto_config_sts(&autoCfgSts))
+		{
+			perror("ERROR: do_cnu_register->db_get_template_auto_config_sts !\n");
+			return ;
+		}
+		else
+		{
+			switch(activeCnu.DevType)
+			{
+			     case  WEC_3702I_E4:
+			     case  WEC701_E4:
+			     case  WEC701_L4:
+			     case  WEC701_W4:
+						do_cnu_template_auto_config(clt_index, cnu_index, &activeCnu);
+				 	break;
+			      default:
+				  	break;
+			}
+		
+		}
+
+		///////////////////////////////////////////////////////////////////
 		/* 获取全局自动配置使能状态*/
 		if( CMM_SUCCESS != db_get_auto_config_sts(&autoCfgSts))
 		{

@@ -238,22 +238,16 @@ typedef struct {
    int wecFreeram;
 
    //add by stan for template begin
-   int isupdate;
-   int templateid;
    int col_tempAutoSts;
    int col_curTemp;
    int col_eth1VlanAddSts;
    int col_eth1VlanStart;
-   int col_eth1VlanStop;
    int col_eth2VlanAddSts;
    int col_eth2VlanStart;
-   int col_eth2VlanStop;
    int col_eth3VlanAddSts;
    int col_eth3VlanStart;
-   int col_eth3VlanStop;
    int col_eth4VlanAddSts;
    int col_eth4VlanStart;
-   int col_eth4VlanStop;
    
    //add by stan for template end
 
