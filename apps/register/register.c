@@ -311,6 +311,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 		perror("ERROR: do_cnu_auto_config->db_get_cnu !\n");
 		/* 发送CNU放弃自动配置的告警*/
 		cnu_abort_auto_config_notification(clt_index, cnu_index);
+	//	msg_reg_mmead_get_userhfid(uint8_t ODA[], T_MMEAD_CNU_INFO *activeCnu)
 		return;
 	}
 	else

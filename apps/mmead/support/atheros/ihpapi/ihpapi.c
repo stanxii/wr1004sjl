@@ -60,7 +60,7 @@
 #include "../ihpapi/SetFrequencyBandSelection.c"
 #include "../ihpapi/GetTxGain.c"
 #include "../ihpapi/SetTxGain.c"
-
+#include "../ihpapi/GetUserHFID.c"
 /*====================================================================*
  *   internal source files; see ihp.h;
  *--------------------------------------------------------------------*/

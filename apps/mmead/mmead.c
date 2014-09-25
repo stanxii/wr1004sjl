@@ -323,6 +323,15 @@ void MME_Atheros_ProcessGetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME
 	MMEAD_ProcessAck(MME_Atheros_MsgGetTxGain(MME_SK, h->ODA, &tx_gain), this, (uint8_t *)&tx_gain, sizeof(uint8_t));
 }
 
+void MME_Atheros_ProcessGetUserHFID(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+	uint8_t user_hfid;
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgGetUserHFID(MME_SK, h->ODA, &user_hfid), this, (uint8_t *)&user_hfid, sizeof(uint8_t));
+}
+
 void MME_Atheros_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 {
 	T_MMETS_REQ_MSG *req= (T_MMETS_REQ_MSG *)(this->b);	
@@ -546,6 +555,14 @@ void MME_ProcessGetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		/* 对于不支持的DEV_TYPE应该给予应答以便让请求者知道 */
 		MMEAD_ProcessAck(CMM_UNKNOWN_DEVTYPE, this, NULL, 0);
 	}	
+}
+
+void MME_ProcessGetUserHFID(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	MME_Atheros_ProcessGetUserHFID(this, MME_SK);
+	
 }
 
 void MME_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
@@ -1665,6 +1682,9 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 			break;
 		case MMEAD_GET_TX_GAIN:
 			MME_ProcessGetTxGain(this, MME_SK);
+			break;
+		case MMEAD_GET_USER_HFID:
+			MME_ProcessGetUserHFID(this, MME_SK);
 			break;
 		case MMEAD_SET_TX_GAIN:
 			MME_ProcessSetTxGain(this, MME_SK);

@@ -42,4 +42,4 @@ InitializeDevice.c
 FindFWHeader.c
 SequenceWriteMemory.c
 SetSDRAMConfig.c
-;DecodeReadMemory.c
+DecodeReadMemory.c

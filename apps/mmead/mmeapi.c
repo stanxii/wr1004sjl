@@ -2034,6 +2034,43 @@ int MME_Atheros_MsgSetTxGain(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint8_t tx_
 	return CMM_MME_ERROR;
 }
 
+int MME_Atheros_MsgGetUserHFID(T_MME_SK_HANDLE *MME_SK, uint8_t ODA[], uint8_t *pdata)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGetUserHFID\n");
+	memset(buffer, 0, sizeof(buffer));
+	packetsize = ihpapi_GetUserHFID(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_rx(MME_SK, VS_GET_PROPERTY, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		*pdata = xresult.data.UserHFIDInfo.User_HFID;
+		return CMM_SUCCESS;
+	}	
+	return CMM_MME_ERROR;
+}
+
 
 /********************************************************************************************
 *	º¯ÊýÃû³Æ:MME_Atheros_MsgGetCltMac

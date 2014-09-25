@@ -514,7 +514,7 @@ enum
 	MMEAD_GET_RTL8306E_CONFIG,	/* get rtl8306e configuration from cnu by mme mdio */
 	MMEAD_WRITE_MOD,				/* write mod */
 	MMEAD_ERASE_MOD,
-	
+	MMEAD_GET_USER_HFID,
 	/* 请在中间增加其他枚举定义 */
 
 	MMEAD_MAX_REQ = 0xff

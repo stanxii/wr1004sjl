@@ -62,6 +62,8 @@ void print_usage(void)
 	printf("	--23:	test mmead case [MMEAD_SET_TX_GAIN]\n");
 	printf("		decrease tx gain value by 1db\n");
 	printf("	--24:	test mmead case [MMEAD_GET_RTL8306E_CONFIG]\n");
+	printf("	--25:	test mmead case [MMEAD_GET_CNU_HFID]\n");
+	printf("	--26:	test mmead case [MMEAD_SET_CNU_HFID]\n");
 	
 	printf("\n\n");
 }
@@ -1136,6 +1138,44 @@ int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
 	return -1;
 }
 
+int TEST_MMEAD_GET_CNU_HFID(T_UDP_SK_INFO *sk)
+{
+	uint8_t buf[MAX_UDP_SIZE];
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;
+	uint8_t *p = (uint8_t *)(reply->body);
+	uint8_t temp[65] ;
+	int tx_gain = 0;
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_GET_USER_HFID;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = 0;
+
+	
+	if( 0 == msg_communicate(sk, buf, sizeof(T_MMETS_REQ_MSG)) )
+	{
+		memset(temp, 0, sizeof(temp));
+		memcpy(temp, p, 64);
+		if(strlen(temp) <= 0)
+			strcpy(temp,"unknow");
+		
+		printf("	CNU HFID : [%s]\n", temp);
+		
+		
+		return 0;
+	}
+	
+	return -1;
+}
+
+int TEST_MMEAD_SET_CNU_HFID(T_UDP_SK_INFO *sk)
+{
+	return -1;
+}
+
 int MMEAD_MSG_DEBUG_ENABLE(T_UDP_SK_INFO *sk, uint32_t enable)
 {
 	T_Msg_Header_MMEAD h;
@@ -1328,6 +1368,16 @@ int main(int argc, char *argv[])
 			case 24:
 			{
 				TEST_MMEAD_GET_RTL8306E_CONFIGS(&sk);
+				break;
+			}
+			case 25:
+			{
+				TEST_MMEAD_GET_CNU_HFID(&sk);
+				break;
+			}
+			case 26:
+			{
+				TEST_MMEAD_GET_CNU_HFID(&sk);
 				break;
 			}
 			default:
