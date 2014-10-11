@@ -9,6 +9,7 @@
  *****************************************************************************************/
 #include <assert.h>
 #include "reg_cmm.h"
+#include "reg_dbs.h"
 
 int __reg2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 {
@@ -109,6 +110,64 @@ int reg2cmm_getCltPortLinkStatus(T_UDP_SK_INFO *sk, uint32_t cltid)
 		linkStatus = (*ack_data == 0)?0:1;
 	}
 	return linkStatus;
+}
+
+int reg2cmm_writeSwitchSettings(T_UDP_SK_INFO *sk, stCnuNode *node, st_rtl8306eSettings * rtl8306e)
+{
+    uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	int i = 0;
+	uint8_t tmp;
+	int opt_sts=CMM_SUCCESS;
+
+	
+	T_Msg_CMM* req = (T_Msg_CMM *)buf;
+	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
+	
+	/*add by stan end  */
+	req_data->node.clt = node->clt;
+	req_data->node.cnu = node->cnu;
+	
+
+
+	/* add by stan for save dbs  begin */
+	st_dbsProfile profile;
+
+	//update db
+	if(CMM_SUCCESS != dbsGetProfile(dbsdev, (node->clt-1) * 64 + node->cnu, &profile))
+	{
+		opt_sts = CMM_FAILED;
+	}
+	profile.col_vlanSts= rtl8306e->vlanConfig.vlan_enable; 
+	profile.col_eth1VMode = rtl8306e->vlanConfig.vlan_port[0].egress_mode;
+	profile.col_uplinkVMode = rtl8306e->vlanConfig.vlan_port[4].egress_mode;
+	profile.col_uplinkvid = rtl8306e->vlanConfig.vlan_port[4].pvid;
+	profile.col_eth1vid = rtl8306e->vlanConfig.vlan_port[0].pvid;
+		
+     /* add by stan for save dbs  end */
+
+	req->HEADER.usSrcMID = MID_REGISTER;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
+	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo) + sizeof(st_dbsProfile);
+	req->HEADER.fragment = 0;
+
+	/*add by stan */
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		printf("add by stan too len rtl8306 body + profile len\n");
+		return CMM_FAILED;
+	}
+
+    memcpy(&(req_data->rtl8306eConfig), rtl8306e, sizeof(st_rtl8306eSettings));
+	memcpy(req->BUF + sizeof(rtl8306eWriteInfo), &profile, sizeof(st_dbsProfile));
+
+	
+	
+	
+	return __reg2cmm_comm(sk, buf, len);
+
 }
 
 int reg2cmm_bindingAtheroesAddr2CablePort(T_UDP_SK_INFO *sk, int portid)

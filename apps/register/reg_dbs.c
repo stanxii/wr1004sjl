@@ -326,6 +326,7 @@ int db_get_template_auto_config_sts(uint32_t *autoCfgSts)
 		else
 		{
 			*autoCfgSts = st_iValue.integer;
+			printf("db_get_templae_auto_config_sts result = (%d, %d, %d, %d) : CMM_SUCCESS\n", st_iValue.ci.tbl, st_iValue.ci.row, st_iValue.ci.col, st_iValue.integer);
 		}
 		return CMM_SUCCESS;
 	}

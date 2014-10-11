@@ -111,7 +111,8 @@ DBS_TBL_DESIGN tbl_cnu[DBS_SYS_TBL_COLS_CNU] =
 	{DBS_SYS_TBL_CNU_COL_ID_BPC,		SQLITE3_TEXT,	16,	BOOL_FALSE,	BOOL_TRUE,	"col_bpc"},
 	{DBS_SYS_TBL_CNU_COL_ID_ATT,		SQLITE3_TEXT,	16,	BOOL_FALSE,	BOOL_TRUE,	"col_att"},
 	{DBS_SYS_TBL_CNU_COL_ID_SYNCH,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_synch"},
-	{DBS_SYS_TBL_CNU_COL_ID_ROWSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_row_sts"}
+	{DBS_SYS_TBL_CNU_COL_ID_ROWSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_row_sts"},
+	{DBS_SYS_TBL_CNU_COL_ID_AUTOSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_auto_sts"}
 };
 
 /* 描述数据表设计的结构体，实际数据库设计
@@ -413,6 +414,10 @@ int __is_col_pk(uint16_t tbl, uint16_t col)
 		{
 			return ((tbl_sysinfo[col].isPrimaryKey)?BOOL_TRUE:BOOL_FALSE);
 		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			return ((tbl_template[col].isPrimaryKey)?BOOL_TRUE:BOOL_FALSE);
+		}
 		default:
 		{
 			return BOOL_FALSE;
@@ -474,6 +479,10 @@ int __is_col_allow_null(uint16_t tbl, uint16_t col)
 		case DBS_SYS_TBL_ID_SYSINFO:
 		{
 			return ((tbl_sysinfo[col].allowNull)?BOOL_TRUE:BOOL_FALSE);
+		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			return ((tbl_template[col].allowNull)?BOOL_TRUE:BOOL_FALSE);
 		}
 		default:
 		{
@@ -537,6 +546,11 @@ int __get_col_type(uint16_t tbl, uint16_t col)
 		{
 			return tbl_sysinfo[col].col_type;
 		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			return tbl_template[col].col_type;
+		}
+
 		default:
 		{
 			return SQLITE_NULL;
@@ -723,6 +737,12 @@ int __dbs_underlayer_SQLClearColumn(DB_COL_INFO *ci, uint8_t *sql)
 				db_system[ci->tbl].tbl_name, tbl_sysinfo[ci->col].col_name, ci->row);
 			break;
 		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			sprintf(sql, "UPDATE [%s] SET [%s]=null WHERE [id]=%d", 
+				db_system[ci->tbl].tbl_name, tbl_template[ci->col].col_name, ci->row);
+			break;
+		}
 		default:
 		{
 			return SQLITE_ERROR;
@@ -807,6 +827,12 @@ int __dbs_underlayer_SQLGetInteger(DB_COL_INFO *ci, uint8_t *sql)
 				tbl_sysinfo[ci->col].col_name, db_system[ci->tbl].tbl_name, ci->row);
 			break;
 		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			sprintf(sql, "SELECT [%s] FROM [%s] WHERE [id]=%d", 
+				tbl_template[ci->col].col_name, db_system[ci->tbl].tbl_name, ci->row);
+			break;
+		}
 		default:
 		{
 			return SQLITE_ERROR;
@@ -889,6 +915,12 @@ int __dbs_underlayer_SQLGetText(DB_COL_INFO *ci, uint8_t *sql)
 		{
 			sprintf(sql, "SELECT [%s] FROM [%s] WHERE [id]=%d", 
 				tbl_sysinfo[ci->col].col_name, db_system[ci->tbl].tbl_name, ci->row);
+			break;
+		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			sprintf(sql, "SELECT [%s] FROM [%s] WHERE [id]=%d", 
+				tbl_template[ci->col].col_name, db_system[ci->tbl].tbl_name, ci->row);
 			break;
 		}
 		default:
@@ -995,6 +1027,12 @@ int __dbs_underlayer_SQLUpdateInteger(DB_COL_VAR *v, uint8_t *sql)
 		{
 			sprintf(sql, "UPDATE [%s] SET [%s]=%d WHERE [id]=%d", 
 					db_system[v->ci.tbl].tbl_name, tbl_sysinfo[v->ci.col].col_name, col_value, v->ci.row);
+			break;
+		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			sprintf(sql, "UPDATE [%s] SET [%s]=%d WHERE [id]=%d", 
+					db_system[v->ci.tbl].tbl_name, tbl_template[v->ci.col].col_name, col_value, v->ci.row);
 			break;
 		}
 		default:
@@ -1205,6 +1243,23 @@ int __dbs_underlayer_SQLUpdateText(DB_COL_VAR *v, uint8_t *sql)
 			}
 			break;
 		}
+		case DBS_SYS_TBL_ID_TEMPLATE:
+		{
+			/* 判断文本是否超长*/
+			if( v->len >= tbl_template[v->ci.col].col_len )
+			{
+				fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateText : TEXT TOO LONG !\n");
+				return SQLITE_ERROR;
+			}
+			else
+			{
+				strncpy(col_value, v->data, v->len);
+				col_value[v->len] = '\0';
+				sprintf(sql, "UPDATE [%s] SET [%s]=\"%s\" WHERE [id]=%d", 
+				db_system[v->ci.tbl].tbl_name, tbl_template[v->ci.col].col_name, col_value, v->ci.row);
+			}
+			break;
+		}
 		default:
 		{
 			return SQLITE_ERROR;
@@ -1372,7 +1427,7 @@ int __dbs_underlayer_SQLGetRowProfile(uint32_t id, uint8_t *sql)
 	}
 	else
 	{
-		fprintf(stderr, "ERROR: __dbs_underlayer_SQLGetRowProfile : id !\n");
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLGetRowProfile : id [%d]!\n", id);
 		return SQLITE_ERROR;
 	}
 }
@@ -1427,6 +1482,24 @@ int __dbs_underlayer_SQLGetRowSysinfo(uint32_t id, uint8_t *sql)
 	else
 	{
 		fprintf(stderr, "ERROR: __dbs_underlayer_SQLGetRowSysinfo : id !\n");
+		return SQLITE_ERROR;
+	}
+}
+
+int __dbs_underlayer_SQLGetRowTemplate(uint32_t id, uint8_t *sql)
+{
+	assert( NULL != sql );
+
+	/* 判断行数量是否超出定义*/
+	if( (id>=1)&&(id<=1))
+	{
+		sprintf(sql, "SELECT * FROM [%s] WHERE [id]=%d",
+			db_system[DBS_SYS_TBL_ID_TEMPLATE].tbl_name, id);
+		return SQLITE_OK;
+	}
+	else
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLGetRowTemplate : id !\n");
 		return SQLITE_ERROR;
 	}
 }
@@ -1676,7 +1749,7 @@ int __dbs_underlayer_SQLUpdateRowCnu(st_dbsCnu *row, uint8_t *sql)
 	/* 判断行数量是否超出定义*/
 	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
 	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=%d, [%s]=%d WHERE [id]=%d", 
+		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=%d WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNU].tbl_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_MODEL].col_name, 
 			row->col_model, 
@@ -1702,6 +1775,8 @@ int __dbs_underlayer_SQLUpdateRowCnu(st_dbsCnu *row, uint8_t *sql)
 			row->col_synch, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_ROWSTS].col_name, 
 			row->col_row_sts, 
+			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_AUTOSTS].col_name,
+			row->col_auto_sts,
 			row->id );
 		return SQLITE_OK;
 	}
@@ -2073,53 +2148,6 @@ int __dbs_underlayer_SQLUpdateRowProfile(st_dbsProfile *row, uint8_t *sql)
 	}
 }
 
-int __dbs_underlayer_SQLUpdateRowTemplate(st_dbsTemplate *row, uint8_t *sql)
-{
-	assert( NULL != sql );
-	assert( NULL != row );
-
-	/* 判断行数量是否超出定义*/
-	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
-	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d  WHERE [id]=%d", 
-			db_system[DBS_SYS_TBL_ID_TEMPLATE].tbl_name, 			
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS].col_name, 
-			row->col_tempAutoSts, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_CURTEMP].col_name, 
-			row->col_curTemp, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS].col_name, 
-			row->col_eth1VlanAddSts, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART].col_name, 
-			row->col_eth1VlanStart, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTOP].col_name, 
-			row->col_eth1VlanStop, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS].col_name, 
-			row->col_eth2VlanAddSts, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTART].col_name, 
-			row->col_eth2VlanStart, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTOP].col_name, 
-			row->col_eth2VlanStop, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANADDSTS].col_name, 
-			row->col_eth3VlanAddSts, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTART].col_name, 
-			row->col_eth3VlanStart, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTOP].col_name, 
-			row->col_eth3VlanStop, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANADDSTS].col_name, 
-			row->col_eth4VlanAddSts, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTART].col_name, 
-			row->col_eth4VlanStart, 
-			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTOP].col_name, 
-			row->col_eth4VlanStop, 
-			row->id );
-		return SQLITE_OK;
-	}
-	else
-	{
-		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowTemplate : id !\n");
-		return SQLITE_ERROR;
-	}
-}
 
 int __dbs_underlayer_SQLUpdateRowSnmp(st_dbsSnmp *row, uint8_t *sql)
 {
@@ -2307,6 +2335,54 @@ int __dbs_underlayer_SQLUpdateRowSysinfo(st_dbsSysinfo *row, uint8_t *sql)
 	}
 }
 
+int __dbs_underlayer_SQLUpdateRowTemplate(st_dbsTemplate *row, uint8_t *sql)
+{
+	assert( NULL != sql );
+	assert( NULL != row );
+
+	/* 判断行数量是否超出定义*/
+	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
+	{
+		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d  WHERE [id]=%d", 
+			db_system[DBS_SYS_TBL_ID_TEMPLATE].tbl_name, 			
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS].col_name, 
+			row->col_tempAutoSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_CURTEMP].col_name, 
+			row->col_curTemp, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS].col_name, 
+			row->col_eth1VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART].col_name, 
+			row->col_eth1VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTOP].col_name, 
+			row->col_eth1VlanStop, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS].col_name, 
+			row->col_eth2VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTART].col_name, 
+			row->col_eth2VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANSTOP].col_name, 
+			row->col_eth2VlanStop, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANADDSTS].col_name, 
+			row->col_eth3VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTART].col_name, 
+			row->col_eth3VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH3VLANSTOP].col_name, 
+			row->col_eth3VlanStop, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANADDSTS].col_name, 
+			row->col_eth4VlanAddSts, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTART].col_name, 
+			row->col_eth4VlanStart, 
+			tbl_template[DBS_SYS_TBL_TEMPLATE_COL_ID_ETH4VLANSTOP].col_name, 
+			row->col_eth4VlanStop, 
+			row->id );
+		return SQLITE_OK;
+	}
+	else
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowTemplate : id !\n");
+		return SQLITE_ERROR;
+	}
+}
+
 int __dbs_underlayer_SQLDestroyRowClt(uint16_t id, uint8_t *sql)
 {
 	assert( NULL != sql );
@@ -2390,7 +2466,7 @@ int __dbs_underlayer_SQLDestroyRowCnu(uint16_t id, uint8_t *sql)
 	/* 判断行数量是否超出定义*/
 	if( (id >= 1) && (id <= MAX_CNU_AMOUNT_LIMIT))
 	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=0 WHERE [id]=%d", 
+		sprintf(sql, "UPDATE [%s] SET [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=0, [%s]=0 WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNU].tbl_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_MODEL].col_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_MAC].col_name, 
@@ -2403,7 +2479,8 @@ int __dbs_underlayer_SQLDestroyRowCnu(uint16_t id, uint8_t *sql)
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_BPC].col_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_ATT].col_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_SYNCH].col_name, 
-			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_ROWSTS].col_name, 
+			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_ROWSTS].col_name,
+			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_AUTOSTS].col_name, 
 			id );
 		return SQLITE_OK;
 	}
@@ -3342,6 +3419,15 @@ int __dbs_underlayer_get_row_cnu(st_dbsCnu *row)
 		{
 			row->col_row_sts = sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_ROWSTS);
 		}
+		/* SQLITE_INTEGER	| col_auto_sts */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_CNU_COL_ID_AUTOSTS) )
+		{
+			row->col_auto_sts = 0;
+		}
+		else
+		{
+			row->col_auto_sts = sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_AUTOSTS);
+		}
 		
 		ret = SQLITE_OK;		
 	}
@@ -3999,22 +4085,22 @@ int __dbs_underlayer_get_row_template(st_dbsTemplate *row)
 			row->col_eth1VlanAddSts = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS);
 		}
 		/* SQLITE_INTEGER	| col_eth1VlanStart */
-		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS) )
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART) )
 		{
 			row->col_eth1VlanStart = 0;
 		}
 		else
 		{
-			row->col_eth1VlanStart = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANADDSTS);
+			row->col_eth1VlanStart = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART);
 		}
 		/* SQLITE_INTEGER	| col_eth1VlanStop */
-		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART) )
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTOP) )
 		{
 			row->col_eth1VlanStop = 0;
 		}
 		else
 		{
-			row->col_eth1VlanStop = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTART);
+			row->col_eth1VlanStop = sqlite3_column_int(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH1VLANSTOP);
 		}
 		/* SQLITE_INTEGER	| col_eth2VlanAddSts */
 		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_TEMPLATE_COL_ID_ETH2VLANADDSTS) )
@@ -6178,11 +6264,6 @@ int dbs_underlayer_get_row_depro(st_dbsCnuDefaultProfile *row)
 	return __dbs_underlayer_get_row_depro(row);
 }
 
-int dbs_underlayer_get_row_template(st_dbsTemplate *row)
-{
-	assert( NULL != row );	
-	return __dbs_underlayer_get_row_template(row);
-}
 
 int dbs_underlayer_get_row_network(st_dbsNetwork *row)
 {
@@ -6212,6 +6293,12 @@ int dbs_underlayer_get_row_sysinfo(st_dbsSysinfo *row)
 {
 	assert( NULL != row );	
 	return __dbs_underlayer_get_row_sysinfo(row);
+}
+
+int dbs_underlayer_get_row_template(st_dbsTemplate *row)
+{
+	assert( NULL != row );	
+	return __dbs_underlayer_get_row_template(row);
 }
 
 int dbs_underlayer_select_cnu_index_by_mac(char *mac, stCnuNode *index)
@@ -6263,12 +6350,6 @@ int dbs_underlayer_update_row_profile(st_dbsProfile *row)
 	return __dbs_underlayer_update_row_profile(row);
 }
 
-int dbs_underlayer_update_row_template(st_dbsTemplate *row)
-{
-	assert( NULL != row );	
-	return __dbs_underlayer_update_row_template(row);
-}
-
 int dbs_underlayer_update_row_snmp(st_dbsSnmp *row)
 {
 	assert( NULL != row );	
@@ -6285,6 +6366,12 @@ int dbs_underlayer_update_row_sysinfo(st_dbsSysinfo *row)
 {
 	assert( NULL != row );	
 	return __dbs_underlayer_update_row_sysinfo(row);
+}
+
+int dbs_underlayer_update_row_template(st_dbsTemplate *row)
+{
+	assert( NULL != row );	
+	return __dbs_underlayer_update_row_template(row);
 }
 
 int dbs_underlayer_destory_row_clt(uint16_t id)
