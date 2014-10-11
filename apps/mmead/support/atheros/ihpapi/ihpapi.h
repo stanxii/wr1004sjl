@@ -400,9 +400,9 @@ typedef struct __packed ihpapi_getTxGain_s
 }
 ihpapi_getTxGain_t;
 
-typedef struct __packed ihpapi_getUserHFID_s
+typedef struct __packed ihpapi_getUserHFID_s 
 {
-	uint8_t User_HFID;
+	uint8_t USER_HFID[64];
 }
 ihpapi_getUserHFID_t;
 
@@ -428,7 +428,8 @@ ihpapi_getUserHFID_t;
 		uint8_t RESERVED1;
 		uint8_t AVGPHYDR_RX[2];
 		int8_t REVERSEVED2[2];
-	}v1sta_t;
+	}
+	 v1sta_t;
 	
  
 typedef struct __packed ihpapi_getNetworkInfoStatsData_s 
@@ -453,7 +454,9 @@ typedef struct __packed ihpapi_getNetworkInfoStatsData_s
 		uint8_t CCO_TEI;
 		uint8_t REVERSEVED4[7];
 		uint8_t nwinfostats[IHPAPI_ETHER_MAX_LEN - IHPAPI_ETHER_HDR_LEN - 38]  ; 
-}ihpapi_getNetworkInfoStatsData_t;
+}
+
+ihpapi_getNetworkInfoStatsData_t;
 /*====================================================================*
  *   
  *--------------------------------------------------------------------*/
@@ -471,7 +474,9 @@ typedef struct __packed ihpapi_getVersionData_s
 	uint8_t mverlength;
 	uint8_t mversion [2*STRNG_MAX_LEN];
 	uint8_t upgradable;
-}ihpapi_getVersionData_t;
+}
+
+ihpapi_getVersionData_t;
 
 /*====================================================================*
  *   Host Action Request returned by RxFrame;
@@ -509,7 +514,9 @@ typedef struct ihpapi_hostActionRequestData_s
 
 {
 	ihpapi_hostActionRequest_t request;
-}ihpapi_hostActionRequestData_t;
+}
+
+ihpapi_hostActionRequestData_t;
 
 /*====================================================================*
  *   
@@ -527,7 +534,9 @@ typedef struct __packed ihpapi_updateDeviceData_s
 	bool eof;
 	size_t bufferLen;
 	uint8_t buffer [IHPAPI_ETHER_MAX_LEN - IHPAPI_ETHER_HDR_LEN];
-}ihpapi_updateDeviceData_t;
+}
+
+ihpapi_updateDeviceData_t;
 
 /*====================================================================*
  *   
@@ -545,7 +554,9 @@ typedef struct __packed ihpapi_manageEnetPHYData_s
 	uint8_t eduplex;
 	uint8_t elinkstatus;
 	uint8_t eflowcontrol;
-}ihpapi_manageEnetPHYData_t;
+}
+
+ihpapi_manageEnetPHYData_t;
 
 /*====================================================================*
  *   
@@ -563,7 +574,9 @@ typedef struct __packed ihpapi_getToneMapData_s
 	uint8_t numtms;
 	uint16_t tmnumactcarriers;
 	uint8_t mod_carrier [MOD_CARRIER_MAX_TUPLE_NUM];
-}ihpapi_getToneMapData_t;
+}
+
+ihpapi_getToneMapData_t;
 
 /*====================================================================*
  *   
@@ -583,13 +596,17 @@ typedef struct __packed ihpapi_getRxToneMapData_s
 	uint8_t mod_carrier [MOD_CARRIER_MAX_TUPLE_NUM];
 	uint8_t gil;
 	uint8_t avg_agc_gain;
-}ihpapi_getRxToneMapData_t;
+}
+
+ihpapi_getRxToneMapData_t;
 
 typedef struct __packed ihpapi_mdioCommandData_s 
 
 {
 	uint16_t value;
-}ihpapi_mdioCommandData_t;
+}
+
+ihpapi_mdioCommandData_t;
 
 /*====================================================================*
  *   
@@ -602,6 +619,7 @@ typedef struct __packed ihpapi_mdioCommandData_s
  */
  
 typedef struct __packed ihpapi_result_s 
+
 {
 	ihpapi_opCode_t opCode;
 	ihpapi_opCmpltCode_t opCompltCode;
@@ -628,7 +646,9 @@ typedef struct __packed ihpapi_result_s
 		ihpapi_getUserHFID_t UserHFIDInfo;
 	}
 	data;
-}ihpapi_result_t;
+}
+
+ihpapi_result_t;
 
 #pragma pack (push, 1)
 typedef struct __packed ClassifierInfo
@@ -647,7 +667,9 @@ typedef struct __packed ClassifierInfo
 	uint8_t CR_ID_3;
 	uint8_t CR_OPERAND_3;
 	uint8_t CR_VALUE_3[16];
-}ClassifierInfo;
+}
+
+ClassifierInfo;
 
 typedef struct __packed MdioCmdInfo
 {
@@ -655,7 +677,9 @@ typedef struct __packed MdioCmdInfo
 	uint8_t PHY_ADDR;
 	uint8_t REGISTER_ADDR;
 	uint16_t DATA;
-}MdioCmdInfo;
+}
+
+MdioCmdInfo;
 
 
 
@@ -701,6 +725,7 @@ size_t ihpapi_SetFrequencyBandSelection(uint8_t sa [], uint8_t da [], size_t buf
 size_t ihpapi_GetTxGain(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_SetTxGain(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], uint8_t tx_gain);
 size_t ihpapi_GetUserHFID(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
+size_t ihpapi_SetUserHFID(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], uint8_t user_hfid[]);
 /*====================================================================*
  *   decoder functions; see the Intellon HomePlug AV
  *   Application Programming Interface Manual for more information;

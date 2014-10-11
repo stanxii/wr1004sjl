@@ -912,7 +912,8 @@ int ihp_DecodeFlashNVM (const uint8_t buffer [], size_t length, ihpapi_result_t 
 int ihp_DecodeGetNVM (const uint8_t buffer [], size_t length, ihpapi_result_t * result, struct MemoryInfo * memory);
 int ihp_DecodeSetClassification (const uint8_t buffer [], size_t length, ihpapi_result_t * result) ;
 int ihp_DecodeMdioInfo (const uint8_t buffer [], size_t length, ihpapi_result_t * result) ;
-
+int ihp_DecodeGetUserHFID (const uint8_t buffer[], size_t length, ihpapi_result_t * result);
+int ihp_DecodeSetUserHFID(const uint8_t buffer [ ], size_t length, ihpapi_result_t * result);
 /*====================================================================*
  *   internal sequencer functions;
  *--------------------------------------------------------------------*/

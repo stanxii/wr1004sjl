@@ -729,7 +729,7 @@ void send_cbat_topology_traps(void)
 	uint32_t cbat_gw = 0;
 	uint32_t cbat_ts = 0;	
 	st_dbsCnu cnu;
-	uint8_t tmp[64] = {0};
+	uint8_t tmp[128] = {0};
 	uint8_t *svalue = NULL;
 	
 	/* 告警及事件OID  定义*//* 心跳TRAP-CBAT状态*/
@@ -816,8 +816,8 @@ void send_cbat_topology_traps(void)
 		{
 			if( cnu.col_row_sts )
 			{	
-				bzero(tmp, 64);
-				sprintf(tmp, "[%s|%d|%d|%d|%d]", cnu.col_mac, boardapi_mapDevModel(cnu.col_model), 1, cnu.id, cnu.col_sts);
+				bzero(tmp, 128);
+				sprintf(tmp, "[%s|%d|%d|%d|%d|%s]", cnu.col_mac, boardapi_mapDevModel(cnu.col_model), 1, cnu.id, cnu.col_sts,cnu.col_user_hfid);
 				strcat(svalue, tmp);
 			}
 		}
@@ -885,8 +885,8 @@ void send_cbat_topology_traps(void)
 			if( cnu.col_row_sts )
 			{
 				cnu_nums++;
-				bzero(tmp, 64);
-				sprintf(tmp, "[%s|%d|%d|%d|%d]", cnu.col_mac, 	boardapi_mapDevModel(cnu.col_model), 1, cnu.id, cnu.col_sts);
+				bzero(tmp, 128);
+				sprintf(tmp, "[%s|%d|%d|%d|%d|%s]", cnu.col_mac, 	boardapi_mapDevModel(cnu.col_model), 1, cnu.id, cnu.col_sts,cnu.col_user_hfid);
 				strcat(svalue, tmp);
 			}
 		}
@@ -960,8 +960,8 @@ void send_cbat_topology_traps(void)
 			if( cnu.col_row_sts )
 			{
 				cnu_nums++;
-				bzero(tmp, 64);
-				sprintf(tmp, "[%s|%d|%d|%d|%d]", cnu.col_mac, 	boardapi_mapDevModel(cnu.col_model), 1, cnu.id, cnu.col_sts);
+				bzero(tmp, 128);
+				sprintf(tmp, "[%s|%d|%d|%d|%d|%s]", cnu.col_mac, 	boardapi_mapDevModel(cnu.col_model), 1, cnu.id, cnu.col_sts,cnu.col_user_hfid);
 				strcat(svalue, tmp);
 			}
 		}

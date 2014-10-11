@@ -61,6 +61,7 @@
 #include "../ihpapi/GetTxGain.c"
 #include "../ihpapi/SetTxGain.c"
 #include "../ihpapi/GetUserHFID.c"
+#include "../ihpapi/SetUserHFID.c"
 /*====================================================================*
  *   internal source files; see ihp.h;
  *--------------------------------------------------------------------*/
@@ -97,7 +98,8 @@
 #include "../ihpapi/SequenceWriteModule.c"
 #include "../ihpapi/SequenceWriteMemory.c"
 #include "../ihpapi/FindFWHeader.c"
- 
+ #include "../ihpapi/DecodeGetUserHFID.c"
+ #include "../ihpapi/DecodeSetUserHFID.c"
 /*====================================================================*
  *
  *--------------------------------------------------------------------*/

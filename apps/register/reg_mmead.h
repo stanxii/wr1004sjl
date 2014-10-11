@@ -10,6 +10,7 @@ int msg_reg_mmead_wr_user_pib(uint32_t devType, uint8_t ODA[]);
 int msg_reg_mmead_bootout_dev(uint8_t ODA[], uint8_t CNU_MAC[]);
 int msg_reg_mmead_get_clt(T_CLT_INFO *clt);
 int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist);
+int msg_reg_mmead_get_user_hfid(uint8_t ODA[], uint8_t *pdata);
 int msg_reg_mmead_reset_eoc(uint32_t devType, uint8_t ODA[]);
 int msg_mmead_destroy(void);
 int msg_mmead_init(void);

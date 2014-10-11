@@ -110,7 +110,8 @@ DBS_TBL_DESIGN tbl_cnu[DBS_SYS_TBL_COLS_CNU] =
 	{DBS_SYS_TBL_CNU_COL_ID_BPC,		SQLITE3_TEXT,	16,	BOOL_FALSE,	BOOL_TRUE,	"col_bpc"},
 	{DBS_SYS_TBL_CNU_COL_ID_ATT,		SQLITE3_TEXT,	16,	BOOL_FALSE,	BOOL_TRUE,	"col_att"},
 	{DBS_SYS_TBL_CNU_COL_ID_SYNCH,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_synch"},
-	{DBS_SYS_TBL_CNU_COL_ID_ROWSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_row_sts"}
+	{DBS_SYS_TBL_CNU_COL_ID_ROWSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_row_sts"},
+	{DBS_SYS_TBL_CNU_COL_ID_USERHFID, SQLITE3_TEXT,64,  BOOL_FALSE,   BOOL_TRUE,    "col_user_hfid"}
 };
 
 /* 描述数据表设计的结构体，实际数据库设计
@@ -1630,11 +1631,15 @@ int __dbs_underlayer_SQLUpdateRowCnu(st_dbsCnu *row, uint8_t *sql)
 		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowCnu : len col_att !\n");
 		return SQLITE_ERROR;
 	}
-	
+	if( strlen(row->col_user_hfid) >= tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_USERHFID].col_len )
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowCnu : len col_userhfid !\n");
+		return SQLITE_ERROR;
+	}
 	/* 判断行数量是否超出定义*/
 	if( (row->id >= 1) && (row->id <= MAX_CNU_AMOUNT_LIMIT))
 	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=%d, [%s]=%d WHERE [id]=%d", 
+		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=\"%s\" WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNU].tbl_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_MODEL].col_name, 
 			row->col_model, 
@@ -1660,6 +1665,8 @@ int __dbs_underlayer_SQLUpdateRowCnu(st_dbsCnu *row, uint8_t *sql)
 			row->col_synch, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_ROWSTS].col_name, 
 			row->col_row_sts, 
+			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_USERHFID].col_name, 
+			row->col_user_hfid, 
 			row->id );
 		return SQLITE_OK;
 	}
@@ -2300,7 +2307,7 @@ int __dbs_underlayer_SQLDestroyRowCnu(uint16_t id, uint8_t *sql)
 	/* 判断行数量是否超出定义*/
 	if( (id >= 1) && (id <= MAX_CNU_AMOUNT_LIMIT))
 	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=0 WHERE [id]=%d", 
+		sprintf(sql, "UPDATE [%s] SET [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=null, [%s]=0, [%s]=null WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_CNU].tbl_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_MODEL].col_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_MAC].col_name, 
@@ -2314,6 +2321,7 @@ int __dbs_underlayer_SQLDestroyRowCnu(uint16_t id, uint8_t *sql)
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_ATT].col_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_SYNCH].col_name, 
 			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_ROWSTS].col_name, 
+			tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_USERHFID].col_name,
 			id );
 		return SQLITE_OK;
 	}
@@ -3251,6 +3259,16 @@ int __dbs_underlayer_get_row_cnu(st_dbsCnu *row)
 		else
 		{
 			row->col_row_sts = sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_ROWSTS);
+		}
+		/* SQLITE3_TEXT		| col_user_hfid */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_CNU_COL_ID_USERHFID) )
+		{
+			row->col_user_hfid[0] = '\0';
+		}
+		else
+		{
+			strncpy(row->col_user_hfid, sqlite3_column_text(stmt, DBS_SYS_TBL_CNU_COL_ID_USERHFID), 
+				tbl_cnu[DBS_SYS_TBL_CNU_COL_ID_USERHFID].col_len);
 		}
 		
 		ret = SQLITE_OK;		

@@ -407,7 +407,7 @@ enum
 	CMM_ERASE_MOD_B,				/* erase mod id=1 */
 	CMM_GET_88E6171R_PORT_PROPETY_ALL,
 	CMM_GET_88E6171R_PORT_STATS_ALL,
-	
+	CMM_USER_HFID_READ,
 	/* 请在中间增加其他枚举定义 */
 	
 	CMM_GET_SNMP_TABLE_ROW = 0xF0,
@@ -515,6 +515,7 @@ enum
 	MMEAD_WRITE_MOD,				/* write mod */
 	MMEAD_ERASE_MOD,
 	MMEAD_GET_USER_HFID,
+	MMEAD_SET_USER_HFID,
 	/* 请在中间增加其他枚举定义 */
 
 	MMEAD_MAX_REQ = 0xff
@@ -694,7 +695,7 @@ typedef enum
 #define DBS_SYS_TBL_COLS_CLIROLE		3
 #define DBS_SYS_TBL_COLS_CLT			9
 #define DBS_SYS_TBL_COLS_CLTPRO		31
-#define DBS_SYS_TBL_COLS_CNU			13
+#define DBS_SYS_TBL_COLS_CNU			14
 #define DBS_SYS_TBL_COLS_CNUDEPRO	62
 #define DBS_SYS_TBL_COLS_NETWORK		9
 #define DBS_SYS_TBL_COLS_CNUPRO		69
@@ -730,6 +731,7 @@ typedef enum
 #define DBS_SYS_TBL_CNU_COL_ID_ATT	10
 #define DBS_SYS_TBL_CNU_COL_ID_SYNCH	11
 #define DBS_SYS_TBL_CNU_COL_ID_ROWSTS	12
+#define DBS_SYS_TBL_CNU_COL_ID_USERHFID     13
 
 /* 定义数据表列元素索引*/
 #define DBS_SYS_TBL_CLIROLES_COL_ID_ID	0
@@ -2132,6 +2134,13 @@ typedef struct
 	T_szMdioRtl8306e mdioInfo;
 }T_szSwRtl8306eConfig;
 
+/* CLI进行读取CNU的HFID时与CMM通讯的接口*/
+typedef struct
+{
+	uint8_t ODA[6];
+	uint8_t pdata[64];
+}T_szCnuUserHFID;
+
 /* CLI进行set vlan 操作时与CMM通讯的接口*/
 typedef struct
 {
@@ -2461,6 +2470,7 @@ typedef struct
 	uint8_t	col_att[16];
 	uint32_t	col_synch;
 	uint32_t	col_row_sts;
+	uint8_t     col_user_hfid[64];
 }st_dbsCnu;
 
 typedef struct

@@ -31,7 +31,7 @@ void print_usage(void)
 	printf("mmeTester debug {on|off}\n");
 	printf("	--on:	turn on mmead module debug massage\n");
 	printf("	--off:	turn on mmead module debug massage\n");	
-	printf("mmeTester test {1|2|...} <mac>\n");
+	printf("mmeTester test {1|2|...} <mac> [CNU_HFID]\n");
 	printf("	--1:	test mmead case [MMEAD_READ_MODULE_OPERATION]\n");
 	printf("	--2:	test mmead case [MMEAD_WRITE_MODULE_OPERATION]\n");
 	printf("	--3:	test mmead case [MMEAD_GET_CLT_MAC]\n");
@@ -1140,40 +1140,47 @@ int TEST_MMEAD_GET_RTL8306E_CONFIGS(T_UDP_SK_INFO *sk)
 
 int TEST_MMEAD_GET_CNU_HFID(T_UDP_SK_INFO *sk)
 {
-	uint8_t buf[MAX_UDP_SIZE];
-	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
-	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;
-	uint8_t *p = (uint8_t *)(reply->body);
-	uint8_t temp[65] ;
-	int tx_gain = 0;
-	
-	request->header.M_TYPE = 0xCC08;
-	request->header.DEV_TYPE = WEC701_M0;
-	request->header.MM_TYPE = MMEAD_GET_USER_HFID;
-	request->header.fragment = 0;
-	memcpy(request->header.ODA, oda, sizeof(oda));
-	request->header.LEN = 0;
+	T_Msg_Header_MMEAD h;	
+	T_REQ_Msg_MMEAD *r = NULL;	
+	uint8_t buf[MAX_UDP_SIZE];	
+	h.M_TYPE = 0xCC08;	
+	h.DEV_TYPE = WEC_3801I;	
+	h.MM_TYPE = MMEAD_GET_USER_HFID;	
+	h.fragment = 0;	
 
-	
-	if( 0 == msg_communicate(sk, buf, sizeof(T_MMETS_REQ_MSG)) )
-	{
-		memset(temp, 0, sizeof(temp));
-		memcpy(temp, p, 64);
-		if(strlen(temp) <= 0)
-			strcpy(temp,"unknow");
-		
-		printf("	CNU HFID : [%s]\n", temp);
-		
-		
-		return 0;
-	}
-	
+	memcpy(h.ODA, oda, sizeof(oda));	
+	h.LEN = 0;	
+	memcpy(buf, &h, sizeof(h));		
+	if( 0 == msg_communicate(sk, buf, sizeof(h)) )	
+	{		
+		r = (T_REQ_Msg_MMEAD *)buf;		
+		printf("    User HFID = [%s]\n", r->BUF);		
+		return 0;	
+	}	
 	return -1;
 }
 
-int TEST_MMEAD_SET_CNU_HFID(T_UDP_SK_INFO *sk)
+int TEST_MMEAD_SET_CNU_HFID(T_UDP_SK_INFO *sk, uint8_t user_hfid[])
 {
-	return -1;
+	uint8_t buf[MAX_UDP_SIZE];
+	int len = 0;
+	T_MMETS_REQ_MSG *request = (T_MMETS_REQ_MSG *)buf;
+	uint8_t *p = (uint8_t *)(request->body);
+	
+	T_MMETS_ACK_MSG *reply = (T_MMETS_ACK_MSG *)buf;	
+	
+	request->header.M_TYPE = 0xCC08;
+	request->header.DEV_TYPE = WEC701_M0;
+	request->header.MM_TYPE = MMEAD_SET_USER_HFID;
+	request->header.fragment = 0;
+	memcpy(request->header.ODA, oda, sizeof(oda));
+	request->header.LEN = 64;
+
+	memcpy(p,user_hfid,64);
+
+	len = sizeof(request->header) + request->header.LEN;
+	
+	return msg_communicate(sk, buf, len);
 }
 
 int MMEAD_MSG_DEBUG_ENABLE(T_UDP_SK_INFO *sk, uint32_t enable)
@@ -1205,8 +1212,9 @@ int main(int argc, char *argv[])
 	int cmd = 0;
 	uint8_t bMac[6] = {0};
 	T_UDP_SK_INFO sk;
+	uint8_t user_hfid[64] = {0};
 	
-	if( (argc != 3) && (argc != 4) )
+	if( (argc != 3) && (argc != 4) && (argc != 5))
 	{
 		print_usage();
 		return 0;
@@ -1248,6 +1256,19 @@ int main(int argc, char *argv[])
 				printf("\n  MAC address invalid\n");	
 			}
 		}
+		else if ( argc == 5)
+		{
+			if( CMM_SUCCESS == boardapi_macs2b(argv[3], bMac) )
+			{
+				memcpy(oda, bMac, sizeof(oda));
+				memcpy(user_hfid,argv[4],strlen(argv[4]));
+			}
+			else
+			{
+				printf("\n  MAC address invalid\n");	
+			}
+		}
+			
 		switch(cmd)
 		{
 			case 1:
@@ -1377,7 +1398,7 @@ int main(int argc, char *argv[])
 			}
 			case 26:
 			{
-				TEST_MMEAD_GET_CNU_HFID(&sk);
+				TEST_MMEAD_SET_CNU_HFID(&sk, user_hfid);
 				break;
 			}
 			default:

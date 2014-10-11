@@ -326,10 +326,22 @@ void MME_Atheros_ProcessGetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME
 void MME_Atheros_ProcessGetUserHFID(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 {
 	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
-	uint8_t user_hfid;
+	uint8_t user_hfid[64] = {0};
 	/* 向设备发送MME *//* 等待设备回应*/
 	/* 将处理信息发送给请求者 */
-	MMEAD_ProcessAck(MME_Atheros_MsgGetUserHFID(MME_SK, h->ODA, &user_hfid), this, (uint8_t *)&user_hfid, sizeof(uint8_t));
+	MMEAD_ProcessAck(MME_Atheros_MsgGetUserHFID(MME_SK, h->ODA, user_hfid),this,user_hfid,64);
+}
+
+void MME_Atheros_ProcessSetUserHFID(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_MMETS_REQ_MSG *req = (T_MMETS_REQ_MSG *)(this->b);
+	uint8_t user_hfid[64] = {0};
+	
+	memcpy(user_hfid, req->body, 64);
+	
+	/* 向设备发送MME *//* 等待设备回应*/
+	/* 将处理信息发送给请求者 */
+	MMEAD_ProcessAck(MME_Atheros_MsgSetUserHFID(MME_SK, req->header.ODA, user_hfid), this, NULL, 0);
 }
 
 void MME_Atheros_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
@@ -562,7 +574,13 @@ void MME_ProcessGetUserHFID(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
 
 	MME_Atheros_ProcessGetUserHFID(this, MME_SK);
-	
+}
+
+void MME_ProcessSetUserHFID(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
+{
+	T_Msg_Header_MMEAD *h = (T_Msg_Header_MMEAD *)(this->b);
+
+	MME_Atheros_ProcessSetUserHFID(this, MME_SK);
 }
 
 void MME_ProcessSetTxGain(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
@@ -1685,6 +1703,9 @@ void ComReqManager(T_MME_SK_HANDLE *MME_SK)
 			break;
 		case MMEAD_GET_USER_HFID:
 			MME_ProcessGetUserHFID(this, MME_SK);
+			break;
+		case MMEAD_SET_USER_HFID:
+			MME_ProcessSetUserHFID(this, MME_SK);
 			break;
 		case MMEAD_SET_TX_GAIN:
 			MME_ProcessSetTxGain(this, MME_SK);

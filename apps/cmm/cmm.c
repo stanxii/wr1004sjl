@@ -561,6 +561,11 @@ int CMM_WriteOptLog(BBLOCK_QUEUE *this, int result)
 			strcpy(log.cmd, "CMM_DEBUG_SW_REG_READ");
 			break;
 		}
+		case CMM_USER_HFID_READ:
+		{
+			strcpy(log.cmd, "CMM_DEBUG_USER_HFID_READ");
+			break;
+		}
 		case CMM_AR8236_SW_REG_WRITE:
 		{
 			strcpy(log.cmd, "CMM_DEBUG_SW_REG_WRITE");
@@ -1507,6 +1512,29 @@ int CMM_ProcessReadAr8236Reg(BBLOCK_QUEUE *this)
 
 	/* 将处理信息发送给请求者 */
 	CMM_ProcessAck(opt_sts, this, (uint8_t *)&cli_ar8236_reg, sizeof(T_szAr8236Reg));
+	return opt_sts;
+}
+
+int CMM_ProcessReadUserHFID(BBLOCK_QUEUE *this)
+{
+	int opt_sts = CMM_SUCCESS;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
+	T_szCnuUserHFID *req_data = (T_szCnuUserHFID *)(req->BUF);	
+
+	T_szCnuUserHFID ack_data;
+
+	memcpy(ack_data.ODA,  req_data->ODA, 6);
+	memset(ack_data.pdata,0,sizeof(uint8_t)*64);
+	
+	if ( CMM_SUCCESS != mmead_get_user_hfid(&ack_data))
+	{
+		printf("cmm_mmead get user_hfid error\n");
+		opt_sts = CMM_FAILED;
+	}
+	/* 将处理信息发送给请求者 */
+	CMM_ProcessAck(opt_sts, this, (uint8_t *)&ack_data, sizeof(T_szCnuUserHFID));
+
 	return opt_sts;
 }
 
@@ -2708,6 +2736,11 @@ void cmmProcessManager(void)
 			case CMM_AR8236_SW_REG_READ:
 			{
 				opt_sts = CMM_ProcessReadAr8236Reg(this);
+				break;
+			}
+			case CMM_USER_HFID_READ:
+			{
+				opt_sts = CMM_ProcessReadUserHFID(this);
 				break;
 			}
 			case CMM_AR8236_SW_REG_WRITE:
