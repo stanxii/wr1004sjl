@@ -458,6 +458,36 @@ int dbsGetDepro(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsCnuDefaultProfile *row)
 	return ack->HEADER.result;
 }
 
+int dbsGetTemplate(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsTemplate  *row)
+{
+	assert( NULL != dev );
+	
+	bzero(dev->buf, MAX_UDP_SIZE);
+	dev->blen = 0;
+	
+	T_DB_MSG_PACKET_REQ *req = (T_DB_MSG_PACKET_REQ *)(dev->buf);	
+	uint16_t *req_cell = (uint16_t *)(req->BUF);
+	
+	T_DB_MSG_PACKET_ACK *ack = (T_DB_MSG_PACKET_ACK *)(dev->buf);	
+	st_dbsTemplate *ack_cell = (st_dbsTemplate *)(ack->BUF);
+
+	req->HEADER.usSrcMID = dev->srcmod;
+	req->HEADER.usDstMID = MID_DBS;
+	req->HEADER.usMsgType = DB_GET_ROW_TEMPLATE;
+	req->HEADER.ulBodyLength = sizeof(uint16_t);
+
+	*req_cell = id;
+
+	dev->blen = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	
+	if( 0 == __dbsCommunicate(dev) )
+	{
+		memcpy(row, ack_cell, sizeof(st_dbsTemplate));	
+	}
+	return ack->HEADER.result;
+}
+
+
 int dbsGetNetwork(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsNetwork *row)
 {
 	assert( NULL != dev );
@@ -889,6 +919,35 @@ int dbsUpdateProfile(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsProfile *row)
 	else
 	{
 		memcpy(req_cell, row, sizeof(st_dbsProfile));
+		req_cell->id = id;	
+		return __dbsCommunicate(dev);
+	}
+}
+
+int dbsUpdateTemplate(T_DBS_DEV_INFO *dev, uint16_t id, st_dbsTemplate *row)
+{
+	assert( NULL != dev );
+	
+	bzero(dev->buf, MAX_UDP_SIZE);
+	dev->blen = 0;
+	
+	T_DB_MSG_PACKET_REQ *req = (T_DB_MSG_PACKET_REQ *)(dev->buf);	
+	st_dbsTemplate *req_cell = (st_dbsTemplate *)(req->BUF);
+
+	req->HEADER.usSrcMID = dev->srcmod;
+	req->HEADER.usDstMID = MID_DBS;
+	req->HEADER.usMsgType = DB_UPDATE_ROW_TEMPLATE;
+	req->HEADER.ulBodyLength = sizeof(st_dbsTemplate);
+
+	dev->blen = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( dev->blen > MAX_UDP_SIZE )
+	{
+		dbs_sys_log(dev, DBS_LOG_ALERT, "dbsUpdateTemplate: CMM_BUFFER_OVERFLOW");
+		return CMM_BUFFER_OVERFLOW;
+	}
+	else
+	{
+		memcpy(req_cell, row, sizeof(st_dbsTemplate));
 		req_cell->id = id;	
 		return __dbsCommunicate(dev);
 	}

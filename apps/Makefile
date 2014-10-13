@@ -42,6 +42,7 @@ apps += register
 #apps += regi
 apps += template
 apps += sysMonitor
+apps += autoconfig
 apps += tests
 apps += mkimges
 

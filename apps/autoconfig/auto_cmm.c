@@ -1,17 +1,8 @@
-/*****************************************************************************************
-  文件名称 : reg_tm.c
-  文件描述 : 注册模块与tm模块连接的处理函数
-  修订记录 :
-           1 创建 : frank
-             日期 : 2010-12-07
-             描述 : 创建文件
-
- *****************************************************************************************/
 #include <assert.h>
-#include "reg_cmm.h"
-#include "reg_dbs.h"
+#include "auto_cmm.h"
+#include "auto_dbs.h"
 
-int __reg2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
+int __auto2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 {
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;
 	uint16_t msgType = req->HEADER.usMsgType;
@@ -42,7 +33,7 @@ int __reg2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 		tv.tv_sec = 18;
 		tv.tv_usec = 0;
 
-		//检测socket
+		//录矛虏芒socket
 		ret = select(sk->sk + 1, &fdsr, NULL, NULL, &tv);
 		if( ret <= 0 )
 		{
@@ -83,36 +74,7 @@ int __reg2cmm_comm(T_UDP_SK_INFO *sk, uint8_t *buf, uint32_t len)
 	}
 }
 
-int reg2cmm_getCltPortLinkStatus(T_UDP_SK_INFO *sk, uint32_t cltid)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	int linkStatus = 0;
-	
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-	uint32_t *req_data = (uint32_t *)(req->BUF);
-
-	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
-	uint32_t *ack_data = (uint32_t *)(ack->BUF);
-
-	req->HEADER.usSrcMID = MID_REGISTER;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_GET_CLT_PORT_LINK_STS;
-	req->HEADER.ulBodyLength = sizeof(uint32_t);
-	req->HEADER.fragment = 0;
-
-	*req_data = cltid;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-
-	if( CMM_SUCCESS ==  __reg2cmm_comm(sk, buf, len) )
-	{
-		linkStatus = (*ack_data == 0)?0:1;
-	}
-	return linkStatus;
-}
-
-int reg2cmm_writeSwitchSettings(T_UDP_SK_INFO *sk, stCnuNode *node, st_rtl8306eSettings * rtl8306e)
+int auto2cmm_writeSwitchSettings(T_UDP_SK_INFO *sk, stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 {
     uint8_t buf[MAX_UDP_SIZE] = {0};
 	uint32_t len = 0;
@@ -139,14 +101,26 @@ int reg2cmm_writeSwitchSettings(T_UDP_SK_INFO *sk, stCnuNode *node, st_rtl8306eS
 		opt_sts = CMM_FAILED;
 	}
 	profile.col_vlanSts= rtl8306e->vlanConfig.vlan_enable; 
+	
 	profile.col_eth1VMode = rtl8306e->vlanConfig.vlan_port[0].egress_mode;
+	profile.col_eth1vid = rtl8306e->vlanConfig.vlan_port[0].pvid;
+	
+	profile.col_eth2VMode = rtl8306e->vlanConfig.vlan_port[1].egress_mode;
+	profile.col_eth2vid = rtl8306e->vlanConfig.vlan_port[1].pvid;
+
+	profile.col_eth3VMode = rtl8306e->vlanConfig.vlan_port[2].egress_mode;
+	profile.col_eth3vid = rtl8306e->vlanConfig.vlan_port[2].pvid;
+	
+	profile.col_eth4VMode = rtl8306e->vlanConfig.vlan_port[3].egress_mode;
+	profile.col_eth4vid = rtl8306e->vlanConfig.vlan_port[3].pvid;
+
 	profile.col_uplinkVMode = rtl8306e->vlanConfig.vlan_port[4].egress_mode;
 	profile.col_uplinkvid = rtl8306e->vlanConfig.vlan_port[4].pvid;
-	profile.col_eth1vid = rtl8306e->vlanConfig.vlan_port[0].pvid;
+
 		
      /* add by stan for save dbs  end */
 
-	req->HEADER.usSrcMID = MID_REGISTER;
+	req->HEADER.usSrcMID = MID_AUTOCONFIG;
 	req->HEADER.usDstMID = MID_CMM;
 	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_WRITE;
 	req->HEADER.ulBodyLength = sizeof(rtl8306eWriteInfo) + sizeof(st_dbsProfile);
@@ -166,46 +140,13 @@ int reg2cmm_writeSwitchSettings(T_UDP_SK_INFO *sk, stCnuNode *node, st_rtl8306eS
 	
 	
 	
-	return __reg2cmm_comm(sk, buf, len);
+	return __auto2cmm_comm(sk, buf, len);
 
 }
 
-int reg2cmm_bindingAtheroesAddr2CablePort(T_UDP_SK_INFO *sk, int portid)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-	uint32_t *req_data = (uint32_t *)(req->BUF);
 
-	req->HEADER.usSrcMID = MID_REGISTER;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_ADD_ATHEROS_ADDR;
-	req->HEADER.ulBodyLength = sizeof(uint32_t);
-	req->HEADER.fragment = 0;
 
-	*req_data = portid;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-	return __reg2cmm_comm(sk, buf, len);
-}
-
-int reg2cmm_delAtheroesAddrFromCablePort(T_UDP_SK_INFO *sk)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-
-	req->HEADER.usSrcMID = MID_REGISTER;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_DEL_ATHEROS_ADDR;
-	req->HEADER.ulBodyLength = 0;
-	req->HEADER.fragment = 0;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-	return __reg2cmm_comm(sk, buf, len);
-}
-
-int reg2cmm_destroy(T_UDP_SK_INFO *sk)
+int auto2cmm_destroy(T_UDP_SK_INFO *sk)
 {
 	if( sk->sk != 0)
 	{
@@ -215,7 +156,7 @@ int reg2cmm_destroy(T_UDP_SK_INFO *sk)
 	return CMM_SUCCESS;
 }
 
-int reg2cmm_init(T_UDP_SK_INFO *sk)
+int auto2cmm_init(T_UDP_SK_INFO *sk)
 {
 	if( ( sk->sk = socket(PF_INET, SOCK_DGRAM, 0) ) < 0 )
 	{
@@ -223,7 +164,7 @@ int reg2cmm_init(T_UDP_SK_INFO *sk)
 	}	
 
 	sk->skaddr.sin_family = PF_INET;
-	sk->skaddr.sin_port = htons(CMM_LISTEN_PORT);		/* 目的端口号*/
+	sk->skaddr.sin_port = htons(CMM_LISTEN_PORT);		/* 脛驴碌脛露脣驴脷潞脜*/
 	sk->skaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
 	return CMM_SUCCESS;

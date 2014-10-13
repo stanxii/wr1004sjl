@@ -25,6 +25,7 @@ MENU_WEC_ACCOUNT_MGMT	 		= 23
 MENU_WEC_ACCOUNT_WEB	 		= 24
 MENU_WEC_ACCOUNT_CLI	 		= 25
 MENU_WEC_WEB_EXIT	 				= 26
+MENU_WEC_TEMPLATE_MGMT                         =27
 //MENU_WEC_WEB_TEST_A	 			= 27
 
 var menuTitle = new Array();
@@ -56,6 +57,7 @@ menuTitle[MENU_WEC_ACCOUNT_MGMT]              = '帐户管理';
 menuTitle[MENU_WEC_ACCOUNT_WEB]               = 'WEB账户';
 menuTitle[MENU_WEC_ACCOUNT_CLI]               = 'CLI账户';
 menuTitle[MENU_WEC_WEB_EXIT]                  = '退出';
+menuTitle[MENU_WEC_TEMPLATE_MGMT]             = '模板管理与VLAN池';
 //menuTitle[MENU_WEC_WEB_TEST_A]                  = 'Test001';
 
 

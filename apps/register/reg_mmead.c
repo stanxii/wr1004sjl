@@ -202,6 +202,60 @@ int msg_reg_mmead_get_clt(T_CLT_INFO *clt)
 	return CMM_FAILED;
 }
 
+int reg_mmead_get_rtl8306e_configs(uint8_t ODA[], st_rtl8306eSettings *rtl8306e)
+{
+	assert( NULL != rtl8306e );
+	
+	int len = 0;
+	uint8_t buf[MAX_UDP_SIZE];
+	
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *MMETS_ACK = (T_MMETS_ACK_MSG *)buf;
+	st_rtl8306eSettings *MMETS_ACK_DATA = (st_rtl8306eSettings *)(MMETS_ACK->body);
+	
+	MMETS_REQ->header.M_TYPE = 0xCC08;
+	MMETS_REQ->header.DEV_TYPE = WEC701_E4;	
+	MMETS_REQ->header.MM_TYPE = MMEAD_GET_RTL8306E_CONFIG;
+	MMETS_REQ->header.fragment = 0;
+	MMETS_REQ->header.LEN = 0;
+	memcpy(MMETS_REQ->header.ODA, ODA, 6);
+
+	len = sizeof(T_MMETS_REQ_MSG) + MMETS_REQ->header.LEN;
+
+	if( 0 == __msg_reg_mmead_communicate(buf, len) )
+	{
+		memcpy(rtl8306e, MMETS_ACK_DATA, sizeof(st_rtl8306eSettings));
+		return CMM_SUCCESS;
+	}
+	return CMM_FAILED;
+}
+
+int reg_mmead_write_rtl8306e_mod(uint8_t ODA[], uint8_t *mod, uint32_t mod_len)
+{
+	assert( NULL != mod );
+	
+	int len = 0;
+	uint8_t buf[MAX_UDP_SIZE];
+	
+	T_MMETS_REQ_MSG *MMETS_REQ = (T_MMETS_REQ_MSG *)buf;
+	T_MMETS_ACK_MSG *MMETS_ACK = (T_MMETS_ACK_MSG *)buf;
+	
+	
+	MMETS_REQ->header.M_TYPE = 0xCC08;
+	MMETS_REQ->header.DEV_TYPE = WEC701_E4;	
+	MMETS_REQ->header.MM_TYPE = MMEAD_WRITE_MOD;
+	MMETS_REQ->header.fragment = 0;
+	MMETS_REQ->header.LEN = mod_len;
+	memcpy(MMETS_REQ->header.ODA, ODA, 6);
+
+	memcpy(MMETS_REQ->body, mod, mod_len);
+
+	len = sizeof(T_MMETS_REQ_MSG) + MMETS_REQ->header.LEN;
+
+	return __msg_reg_mmead_communicate(buf, len);
+}
+
+
 int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
@@ -277,23 +331,6 @@ int msg_reg_mmead_reset_eoc(uint32_t devType, uint8_t ODA[])
 	memcpy(buf, &h, sizeof(h));
 	return __msg_reg_mmead_communicate(buf, sizeof(h));
 }
-
-int msg_reg_2_cmm_resetMp(void)
-{
-	uint8_t buf[MAX_UDP_SIZE] = {0};
-	uint32_t len = 0;
-	T_Msg_CMM *req = (T_Msg_CMM *)buf;
-
-	req->HEADER.usSrcMID = MID_REGISTER;
-	req->HEADER.usDstMID = MID_CMM;
-	req->HEADER.usMsgType = CMM_CBAT_RESET;
-	req->HEADER.ulBodyLength = 0;
-	req->HEADER.fragment = 0;
-
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-	return __msg_reg_mmead_communicate(buf, len);
-}
-
 
 int msg_mmead_destroy(void)
 {

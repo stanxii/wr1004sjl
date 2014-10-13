@@ -237,6 +237,20 @@ typedef struct {
    int wecTotalram;
    int wecFreeram;
 
+   //add by stan for template begin
+   int col_tempAutoSts;
+   int col_curTemp;
+   int col_eth1VlanAddSts;
+   int col_eth1VlanStart;
+   int col_eth2VlanAddSts;
+   int col_eth2VlanStart;
+   int col_eth3VlanAddSts;
+   int col_eth3VlanStart;
+   int col_eth4VlanAddSts;
+   int col_eth4VlanStart;
+   
+   //add by stan for template end
+
    char wecTemprature[IFC_SMALL_LEN];	/* host envirument temperature */
 
    char frmloadUrl[IFC_MEDIUM_LEN];

@@ -54,9 +54,13 @@ void do_cgi(char *path, FILE *fs) {
    int cltid = 0;
    int cnuid = 0;
 
+   
    query = strchr(path, '?');
+
+   
    if ( query != NULL )
       cgiParseSet(path);
+
 
    filename[0] = '\0';
    ext = strchr(path, '.');
@@ -525,6 +529,48 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(glbWebVar.frmloadUrl, "wecTopology.cmd");
 		strcpy(filename, "/webs/wecPreView.html");	
 	}
+	else if ( strstr(filename, "previewTemplate.html") != NULL )
+	{
+		strcpy(glbWebVar.frmloadUrl, "wecTemplateList.cmd");
+		strcpy(filename, "/webs/wecPreView.html");	
+	}
+	else if ( strstr(filename, "editTemplate.html") != NULL )
+	{
+		
+	/////////////////////
+		strcpy(filename, "wecTemplateEdit.cmd");
+	
+		/*opt-log*/			
+		http2dbs_writeOptlog(ret, "edit  template");
+	
+
+		//////////// 
+	}
+	else if ( strstr(filename, "mgmtTemplate.html") != NULL )
+	{
+	
+		strcpy(filename, "wecTemplateMgmt.cmd");
+		/*opt-log*/			
+		http2dbs_writeOptlog(ret, "management  template");
+	}
+	else if ( strstr(filename, "saveTemplate.html") != NULL )
+	{  
+		ret = http2dbs_saveTemplate(&glbWebVar);
+
+		if( 0 != ret )
+		{
+			glbWebVar.wecOptCode = CMM_FAILED;
+		}
+		else
+			glbWebVar.wecOptCode = CMM_SUCCESS;
+
+		sprintf(glbWebVar.returnUrl, "mgmtTemplate.cgi");
+		strcpy(filename, "/webs/wecOptResult2.html");
+		
+		/*opt-log*/					
+		http2dbs_writeOptlog(ret, "save  template");
+		
+	}
 	else if ( strstr(filename, "previewLinkDiag.html") != NULL )
 	{
 		strcpy(glbWebVar.frmloadUrl, "wecLinkDiag.cmd");
@@ -727,6 +773,20 @@ CGI_ITEM CgiGetTable[] = {
    { "swEth2TxRate", (void *)&glbWebVar.swEth2TxRate, CGI_TYPE_NUM },
    { "swEth3TxRate", (void *)&glbWebVar.swEth3TxRate, CGI_TYPE_NUM },
    { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
+
+   
+   { "col_tempAutoSts", (void *)&glbWebVar.col_tempAutoSts, CGI_TYPE_NUM }, 
+   { "col_curTemp", (void *)&glbWebVar.col_curTemp, CGI_TYPE_NUM }, 
+   { "col_eth1VlanAddSts", (void *)&glbWebVar.col_eth1VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth1VlanStart", (void *)&glbWebVar.col_eth1VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth2VlanAddSts", (void *)&glbWebVar.col_eth2VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth2VlanStart", (void *)&glbWebVar.col_eth2VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth3VlanAddSts", (void *)&glbWebVar.col_eth3VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth3VlanStart", (void *)&glbWebVar.col_eth3VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth4VlanAddSts", (void *)&glbWebVar.col_eth4VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth4VlanStart", (void *)&glbWebVar.col_eth4VlanStart, CGI_TYPE_NUM }, 
+   
+
 
    //{ "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
    //{ "swSwitchSid", (void *)glbWebVar.swSwitchSid, CGI_TYPE_STR },
@@ -1060,7 +1120,16 @@ CGI_ITEM CgiSetTable[] = {
    { "swMlEth4Enable", (void *)&glbWebVar.swMlEth4Enable, CGI_TYPE_NUM }, 
    { "swMlEth4Thresholt", (void *)&glbWebVar.swMlEth4Thresholt, CGI_TYPE_NUM }, 
 
-   { "cnuPermition", (void *)&glbWebVar.cnuPermition, CGI_TYPE_NUM }, 
+   { "col_tempAutoSts", (void *)&glbWebVar.col_tempAutoSts, CGI_TYPE_NUM }, 
+   { "col_curTemp", (void *)&glbWebVar.col_curTemp, CGI_TYPE_NUM }, 
+   { "col_eth1VlanAddSts", (void *)&glbWebVar.col_eth1VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth1VlanStart", (void *)&glbWebVar.col_eth1VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth2VlanAddSts", (void *)&glbWebVar.col_eth2VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth2VlanStart", (void *)&glbWebVar.col_eth2VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth3VlanAddSts", (void *)&glbWebVar.col_eth3VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth3VlanStart", (void *)&glbWebVar.col_eth3VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth4VlanAddSts", (void *)&glbWebVar.col_eth4VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth4VlanStart", (void *)&glbWebVar.col_eth4VlanStart, CGI_TYPE_NUM }, 
    
    { NULL, NULL, CGI_TYPE_NONE }
 };

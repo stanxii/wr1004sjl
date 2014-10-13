@@ -285,6 +285,199 @@ void refresh_signon_cnu(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 	}
 }
 
+void do_cnu_template_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO *activeCnu)
+{
+	st_dbsTemplate template;
+	st_dbsProfile profile;
+	DB_INTEGER_V iValue;
+	st_dbsCnu cnu;
+	uint8_t bMac[6] = {0};
+	uint8_t mod[1024] = {0};
+	int opt_sts=CMM_SUCCESS;
+	int len = 0;
+	int i=0;
+
+	stCnuNode iNode;
+
+
+	st_rtl8306eSettings ack_data;
+
+	memset(&template, 0, sizeof(st_dbsTemplate));
+		
+	//get 1 row is templage management row
+	if(CMM_SUCCESS != dbsGetTemplate(dbsdev, 1, &template))
+	{
+		perror("ERROR: do_cnu_template_auto_config->dbsGetTemplate !\n");
+		return;
+	}else{
+	       //eth1 enable auto
+	       if(1 == template.col_eth1VlanAddSts)
+		{
+		    if(template.col_eth1VlanStart > 1 && template.col_eth1VlanStart <= 4030 )
+		    {
+				//ok now auto template config
+				if(template.col_eth1VlanStop < template.col_eth1VlanStart|| template.col_eth1VlanStop >= 4030 )	
+					template.col_eth1VlanStop = template.col_eth1VlanStart  ;					
+				else
+				      template.col_eth1VlanStop++;
+		    }
+	       	}	
+		else
+		{
+	       	   //eth1 disable auto 
+	       	       if(template.col_eth1VlanStart >1 && template.col_eth1VlanStart <= 4094 )
+				template.col_eth1VlanStop = template.col_eth1VlanStart  ;	
+		}
+		 //eth2 enable auto
+	       if(1 == template.col_eth2VlanAddSts)
+		{
+		    if(template.col_eth2VlanStart > 1 && template.col_eth2VlanStart <= 4030 )
+		    {
+				//ok now auto template config
+				if(template.col_eth2VlanStop <= template.col_eth2VlanStart|| template.col_eth2VlanStop >= 4030 )	
+					template.col_eth2VlanStop = template.col_eth2VlanStart  ;					
+				else
+				      template.col_eth2VlanStop++;
+		    }
+	       	}	
+		 else
+		  {
+	       	   //eth2 disable auto 
+	       	       if(template.col_eth2VlanStart >=1 && template.col_eth2VlanStart <= 4094 )
+				template.col_eth2VlanStop = template.col_eth2VlanStart  ;	
+		  }
+		 //eth3 enable auto
+	       if(1 == template.col_eth3VlanAddSts)
+		{
+		    if(template.col_eth3VlanStart > 1 && template.col_eth3VlanStart <= 4030 )
+		    {
+				//ok now auto template config
+				if(template.col_eth3VlanStop <= template.col_eth3VlanStart|| template.col_eth3VlanStop >= 4030 )	
+					template.col_eth3VlanStop = template.col_eth3VlanStart  ;					
+				else
+				      template.col_eth3VlanStop++;
+		    }
+	       	}	
+		else
+		{
+	       	   //eth3 disable auto 
+	       	       if(template.col_eth3VlanStart >=1 && template.col_eth3VlanStart <= 4094 )
+				template.col_eth3VlanStop = template.col_eth3VlanStart  ;	
+		}
+		 //eth4 enable auto
+	       if(1 == template.col_eth4VlanAddSts)
+		{
+		    if(template.col_eth4VlanStart > 1 && template.col_eth4VlanStart <= 4030 )
+		    {
+				//ok now auto template config
+				if(template.col_eth4VlanStop <= template.col_eth4VlanStart|| template.col_eth4VlanStop >= 4030 )	
+					template.col_eth4VlanStop = template.col_eth4VlanStart  ;					
+				else
+				      template.col_eth4VlanStop++;
+		    }
+	       	}	
+		 else
+		   {
+	       	       //eth4 disable auto 
+	       	       if(template.col_eth4VlanStart >=1 && template.col_eth4VlanStart <= 4094 )
+				template.col_eth4VlanStop = template.col_eth4VlanStart  ;	
+		   }
+								
+		//config send to cnu now and save profile db vlan
+		//st_rtl8306eSettings ack_data;
+
+		//update template dbs
+		if(CMM_SUCCESS != dbsUpdateTemplate(dbsdev, 1, &template))
+		{
+			perror("ERROR: do_cnu_template_auto_config->dbsUpdateTemplate !\n");
+			return;
+		}
+	
+		if( (cnu_index<1)||(cnu_index > MAX_CNU_AMOUNT_LIMIT))
+		{
+			printf("\n#ERROR[01]\n");
+			opt_sts = CMM_FAILED;
+		}
+		else if( CMM_SUCCESS != dbsGetCnu(dbsdev,  (clt_index-1) * 64 + cnu_index, &cnu) )
+		{
+			printf("\n#ERROR[02]\n");
+			opt_sts = CMM_FAILED;
+		}
+		else if( (DEV_STS_ONLINE != cnu.col_sts)||BOOL_TRUE != cnu.col_row_sts )
+		{
+			printf("\n#ERROR[03]\n");
+			opt_sts = CMM_FAILED;
+		}
+		else if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, bMac) )
+		{
+			printf("\n#ERROR[04]\n");
+			opt_sts = CMM_FAILED;
+		}
+
+		for(i=0; i< 6; i++){
+			printf("bMac[%d]=[%d]\n", i, bMac[i]);
+		}
+
+		if(CMM_SUCCESS != reg_mmead_get_rtl8306e_configs(bMac,  &ack_data))
+		{
+			opt_sts = CMM_FAILED;
+			printf("\n#ERROR[05]\n");
+			printf("reg_mmead_get_rtl8306e_configs error\n" );
+			return opt_sts;
+		}
+
+		//update switch and send config
+		if(template.col_eth1VlanStart  == 1)
+			ack_data.vlanConfig.vlan_port[0].egress_mode= 3;
+		else{
+			ack_data.vlanConfig.vlan_port[0].egress_mode = 1;
+			ack_data.vlanConfig.vlan_port[0].pvid = template.col_eth1VlanStop;
+			}
+		if(template.col_eth2VlanStart  == 1)
+			ack_data.vlanConfig.vlan_port[1].egress_mode = 3;
+		else{
+			ack_data.vlanConfig.vlan_port[1].egress_mode = 1;
+			ack_data.vlanConfig.vlan_port[1].pvid = template.col_eth2VlanStop;
+			}
+		if(template.col_eth3VlanStart  == 1)
+			ack_data.vlanConfig.vlan_port[2].egress_mode = 3;
+		else{
+			ack_data.vlanConfig.vlan_port[2].egress_mode = 1;
+			ack_data.vlanConfig.vlan_port[2].pvid = template.col_eth3VlanStop;
+			}
+		if(template.col_eth4VlanStart  == 1)
+			ack_data.vlanConfig.vlan_port[3].egress_mode = 3;
+		else{
+			ack_data.vlanConfig.vlan_port[3].egress_mode = 1;
+			ack_data.vlanConfig.vlan_port[3].pvid = template.col_eth4VlanStop;
+			}
+			
+		ack_data.vlanConfig.vlan_enable = 1;
+		ack_data.vlanConfig.vlan_tag_aware = 1;
+		ack_data.vlanConfig.vlan_port[4].egress_mode = 2;
+		ack_data.vlanConfig.vlan_port[4].pvid = 1;
+		
+		
+		
+
+		//send to cmm to update db and switch reg
+		iNode.clt = clt_index;
+		iNode.cnu = cnu_index;
+		if(CMM_SUCCESS  != reg2cmm_writeSwitchSettings(&SK_REG2CMM, &iNode,  &ack_data))
+		{
+			opt_sts = CMM_FAILED;
+			printf("\n#ERROR[06]\n");
+			printf("reg2cmm_writeSwitchSettings error\n" );
+			return opt_sts;
+		}
+
+		printf("reg2cmm_writeSwitchSettings now successfull!!!\n" );
+		
+		
+	}
+	
+}
+
 void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO *activeCnu)
 {
 	uint32_t PIB_CRC = 0;
@@ -782,7 +975,10 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 			return;
 		}
 		#endif
+		
+		///////////////////////////////////////////////////////////////////
 		/* 获取全局自动配置使能状态*/
+		
 		if( CMM_SUCCESS != db_get_auto_config_sts(&autoCfgSts))
 		{
 			perror("ERROR: do_cnu_register->db_get_auto_config_sts !\n");
@@ -797,16 +993,17 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 			}			
 			else if( 0 == autoCfgSts )
 			{
-				/* 这里还有潜在的漏洞*/
-				/* 如果MAC地址相同的非法用户在这里也能混进去*/
+				//这里还有潜在的漏洞
+				// 如果MAC地址相同的非法用户在这里也能混进去
 				refresh_signon_cnu(clt_index, cnu_index, &activeCnu);
 			}
 			else
 			{
-				/* 自动配置*/
+				// 自动配置
 				do_cnu_auto_config(clt_index, cnu_index, &activeCnu);
-			}	
-		}
+			}
+		 }
+		    
 	}
 	else
 	{
@@ -1410,11 +1607,7 @@ void ProcessRegist(void)
 				//还原标志位
 				cltFlags[i] = 0;				
 				/* 发送MME重启CLT */
-				/* stan  如果mme CLT重启不成功 reboot 主控板 */
-				if(0 != msg_reg_mmead_reset_eoc(topEntry.tb_clt[i].DevType, topEntry.tb_clt[i].Mac))
-				{
-					return msg_reg_2_cmm_resetMp();
-				}
+				msg_reg_mmead_reset_eoc(topEntry.tb_clt[i].DevType, topEntry.tb_clt[i].Mac);
 				/* 设备下线 */
 				ProcessTopologyChange(cltid, NULL);				
 			}

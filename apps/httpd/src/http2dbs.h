@@ -14,6 +14,8 @@ int http2dbs_setProfile(uint16_t id, st_dbsProfile * profile);
 int http2dbs_getCnu(uint16_t id, st_dbsCnu * cnu);
 int http2dbs_setCnu(uint16_t id, st_dbsCnu * cnu);
 
+int http2dbs_saveTemplate(PWEB_NTWK_VAR pWebVar);
+
 int http2dbs_doCltAgTimeSettings(PWEB_NTWK_VAR pWebVar);
 int http2dbs_doCltDecapSettings(PWEB_NTWK_VAR pWebVar);
 int http2dbs_doCltQosEnable(PWEB_NTWK_VAR pWebVar);

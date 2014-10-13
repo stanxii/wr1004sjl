@@ -303,6 +303,35 @@ int db_get_user_access_sts(uint32_t cltid, uint32_t cnuid, uint32_t *userAccSts)
 	return CMM_SUCCESS;
 }
 
+int db_get_template_auto_config_sts(uint32_t *autoCfgSts)
+{
+	DB_INTEGER_V st_iValue;
+
+	st_iValue.ci.tbl = DBS_SYS_TBL_ID_TEMPLATE;
+	st_iValue.ci.row = 1;
+	st_iValue.ci.col = DBS_SYS_TBL_TEMPLATE_COL_ID_TEMPAUTOSTS;
+	st_iValue.ci.colType = DBS_INTEGER;
+
+	if( CMM_SUCCESS != dbsGetInteger(dbsdev, &st_iValue))
+	{
+		printf("db_get_templae_auto_config_sts(%d, %d, %d) : CMM_FAILED", st_iValue.ci.tbl, st_iValue.ci.row, st_iValue.ci.col);
+		return CMM_FAILED;
+	}
+	else
+	{
+		if( DBS_NULL == st_iValue.ci.colType )
+		{
+			*autoCfgSts = 0;
+		}
+		else
+		{
+			*autoCfgSts = st_iValue.integer;
+			printf("db_get_templae_auto_config_sts result = (%d, %d, %d, %d) : CMM_SUCCESS\n", st_iValue.ci.tbl, st_iValue.ci.row, st_iValue.ci.col, st_iValue.integer);
+		}
+		return CMM_SUCCESS;
+	}
+}
+
 int db_get_auto_config_sts(uint32_t *autoCfgSts)
 {
 	DB_INTEGER_V st_iValue;

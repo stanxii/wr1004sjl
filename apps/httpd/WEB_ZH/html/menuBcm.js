@@ -17,6 +17,11 @@ function createBcmMenu()
 	//insFld(wecNtwkMgmt, gFld(getMenuTitle(MENU_WEC_CNU_MGMT), 'previewCnus.cgi'));
 	insFld(wecNtwkMgmt, gFld(getMenuTitle(MENU_WEC_WLIST_CTL), 'wecWlistCtrl.html'));
 	insFld(wecNtwkMgmt, gFld(getMenuTitle(MENU_WEC_LINK_DIAG), 'previewLinkDiag.cgi'));
+	//模板管理菜单
+	wecTemplateMgmt = insFld(foldersTree, gFld(getMenuTitle(MENU_WEC_TEMPLATE_MGMT), 'mgmtTemplate.cgi'));	
+	//insFld(wecTemplateMgmt, gFld(getMenuTitle(MENU_WEC_TEMPLATE_EDIT), 'mgmtTemplate.cgi));
+	
+	
 	//系统信息菜单
 	wecSystemInfo = insFld(foldersTree, gFld(getMenuTitle(MENU_WEC_SYS_INFO), 'info.html'));
 	insFld(wecSystemInfo, gFld(getMenuTitle(MENU_WEC_BASIC_INFO), 'info.html'));

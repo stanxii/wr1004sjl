@@ -23,6 +23,7 @@ int db_get_user_type(uint32_t cltid, uint32_t cnuid, uint32_t *userType);
 int db_get_user_onused(uint32_t cltid, uint32_t cnuid, uint32_t *onUsed);
 int db_get_anonymous_access_sts(uint32_t *anonyAccSts);
 int db_get_user_access_sts(uint32_t cltid, uint32_t cnuid, uint32_t *userAccSts);
+int db_get_template_auto_config_sts(uint32_t *autoCfgSts);
 int db_get_auto_config_sts(uint32_t *autoCfgSts);
 int db_get_user_auto_config_sts(uint32_t cltid, uint32_t cnuid, uint32_t *userAutoCfgSts);
 int db_init_nelib(T_TOPOLOGY_INFO *this);
