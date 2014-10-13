@@ -2590,10 +2590,10 @@ ULONG CLI_Cmd_DoCnuVlanConfig()
 	uint16_t vid = 1;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
+	
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
-
 	/* 判断模式并显示打印信息*/
 	/* 该命令只能在CNU模式下执行*/
 	if( 2 != prevailMode )
@@ -2606,6 +2606,8 @@ ULONG CLI_Cmd_DoCnuVlanConfig()
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
 	cltid = CLI_GetCltTidByMode(iMode);
 	cnuid = CLI_GetCnuTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	if((pParam=CLI_GetParamByName("set"))==NULL)
 	{
 		MT_ERRLOG(0);
@@ -2676,112 +2678,45 @@ ULONG CLI_Cmd_DoCnuVlanConfig()
 			IO_Print("\r\n\r\n  Parameter Error !");
 			return CMM_FAILED;
 		}
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = profile.col_eth1VMode;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = profile.col_eth2VMode;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = profile.col_eth3VMode;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = profile.col_eth4VMode;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = profile.col_uplinkVMode;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = profile.col_eth1vid;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = profile.col_eth2vid;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = profile.col_eth3vid;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = profile.col_eth4vid;
-		req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = profile.col_uplinkvid;
-		req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = profile.col_rxLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = profile.col_rxLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = profile.col_rxLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = profile.col_rxLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = profile.col_rxLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = profile.col_rxLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = profile.col_eth1rx;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = profile.col_eth2rx;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = profile.col_eth3rx;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = profile.col_eth4rx;
-		req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = profile.col_cpuPortRxRate;
-		req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = profile.col_txLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = profile.col_txLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = profile.col_txLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = profile.col_txLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = profile.col_txLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = profile.col_txLimitSts;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = profile.col_eth1tx;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = profile.col_eth2tx;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = profile.col_eth3tx;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = profile.col_eth4tx;
-		req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = profile.col_cpuPortTxRate;
-		req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-		req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-		req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-		req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-		req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-		//报文抑制
-		req_data.rtl8306eConfig.stormFilter.disable_broadcast = profile.col_sfbSts;
-		req_data.rtl8306eConfig.stormFilter.disable_multicast = profile.col_sfmSts;
-		req_data.rtl8306eConfig.stormFilter.disable_unknown = profile.col_sfuSts;
-		//req_data->rtl8306eConfig.stormFilter.iteration = pWebVar->swSfIteration;
-		//req_data->rtl8306eConfig.stormFilter.reset_source = pWebVar->swSfResetSrc;
-		//req_data->rtl8306eConfig.stormFilter.rule = pWebVar->swSfRule;
-		//req_data->rtl8306eConfig.stormFilter.thresholt = pWebVar->swSfThresholt;
-		//MAC地址限制
-		req_data.rtl8306eConfig.macLimit.action = 0;			/* drop */
-		req_data.rtl8306eConfig.macLimit.system.enable = 0;
-		req_data.rtl8306eConfig.macLimit.system.thresholt = profile.col_macLimit;
-		req_data.rtl8306eConfig.macLimit.system.mport = 0xf;	/* p0~p3 */
-		req_data.rtl8306eConfig.macLimit.port[0].enable = 0;
-		req_data.rtl8306eConfig.macLimit.port[0].thresholt = 0;
-		req_data.rtl8306eConfig.macLimit.port[1].enable = 0;
-		req_data.rtl8306eConfig.macLimit.port[1].thresholt = 0;
-		req_data.rtl8306eConfig.macLimit.port[2].enable = 0;
-		req_data.rtl8306eConfig.macLimit.port[2].thresholt = 0;
-		req_data.rtl8306eConfig.macLimit.port[3].enable = 0;
-		req_data.rtl8306eConfig.macLimit.port[3].thresholt = 0;
-		//环路检测
-		req_data.rtl8306eConfig.loopDetect.status = 0;
-		if( 0 == req_data.rtl8306eConfig.loopDetect.status )
+		if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
 		{
-			req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-			req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-			req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-			req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
-		}
-		else
-		{
-			req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-			req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-			req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-			req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
+			if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+			{
+				printf(" read CNU switch config error!\n");
+			}
 		}
 		switch(port)
 		{
 			case 1:
 			{
 				profile.col_eth1vid = vid;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = vid;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = vid;
 				profile.col_eth1VMode = 1;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = 1;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = 1;
 				break;
 			}
 			case 2:
 			{
 				profile.col_eth2vid = vid;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = vid;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = vid;
 				profile.col_eth2VMode = 1;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = 1;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = 1;
 				break;
 			}
 			case 3:
 			{
 				profile.col_eth3vid = vid;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = vid;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = vid;
 				profile.col_eth3VMode = 1;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = 1;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = 1;
 				break;
 			}
 			case 4:
 			{
 				profile.col_eth4vid = vid;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = vid;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = vid;
 				profile.col_eth4VMode = 1;
-				req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = 1;
+				rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = 1;
 				break;
 			}
 			default:
@@ -2791,25 +2726,23 @@ ULONG CLI_Cmd_DoCnuVlanConfig()
 			}
 		}	
 		profile.col_vlanSts = 1;
-		req_data.rtl8306eConfig.vlanConfig.vlan_enable = 1;
-		req_data.node.clt = cltid;
-		req_data.node.cnu = cnuid;
+		rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_enable = 1;
 		profile.id = cnuid;
 		if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 			ret = cli2cmm_vlanConfig1(&profile);
 		else
 		{
-			req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = 1;		
-			req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = 2;
-			req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = 1;
-			req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-			req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-			req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-			req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-			req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-			req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-			req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-			ret = cli2cmm_vlanConfig2(&req_data, &profile);
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = 1;		
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = 2;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_tag_aware = 1;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.ingress_filter = 0;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.g_admit_control = 0;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
+			rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
+			ret = cli2cmm_vlanConfig2(&rtl8306eSettings, &profile);
 		}
 	}
 	else
@@ -2834,10 +2767,11 @@ ULONG CLI_Cmd_UndoCnuVlanConfig()
 	ULONG ret = CMM_SUCCESS;
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
-	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
@@ -2850,10 +2784,12 @@ ULONG CLI_Cmd_UndoCnuVlanConfig()
 		return CMM_FAILED;
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
-	id = CLI_GetCnuTidByMode(iMode);
-
+	cltid = CLI_GetCltTidByMode(iMode);
+	cnuid = CLI_GetCnuTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -2865,7 +2801,7 @@ ULONG CLI_Cmd_UndoCnuVlanConfig()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, cnuid,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -2875,100 +2811,36 @@ ULONG CLI_Cmd_UndoCnuVlanConfig()
 		IO_Print("\r\n\r\n  CNU Profile Unreachable !");
 		return CMM_SUCCESS;
 	}
-	req_data.node.cnu = id;
+
+	if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
+	{
+		if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+		{
+			printf(" read CNU switch config error!\n");
+		}
+	}
+	
 	profile.col_vlanSts = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_enable = 0;
 	profile.col_eth1vid = 1;
 	profile.col_eth2vid = 1;
 	profile.col_eth3vid = 1;
 	profile.col_eth4vid = 1;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = 1;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = 3;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = 1;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = 3;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = 1;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = 3;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = 1;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = 3;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = 1;		
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = 3;
-	req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = 1;
-	req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-	req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-	req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-	req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-	req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-	req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-	req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-	//端口限速
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = profile.col_eth1rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = profile.col_eth2rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = profile.col_eth3rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = profile.col_eth4rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = profile.col_cpuPortRxRate;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = profile.col_eth1tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = profile.col_eth2tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = profile.col_eth3tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = profile.col_eth4tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = profile.col_cpuPortTxRate;
-	//报文抑制
-	req_data.rtl8306eConfig.stormFilter.disable_broadcast = profile.col_sfbSts;
-	req_data.rtl8306eConfig.stormFilter.disable_multicast = profile.col_sfmSts;
-	req_data.rtl8306eConfig.stormFilter.disable_unknown = profile.col_sfuSts;
-	//req_data->rtl8306eConfig.stormFilter.iteration = pWebVar->swSfIteration;
-	//req_data->rtl8306eConfig.stormFilter.reset_source = pWebVar->swSfResetSrc;
-	//req_data->rtl8306eConfig.stormFilter.rule = pWebVar->swSfRule;
-	//req_data->rtl8306eConfig.stormFilter.thresholt = pWebVar->swSfThresholt;
-	//MAC地址限制
-	req_data.rtl8306eConfig.macLimit.action = 0;			/* drop */
-	req_data.rtl8306eConfig.macLimit.system.enable = 0;
-	req_data.rtl8306eConfig.macLimit.system.thresholt = profile.col_macLimit;
-	req_data.rtl8306eConfig.macLimit.system.mport = 0xf;	/* p0~p3 */
-	req_data.rtl8306eConfig.macLimit.port[0].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[0].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].thresholt = 0;
-	//环路检测
-	req_data.rtl8306eConfig.loopDetect.status = 0;
-	if( 0 == req_data.rtl8306eConfig.loopDetect.status )
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
-	}	
-	else
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
-	}
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = 1;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = 3;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = 1;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = 3;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = 1;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = 3;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = 1;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = 3;
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = 1;		
+	rtl8306eSettings.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = 3;
+	
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 		ret = cli2cmm_vlanConfig1(&profile);	
 	else
-		ret = cli2cmm_vlanConfig2(&req_data, &profile);
+		ret = cli2cmm_vlanConfig2(&rtl8306eSettings, &profile);
 	
 	/* 不需要在此处写日志，在CMM 中进行*/
 	if( CMM_SUCCESS == ret )
@@ -2989,14 +2861,14 @@ ULONG CLI_Cmd_DoRateLimiting()
 	ULONG ret = CMM_SUCCESS;
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
-	uint16_t id = 0;
-	//uint16_t dir = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
 	uint16_t port = 1;
 	uint32_t rate = 0;
 	uint16_t unit = 0;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
@@ -3009,10 +2881,12 @@ ULONG CLI_Cmd_DoRateLimiting()
 		return CMM_FAILED;
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
-	id = CLI_GetCnuTidByMode(iMode);
-	req_data.node.cnu = id;
+	cltid = CLI_GetCltTidByMode(iMode);
+	cnuid = CLI_GetCnuTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3024,7 +2898,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 	}
 
 	/* 设置前先读取线路配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id, &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, cnuid, &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3122,92 +2996,15 @@ ULONG CLI_Cmd_DoRateLimiting()
 			return TBS_FAILED;
 		}
 	}
-	//vlan
-	req_data.rtl8306eConfig.vlanConfig.vlan_enable = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-	req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = profile.col_eth1VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = profile.col_eth2VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = profile.col_eth3VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = profile.col_eth4VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = profile.col_uplinkVMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = profile.col_eth1vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = profile.col_eth2vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = profile.col_eth3vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = profile.col_eth4vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = profile.col_uplinkvid;
-	//cnu及端口授权
-	req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-	req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-	req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-	req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-	req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-	//端口限速
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = profile.col_eth1rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = profile.col_eth2rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = profile.col_eth3rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = profile.col_eth4rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = profile.col_cpuPortRxRate;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = profile.col_eth1tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = profile.col_eth2tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = profile.col_eth3tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = profile.col_eth4tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = profile.col_cpuPortTxRate;
-	//报文抑制
-	req_data.rtl8306eConfig.stormFilter.disable_broadcast = profile.col_sfbSts;
-	req_data.rtl8306eConfig.stormFilter.disable_multicast = profile.col_sfmSts;
-	req_data.rtl8306eConfig.stormFilter.disable_unknown = profile.col_sfuSts;
-	//req_data->rtl8306eConfig.stormFilter.iteration = pWebVar->swSfIteration;
-	//req_data->rtl8306eConfig.stormFilter.reset_source = pWebVar->swSfResetSrc;
-	//req_data->rtl8306eConfig.stormFilter.rule = pWebVar->swSfRule;
-	//req_data->rtl8306eConfig.stormFilter.thresholt = pWebVar->swSfThresholt;
-	//MAC地址限制
-	req_data.rtl8306eConfig.macLimit.action = 0;			/* drop */
-	req_data.rtl8306eConfig.macLimit.system.enable = 0;
-	req_data.rtl8306eConfig.macLimit.system.thresholt = profile.col_macLimit;
-	req_data.rtl8306eConfig.macLimit.system.mport = 0xf;	/* p0~p3 */
-	req_data.rtl8306eConfig.macLimit.port[0].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[0].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].thresholt = 0;
-	//环路检测
-	req_data.rtl8306eConfig.loopDetect.status = 0;
-	if( 0 == req_data.rtl8306eConfig.loopDetect.status )
+
+	if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
 	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
+		if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+		{
+			printf(" read CNU switch config error!\n");
+		}
 	}
-	else
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
-	}
+
 	/* 将上行限速参数写入数据结构*/
 	switch(port)
 	{
@@ -3215,40 +3012,40 @@ ULONG CLI_Cmd_DoRateLimiting()
 		case 0:
 		{
 			profile.col_cpuPortTxRate = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = rate;
 			break;
 		}
 		/* ETH1 */
 		case 1:
 		{
 			profile.col_eth1rx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = rate;
 			break;
 		}
 		/* ETH2 */
 		case 2:
 		{
 			profile.col_eth2rx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = rate;
 			break;
 		}
 		/* ETH3 */
 		case 3:
 		{
 			profile.col_eth3rx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = 2;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = rate;
 			break;
 		}
 		/* ETH4 */
 		case 4:
 		{
 			profile.col_eth4rx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = 3;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = rate;
 			break;
 		}
 		default:
@@ -3317,40 +3114,40 @@ ULONG CLI_Cmd_DoRateLimiting()
 		case 0:
 		{
 			profile.col_cpuPortRxRate = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = rate;
 			break;
 		}
 		/* ETH1 */
 		case 1:
 		{
 			profile.col_eth1tx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = rate;
 			break;
 		}
 		/* ETH2 */
 		case 2:
 		{
 			profile.col_eth2tx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = rate;
 			break;
 		}
 		/* ETH3 */
 		case 3:
 		{
 			profile.col_eth3tx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = rate;
 			break;
 		}
 		/* ETH4 */
 		case 4:
 		{
 			profile.col_eth4tx = rate;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 1;
-			req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 1;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = rate;
 			break;
 		}
 		default:
@@ -3362,12 +3159,12 @@ ULONG CLI_Cmd_DoRateLimiting()
 
 	profile.col_rxLimitSts = 1;
 	profile.col_txLimitSts = 1;
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = 1;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = 1;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = 1;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = 1;
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 		ret = cli2cmm_rateLimitConfig1(&profile);
 	else
-		ret = cli2cmm_rateLimitConfig2(&req_data, &profile);
+		ret = cli2cmm_rateLimitConfig2(&rtl8306eSettings, &profile);
 	/* 不需要在此处写日志，在CMM 中进行*/
 	if( CMM_SUCCESS == ret )
 	{
@@ -3384,10 +3181,11 @@ ULONG CLI_Cmd_UndoRateLimiting()
 	ULONG ret = CMM_SUCCESS;
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
-	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
@@ -3400,10 +3198,12 @@ ULONG CLI_Cmd_UndoRateLimiting()
 		return CMM_FAILED;
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
-	id = CLI_GetCnuTidByMode(iMode);
-	req_data.node.cnu = id;
+	cltid = CLI_GetCltTidByMode(iMode);
+	cnuid = CLI_GetCnuTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3415,7 +3215,7 @@ ULONG CLI_Cmd_UndoRateLimiting()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, cnuid,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3438,93 +3238,41 @@ ULONG CLI_Cmd_UndoRateLimiting()
 	profile.col_eth3tx = 0;
 	profile.col_eth4rx = 0;
 	profile.col_eth4tx = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = 0;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_enable = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-	req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = profile.col_eth1VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = profile.col_eth2VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = profile.col_eth3VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = profile.col_eth4VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = profile.col_uplinkVMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = profile.col_eth1vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = profile.col_eth2vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = profile.col_eth3vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = profile.col_eth4vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = profile.col_uplinkvid;
-	req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-	req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-	req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-	req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-	req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-	//报文抑制
-	req_data.rtl8306eConfig.stormFilter.disable_broadcast = profile.col_sfbSts;
-	req_data.rtl8306eConfig.stormFilter.disable_multicast = profile.col_sfmSts;
-	req_data.rtl8306eConfig.stormFilter.disable_unknown = profile.col_sfuSts;
-	//req_data->rtl8306eConfig.stormFilter.iteration = pWebVar->swSfIteration;
-	//req_data->rtl8306eConfig.stormFilter.reset_source = pWebVar->swSfResetSrc;
-	//req_data->rtl8306eConfig.stormFilter.rule = pWebVar->swSfRule;
-	//req_data->rtl8306eConfig.stormFilter.thresholt = pWebVar->swSfThresholt;
-	//MAC地址限制
-	req_data.rtl8306eConfig.macLimit.action = 0;			/* drop */
-	req_data.rtl8306eConfig.macLimit.system.enable = 0;
-	req_data.rtl8306eConfig.macLimit.system.thresholt = profile.col_macLimit;
-	req_data.rtl8306eConfig.macLimit.system.mport = 0xf;	/* p0~p3 */
-	req_data.rtl8306eConfig.macLimit.port[0].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[0].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].thresholt = 0;
-	//环路检测
-	req_data.rtl8306eConfig.loopDetect.status = 0;
-	if( 0 == req_data.rtl8306eConfig.loopDetect.status )
+
+	if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
 	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
+		if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+		{
+			printf(" read CNU switch config error!\n");
+		}
 	}
-	else
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
-	}
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = 0;
+	rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = 0;
+	
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 		ret = cli2cmm_rateLimitConfig1(&profile);
 	else
-		ret = cli2cmm_rateLimitConfig2(&req_data, &profile);
+		ret = cli2cmm_rateLimitConfig2(&rtl8306eSettings, &profile);
 	/* 不需要在此处写日志，在CMM 中进行*/
 	if( CMM_SUCCESS == ret )
 	{
@@ -3542,11 +3290,12 @@ ULONG CLI_Cmd_DoStromFilter()
 	ULONG ret = CMM_SUCCESS;
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
-	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
 	uint16_t enable = 0;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
@@ -3559,10 +3308,12 @@ ULONG CLI_Cmd_DoStromFilter()
 		return CMM_FAILED;
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
-	id = CLI_GetCnuTidByMode(iMode);
-	req_data.node.cnu = id;
+	cltid = CLI_GetCltTidByMode(iMode);
+	cnuid = CLI_GetCnuTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3574,7 +3325,7 @@ ULONG CLI_Cmd_DoStromFilter()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, cnuid,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3605,20 +3356,29 @@ ULONG CLI_Cmd_DoStromFilter()
 		MT_ERRLOG(0);
 		return TBS_FAILED;
 	}
+
+	if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
+	{
+		if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+		{
+			printf(" read CNU switch config error!\n");
+		}
+	}
+	
 	if(!STB_StriCmp(pParam, "broadcast"))
 	{
 		profile.col_sfbSts = enable;
-		req_data.rtl8306eConfig.stormFilter.disable_broadcast = enable;
+		rtl8306eSettings.rtl8306eConfig.stormFilter.disable_broadcast = !enable;
 	}
 	else if(!STB_StriCmp(pParam, "unknown-unicast"))
 	{
 		profile.col_sfuSts = enable;
-		req_data.rtl8306eConfig.stormFilter.disable_unknown = enable;
+		rtl8306eSettings.rtl8306eConfig.stormFilter.disable_unknown = !enable;
 	}
 	else
 	{
 		profile.col_sfmSts = enable;
-		req_data.rtl8306eConfig.stormFilter.disable_multicast = enable;
+		rtl8306eSettings.rtl8306eConfig.stormFilter.disable_multicast = !enable;
 	}
 
 	/* 只要3类风暴抑制中任何一类启用，则抑制等级设置为1 */
@@ -3630,88 +3390,11 @@ ULONG CLI_Cmd_DoStromFilter()
 	{
 		profile.col_sfRate = 0;
 	}
-		//vlan
-	req_data.rtl8306eConfig.vlanConfig.vlan_enable = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-	req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = profile.col_eth1VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = profile.col_eth2VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = profile.col_eth3VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = profile.col_eth4VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = profile.col_uplinkVMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = profile.col_eth1vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = profile.col_eth2vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = profile.col_eth3vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = profile.col_eth4vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = profile.col_uplinkvid;
-	//cnu及端口授权
-	req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-	req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-	req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-	req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-	req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-	//端口限速
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = profile.col_eth1rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = profile.col_eth2rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = profile.col_eth3rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = profile.col_eth4rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = profile.col_cpuPortRxRate;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = profile.col_eth1tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = profile.col_eth2tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = profile.col_eth3tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = profile.col_eth4tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = profile.col_cpuPortTxRate;
-	//MAC地址限制
-	req_data.rtl8306eConfig.macLimit.action = 0;			/* drop */
-	req_data.rtl8306eConfig.macLimit.system.enable = 0;
-	req_data.rtl8306eConfig.macLimit.system.thresholt = profile.col_macLimit;
-	req_data.rtl8306eConfig.macLimit.system.mport = 0xf;	/* p0~p3 */
-	req_data.rtl8306eConfig.macLimit.port[0].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[0].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].thresholt = 0;
-	//环路检测
-	req_data.rtl8306eConfig.loopDetect.status = 0;
-	if( 0 == req_data.rtl8306eConfig.loopDetect.status )
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
-	}
-	else
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
-	}
+		
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 		ret = cli2cmm_stormFilterConfig1(&profile);
 	else
-		ret = cli2cmm_stormFilterConfig2(&req_data, &profile);
+		ret = cli2cmm_stormFilterConfig2(&rtl8306eSettings, &profile);
 	/* 不需要在此处写日志，在CMM 中进行*/
 	if( CMM_SUCCESS == ret )
 	{
@@ -3728,10 +3411,11 @@ ULONG CLI_Cmd_UndoStromFilter()
 	ULONG ret = CMM_SUCCESS;
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
-	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
@@ -3744,10 +3428,12 @@ ULONG CLI_Cmd_UndoStromFilter()
 		return CMM_FAILED;
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
-	id = CLI_GetCnuTidByMode(iMode);
-	req_data.node.cnu = id;
+	cnuid = CLI_GetCnuTidByMode(iMode);
+	cltid = CLI_GetCltTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3759,7 +3445,7 @@ ULONG CLI_Cmd_UndoStromFilter()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, cnuid,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -3774,92 +3460,22 @@ ULONG CLI_Cmd_UndoStromFilter()
 	profile.col_sfmSts = 0;
 	profile.col_sfuSts = 0;
 	profile.col_sfRate = 0;
-	req_data.rtl8306eConfig.stormFilter.disable_broadcast = 0;
-	req_data.rtl8306eConfig.stormFilter.disable_multicast = 0;
-	req_data.rtl8306eConfig.stormFilter.disable_unknown = 0;
-	//vlan
-	req_data.rtl8306eConfig.vlanConfig.vlan_enable = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-	req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = profile.col_eth1VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = profile.col_eth2VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = profile.col_eth3VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = profile.col_eth4VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = profile.col_uplinkVMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = profile.col_eth1vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = profile.col_eth2vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = profile.col_eth3vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = profile.col_eth4vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = profile.col_uplinkvid;
-	//cnu及端口授权
-	req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-	req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-	req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-	req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-	req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-	//端口限速
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = profile.col_eth1rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = profile.col_eth2rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = profile.col_eth3rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = profile.col_eth4rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = profile.col_cpuPortRxRate;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = profile.col_eth1tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = profile.col_eth2tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = profile.col_eth3tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = profile.col_eth4tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = profile.col_cpuPortTxRate;
-	//MAC地址限制
-	req_data.rtl8306eConfig.macLimit.action = 0;			/* drop */
-	req_data.rtl8306eConfig.macLimit.system.enable = 0;
-	req_data.rtl8306eConfig.macLimit.system.thresholt = profile.col_macLimit;
-	req_data.rtl8306eConfig.macLimit.system.mport = 0xf;	/* p0~p3 */
-	req_data.rtl8306eConfig.macLimit.port[0].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[0].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[1].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[2].thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].enable = 0;
-	req_data.rtl8306eConfig.macLimit.port[3].thresholt = 0;
-	//环路检测
-	req_data.rtl8306eConfig.loopDetect.status = 0;
-	if( 0 == req_data.rtl8306eConfig.loopDetect.status )
+
+	if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
 	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
+		if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+		{
+			printf(" read CNU switch config error!\n");
+		}
 	}
-	else
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
-	}
+	rtl8306eSettings.rtl8306eConfig.stormFilter.disable_broadcast = 1;
+	rtl8306eSettings.rtl8306eConfig.stormFilter.disable_multicast = 1;
+	rtl8306eSettings.rtl8306eConfig.stormFilter.disable_unknown = 1;
 	
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 		ret = cli2cmm_stormFilterConfig1(&profile);
 	else
-		ret = cli2cmm_stormFilterConfig2(&req_data, &profile);
+		ret = cli2cmm_stormFilterConfig2(&rtl8306eSettings, &profile);
 	/* 不需要在此处写日志，在CMM 中进行*/
 	if( CMM_SUCCESS == ret )
 	{
@@ -4297,11 +3913,12 @@ ULONG CLI_Cmd_MacLimit()
 	ULONG ret = CMM_SUCCESS;
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
-	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
 	uint32_t n = 0;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
@@ -4314,10 +3931,12 @@ ULONG CLI_Cmd_MacLimit()
 		return CMM_FAILED;
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
-	id = CLI_GetCnuTidByMode(iMode);
-	req_data.node.cnu = id;
+	cltid = CLI_GetCltTidByMode(iMode);
+	cnuid = CLI_GetCnuTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4329,7 +3948,7 @@ ULONG CLI_Cmd_MacLimit()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, cnuid,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4338,6 +3957,14 @@ ULONG CLI_Cmd_MacLimit()
 	{
 		IO_Print("\r\n\r\n  CNU Profile Unreachable !");
 		return CMM_SUCCESS;
+	}
+
+	if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
+	{
+		if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+		{
+			printf(" read CNU switch config error!\n");
+		}
 	}
 
 	/* 读取命令行参数*/
@@ -4356,84 +3983,16 @@ ULONG CLI_Cmd_MacLimit()
 		else
 		{
 			profile.col_macLimit = n;
-			req_data.rtl8306eConfig.macLimit.system.thresholt = n;
+			rtl8306eSettings.rtl8306eConfig.macLimit.system.thresholt = n;
 		}
 	}
-	req_data.rtl8306eConfig.macLimit.system.enable = 1;
-	req_data.rtl8306eConfig.macLimit.action = 0;
-	//vlan
-	req_data.rtl8306eConfig.vlanConfig.vlan_enable = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-	req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = profile.col_eth1VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = profile.col_eth2VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = profile.col_eth3VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = profile.col_eth4VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = profile.col_uplinkVMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = profile.col_eth1vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = profile.col_eth2vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = profile.col_eth3vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = profile.col_eth4vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = profile.col_uplinkvid;
-	//cnu及端口授权
-	req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-	req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-	req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-	req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-	req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-	//端口限速
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = profile.col_eth1rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = profile.col_eth2rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = profile.col_eth3rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = profile.col_eth4rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = profile.col_cpuPortRxRate;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = profile.col_eth1tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = profile.col_eth2tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = profile.col_eth3tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = profile.col_eth4tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = profile.col_cpuPortTxRate;
-	//报文抑制
-	req_data.rtl8306eConfig.stormFilter.disable_broadcast = profile.col_sfbSts;
-	req_data.rtl8306eConfig.stormFilter.disable_multicast = profile.col_sfmSts;
-	req_data.rtl8306eConfig.stormFilter.disable_unknown = profile.col_sfuSts;
-	//环路检测
-	req_data.rtl8306eConfig.loopDetect.status = 0;
-	if( 0 == req_data.rtl8306eConfig.loopDetect.status )
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
-	}
-	else
-	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
-	}
+	rtl8306eSettings.rtl8306eConfig.macLimit.system.enable = 1;
+	rtl8306eSettings.rtl8306eConfig.macLimit.action = 0;
+	
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 		ret = cli2cmm_macLimitConfig1(&profile);
 	else
-		ret = cli2cmm_macLimitConfig2(&req_data, &profile);
+		ret = cli2cmm_macLimitConfig2(&rtl8306eSettings, &profile);
 	/* 不需要在此处写日志，在CMM 中进行*/
 	if( CMM_SUCCESS == ret )
 	{
@@ -4450,10 +4009,11 @@ ULONG CLI_Cmd_UndoMacLimit()
 	ULONG ret = CMM_SUCCESS;
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
-	uint16_t id = 0;
+	uint16_t cltid = 0;
+	uint16_t cnuid = 0;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
-	rtl8306eWriteInfo req_data;
+	rtl8306eWriteInfo rtl8306eSettings;
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
@@ -4466,10 +4026,12 @@ ULONG CLI_Cmd_UndoMacLimit()
 		return CMM_FAILED;
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
-	id = CLI_GetCnuTidByMode(iMode);
-	req_data.node.cnu = id;
+	cltid = CLI_GetCltTidByMode(iMode);
+	cnuid = CLI_GetCnuTidByMode(iMode);
+	rtl8306eSettings.node.clt = cltid;
+	rtl8306eSettings.node.cnu = cnuid;
 	/* 如果该CNU 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
+	if( CMM_SUCCESS != dbsGetCnu(dbsdev, cnuid, &cnu) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4481,7 +4043,7 @@ ULONG CLI_Cmd_UndoMacLimit()
 	}
 
 	/* 如果该PROFILE 槽位无效则禁止配置*/
-	if( CMM_SUCCESS != dbsGetProfile(dbsdev, id,  &profile) )
+	if( CMM_SUCCESS != dbsGetProfile(dbsdev, cnuid,  &profile) )
 	{
 		IO_Print("\r\n\r\n  System Error !");
 		return CMM_FAILED;
@@ -4492,87 +4054,23 @@ ULONG CLI_Cmd_UndoMacLimit()
 		return CMM_SUCCESS;
 	}
 
-	profile.col_macLimit = 0;
-	req_data.rtl8306eConfig.macLimit.action = 0;
-	req_data.rtl8306eConfig.macLimit.system.thresholt = 0;
-	req_data.rtl8306eConfig.macLimit.system.enable = 0;
-	//vlan
-	req_data.rtl8306eConfig.vlanConfig.vlan_enable = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.vlan_tag_aware = profile.col_vlanSts;
-	req_data.rtl8306eConfig.vlanConfig.ingress_filter = 0;
-	req_data.rtl8306eConfig.vlanConfig.g_admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].admit_control = 0;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].egress_mode = profile.col_eth1VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].egress_mode = profile.col_eth2VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].egress_mode = profile.col_eth3VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].egress_mode = profile.col_eth4VMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].egress_mode = profile.col_uplinkVMode;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[0].pvid = profile.col_eth1vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[1].pvid = profile.col_eth2vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[2].pvid = profile.col_eth3vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[3].pvid = profile.col_eth4vid;
-	req_data.rtl8306eConfig.vlanConfig.vlan_port[4].pvid = profile.col_uplinkvid;
-	//cnu及端口授权
-	req_data.rtl8306eConfig.portControl.port[4].enable = 1;
-	req_data.rtl8306eConfig.portControl.port[0].enable = profile.col_eth1sts;
-	req_data.rtl8306eConfig.portControl.port[1].enable = profile.col_eth2sts;
-	req_data.rtl8306eConfig.portControl.port[2].enable = profile.col_eth3sts;
-	req_data.rtl8306eConfig.portControl.port[3].enable = profile.col_eth4sts;
-	//端口限速
-	req_data.rtl8306eConfig.bandwidthConfig.g_rx_bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = profile.col_rxLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = profile.col_eth1rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = profile.col_eth2rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = profile.col_eth3rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = profile.col_eth4rx;
-	req_data.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = profile.col_cpuPortRxRate;
-	req_data.rtl8306eConfig.bandwidthConfig.g_tx_bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = profile.col_txLimitSts;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = profile.col_eth1tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = profile.col_eth2tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = profile.col_eth3tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = profile.col_eth4tx;
-	req_data.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = profile.col_cpuPortTxRate;
-	//报文抑制
-	req_data.rtl8306eConfig.stormFilter.disable_broadcast = profile.col_sfbSts;
-	req_data.rtl8306eConfig.stormFilter.disable_multicast = profile.col_sfmSts;
-	req_data.rtl8306eConfig.stormFilter.disable_unknown = profile.col_sfuSts;
-	//req_data->rtl8306eConfig.stormFilter.iteration = pWebVar->swSfIteration;
-	//req_data->rtl8306eConfig.stormFilter.reset_source = pWebVar->swSfResetSrc;
-	//req_data->rtl8306eConfig.stormFilter.rule = pWebVar->swSfRule;
-	//req_data->rtl8306eConfig.stormFilter.thresholt = pWebVar->swSfThresholt;
-	//环路检测
-	req_data.rtl8306eConfig.loopDetect.status = 0;
-	if( 0 == req_data.rtl8306eConfig.loopDetect.status )
-	{	
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 0;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 0;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 0;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 0;
-	}
-	else
+	if( CNU_SWITCH_TYPE_AR8236 != boardapi_getCnuSwitchType(cnu.col_model))
 	{
-		req_data.rtl8306eConfig.loopDetect.ldmethod = 1;
-		req_data.rtl8306eConfig.loopDetect.ldtime = 3;
-		req_data.rtl8306eConfig.loopDetect.disfltlf = 1;
-		req_data.rtl8306eConfig.loopDetect.enlpttl = 1;
+		if( cli2cmm_readSwitchSettings(&rtl8306eSettings) != CMM_SUCCESS)
+		{
+			printf(" read CNU switch config error!\n");
+		}
 	}
+
+	profile.col_macLimit = 0;
+	rtl8306eSettings.rtl8306eConfig.macLimit.action = 0;
+	rtl8306eSettings.rtl8306eConfig.macLimit.system.thresholt = 0;
+	rtl8306eSettings.rtl8306eConfig.macLimit.system.enable = 0;
+	
 	if( CNU_SWITCH_TYPE_AR8236 == boardapi_getCnuSwitchType(cnu.col_model))
 		ret = cli2cmm_macLimitConfig1(&profile);
 	else
-		ret = cli2cmm_macLimitConfig2(&req_data, &profile);
+		ret = cli2cmm_macLimitConfig2(&rtl8306eSettings, &profile);
 	/* 不需要在此处写日志，在CMM 中进行*/
 	if( CMM_SUCCESS == ret )
 	{

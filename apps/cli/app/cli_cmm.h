@@ -47,6 +47,7 @@ int cli2cmm_do_aclDropMme(uint16_t cltid, uint16_t cnuid);
 int destroy_cli_cmm(void);
 int init_cli_cmm(void);
 int cli2cmm_readUserHFID(T_szCnuUserHFID *cnuuserhfid);
+int cli2cmm_readSwitchSettings(rtl8306eWriteInfo *rtl8306eSettings );
 
 #endif
 
