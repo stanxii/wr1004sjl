@@ -249,10 +249,10 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	iNode.cnu = cnu_index;
 
 
-	printf("eth1 vlanstart=[%d], stop =[%d]", ptemplate->col_eth1VlanStop);
-	printf("eth2 vlanstart=[%d], stop =[%d]", ptemplate->col_eth2VlanStop);
-	printf("eth3 vlanstart=[%d], stop =[%d]", ptemplate->col_eth3VlanStop);
-	printf("eth4 vlanstart=[%d], stop =[%d]", ptemplate->col_eth4VlanStop);
+	printf("eth1 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth1VlanStop);
+	printf("eth2 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth2VlanStop);
+	printf("eth3 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth3VlanStop);
+	printf("eth4 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth4VlanStop);
 
 	
 	//update template dbs
@@ -299,7 +299,7 @@ void do_cnu_template_auto_config(void )
 
 
 
-	printf("do_cnu_template_auto_config\n");
+	//printf("do_cnu_template_auto_config\n");
 
 	/* 获取全局自动模板下发VLAN自增使能状态*/
 	memset(&template, 0, sizeof(st_dbsTemplate));
@@ -326,7 +326,7 @@ void do_cnu_template_auto_config(void )
 			for(j=1; j<=  MAX_CNUS_PER_CLT; j++)
 			{				
 					do_one_cnu_templat_autoconfig(i,j, &template);
-					sleep(5);
+					sleep(4);
 				
 			}
 
@@ -352,8 +352,10 @@ void ProcessRegist(void)
 	    
 		
 		
-		sleep(AUTOCONFIG_POLL_INT);
+		//sleep(AUTOCONFIG_POLL_INT);
 		
+		sleep(6);
+
 		/* ¶ÁÈ¡Íâ²¿Ä£¿éÇëÇóÊÂ¼þ*/
 
 
