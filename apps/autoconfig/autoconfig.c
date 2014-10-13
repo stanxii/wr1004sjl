@@ -90,11 +90,11 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 		return opt_sts;
 	}
 
-	printf("now call auto_mmead_get_rtl8306e_configs get  vlan1 =[%d]\n", ack_data.vlanConfig.vlan_port[0].pvid);
-	printf("now call auto_mmead_get_rtl8306e_configs get  vlan2 =[%d]\n", ack_data.vlanConfig.vlan_port[1].pvid);
-	printf("now call auto_mmead_get_rtl8306e_configs get  vlan3 =[%d]\n", ack_data.vlanConfig.vlan_port[2].pvid);
-	printf("now call auto_mmead_get_rtl8306e_configs get  vlan4 =[%d]\n", ack_data.vlanConfig.vlan_port[3].pvid);
-	printf("now call auto_mmead_get_rtl8306e_configs get  vlan cpu =[%d]\n", ack_data.vlanConfig.vlan_port[4].pvid);
+	//printf("now call auto_mmead_get_rtl8306e_configs get  vlan1 =[%d]\n", ack_data.vlanConfig.vlan_port[0].pvid);
+	//printf("now call auto_mmead_get_rtl8306e_configs get  vlan2 =[%d]\n", ack_data.vlanConfig.vlan_port[1].pvid);
+	//printf("now call auto_mmead_get_rtl8306e_configs get  vlan3 =[%d]\n", ack_data.vlanConfig.vlan_port[2].pvid);
+	//printf("now call auto_mmead_get_rtl8306e_configs get  vlan4 =[%d]\n", ack_data.vlanConfig.vlan_port[3].pvid);
+	//printf("now call auto_mmead_get_rtl8306e_configs get  vlan cpu =[%d]\n", ack_data.vlanConfig.vlan_port[4].pvid);
 
 
 	//update switch and send config
@@ -249,10 +249,10 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	iNode.cnu = cnu_index;
 
 
-	printf("eth1 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth1VlanStop);
-	printf("eth2 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth2VlanStop);
-	printf("eth3 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth3VlanStop);
-	printf("eth4 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth4VlanStop);
+	// printf("eth1 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth1VlanStop);
+	// printf("eth2 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth2VlanStop);
+	// printf("eth3 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth3VlanStop);
+	// printf("eth4 vlanstart=[%d], stop =[%d]\n", ptemplate->col_eth4VlanStop);
 
 	
 	//update template dbs
@@ -264,7 +264,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 
 	dbsFflush(dbsdev);
 
-    printf("now willl calll   auto2cmm_writeSwitchSettings befoooooore\n");
+    //printf("now willl calll   auto2cmm_writeSwitchSettings befoooooore\n");
 	if(CMM_SUCCESS  != auto2cmm_writeSwitchSettings(&SK_AUTOCONFIG2CMM, &iNode,  &ack_data))
 	{
 		opt_sts = CMM_FAILED;
@@ -281,7 +281,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 		opt_sts = CMM_FAILED;
 	}
 
-	//printf("auto2cmm_writeSwitchSettings now successfull!!!\n" );
+	printf("auto2cmm_writeSwitchSettings now successfull!!!\n" );
 
 }
 
@@ -321,7 +321,7 @@ void do_cnu_template_auto_config(void )
 	
 	    
 	
-		printf("now save template dbs ok\n");
+	//	printf("now save template dbs ok\n");
 	    for( i=1; i <= MAX_CLT_AMOUNT_LIMIT; i++)
 			for(j=1; j<=  MAX_CNUS_PER_CLT; j++)
 			{				
