@@ -12,6 +12,7 @@ int mmead_set_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo);
 int mmead_get_rtl8306e_configs(uint8_t ODA[], st_rtl8306eSettings *rtl8306e);
 int mmead_write_rtl8306e_mod(uint8_t ODA[], uint8_t *mod, uint32_t mod_len);
 int mmead_erase_mod(uint8_t ODA[], T_MMEAD_ERASE_MOD_REQ_INFO *erase);
+int mmead_get_user_hfid(T_szCnuUserHFID *cnuuserhfid );
 
 int mmead_do_link_diag
 (

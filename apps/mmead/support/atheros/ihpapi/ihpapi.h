@@ -400,6 +400,12 @@ typedef struct __packed ihpapi_getTxGain_s
 }
 ihpapi_getTxGain_t;
 
+typedef struct __packed ihpapi_getUserHFID_s 
+{
+	uint8_t USER_HFID[64];
+}
+ihpapi_getUserHFID_t;
+
 
 /*====================================================================*
  *   
@@ -637,6 +643,7 @@ typedef struct __packed ihpapi_result_s
 		ihpapi_mdioCommandData_t mdioInfo;
 		ihpapi_getFrequencyBandSelection_t FrequencyBandSelectionInfo;
 		ihpapi_getTxGain_t txGainInfo;
+		ihpapi_getUserHFID_t UserHFIDInfo;
 	}
 	data;
 }
@@ -717,7 +724,8 @@ size_t ihpapi_GetFrequencyBandSelection (uint8_t sa [], uint8_t da [], size_t bu
 size_t ihpapi_SetFrequencyBandSelection(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_getFrequencyBandSelection_t *FrequencyBandSelectionInfo);
 size_t ihpapi_GetTxGain(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_SetTxGain(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], uint8_t tx_gain);
-
+size_t ihpapi_GetUserHFID(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
+size_t ihpapi_SetUserHFID(uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], uint8_t user_hfid[]);
 /*====================================================================*
  *   decoder functions; see the Intellon HomePlug AV
  *   Application Programming Interface Manual for more information;

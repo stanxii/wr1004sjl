@@ -2029,6 +2029,39 @@ int http2cmm_getCbatTemperature(st_temperature *temp_data)
 	return CMM_FAILED;
 }
 
+int http2cmm_getCnuUserHFID(T_szCnuUserHFID *cnuuserhfid )
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+//	uint32_t *req_data = (uint32_t *)(req->BUF);
+	
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	T_szCnuUserHFID *ack_data = (T_szCnuUserHFID *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_HTTP;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_USER_HFID_READ;
+	req->HEADER.ulBodyLength = sizeof(T_szCnuUserHFID);
+	req->HEADER.fragment = 0;
+
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+	memcpy(req->BUF,cnuuserhfid, req->HEADER.ulBodyLength);
+
+	if( CMM_SUCCESS == __http2cmm_comm(buf, len) )
+	{
+		memcpy(cnuuserhfid->pdata,ack_data->pdata,64);
+		return CMM_SUCCESS;
+	}	
+	return CMM_FAILED;
+}
+
 int http2cmm_upgrade(void)
 {
 	return CMM_FAILED;

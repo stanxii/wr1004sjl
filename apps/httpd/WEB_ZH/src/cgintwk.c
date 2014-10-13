@@ -24,6 +24,7 @@
 #include <http2cmm.h>
 #include <dbsapi.h>
 #include <boardapi.h>
+#include <public.h>
 
 extern WEB_NTWK_VAR glbWebVar;
 
@@ -4141,6 +4142,7 @@ void cgiCnuMgmt(char *query, FILE *fs)
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 	char action[IFC_LARGE_LEN];
+	T_szCnuUserHFID cnuuserhfid;
 
 	cgiGetValueByName(query, "cnuid", action);
 	id = atoi(action);
@@ -4150,6 +4152,12 @@ void cgiCnuMgmt(char *query, FILE *fs)
 
 	dbsGetCnu(dbsdev, id, &cnu);
 	dbsGetProfile(dbsdev, id, &profile);
+
+	if (  cnu.col_sts == 1)
+	{
+		boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA);
+		http2cmm_getCnuUserHFID(&cnuuserhfid);
+	}
 
 	fprintf(fs, "<html>\n");
 	fprintf(fs, "<head>\n");
@@ -4354,7 +4362,7 @@ void cgiCnuMgmt(char *query, FILE *fs)
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td>设备型号</td>\n");
-	fprintf(fs, "				<td>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+	fprintf(fs, "				<td>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model));
 	fprintf(fs, "			</tr>\n");
 	fprintf(fs, "			<tr>\n");
 	fprintf(fs, "				<td>MAC地址</td>\n");
@@ -4814,6 +4822,7 @@ void cgiTopologyView(char *query, FILE *fs)
 	st_dbsClt clt;
 	st_dbsCnu cnu;
 	char logmsg[256]={0};
+	T_szCnuUserHFID cnuuserhfid;
 
 	fprintf(fs, "<html>\n");
 	fprintf(fs, "<head>\n");
@@ -4928,7 +4937,14 @@ void cgiTopologyView(char *query, FILE *fs)
 						}
 						else
 						{
-							
+							if ( cnu.col_sts == 1)
+							{
+								 boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA);
+								 http2cmm_getCnuUserHFID(&cnuuserhfid);
+								 memcpy(cnu.col_user_hfid,cnuuserhfid.pdata,64);
+								 dbsUpdateCnu( dbsdev, n, &cnu);
+								 dbsFflush(dbsdev);
+							}
 							iCount++;
 							if( (iCount % 2) == 0 )
 							{
@@ -4936,7 +4952,7 @@ void cgiTopologyView(char *query, FILE *fs)
 								fprintf(fs, "<tr>\n");
 								fprintf(fs, "<td class='cnub' align='center'>CNU/%d/%d</td>\n", i, j);
 								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
-								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model));
 								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
 								fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
 								fprintf(fs, "<td class='cnub' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
@@ -4950,7 +4966,7 @@ void cgiTopologyView(char *query, FILE *fs)
 								fprintf(fs, "<tr>\n");
 								fprintf(fs, "<td class='cnua' align='center'>CNU/%d/%d</td>\n", i, j);
 								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
-								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model));
 								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
 								fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
 								fprintf(fs, "<td class='cnua' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");

@@ -506,6 +506,34 @@ int mmead_set_rtl8306e_register(uint8_t ODA[], T_szSwRtl8306eConfig *pRegInfo)
 	return ret;	
 }
 
+int mmead_get_user_hfid(T_szCnuUserHFID *hfidinfo)
+{
+	int len = 0;
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	T_Msg_Header_MMEAD h;
+	T_REQ_Msg_MMEAD *r = (T_REQ_Msg_MMEAD *)buf;
+	bzero(hfidinfo->pdata, sizeof(uint8_t));
+	bzero(buf, MAX_UDP_SIZE);
+
+	h.M_TYPE = 0xCC08;
+	h.DEV_TYPE = WEC_3801I;
+	h.MM_TYPE = MMEAD_GET_USER_HFID;
+	h.fragment = 0;
+	memcpy(h.ODA, hfidinfo->ODA, 6);
+
+	h.LEN = sizeof(uint8_t);
+
+	memcpy(buf, &h, sizeof(T_Msg_Header_MMEAD));
+	len = sizeof(T_Msg_Header_MMEAD) + sizeof(uint8_t);
+
+	if( CMM_SUCCESS == __cmm_mmead_communicate(buf, len) )
+	{
+		memcpy(hfidinfo->pdata, (void *)r->BUF, 64);
+		return CMM_SUCCESS;
+	}
+	return CMM_FAILED;
+}
+
 int mmead_do_link_diag
 (
 	uint8_t ODA[], 

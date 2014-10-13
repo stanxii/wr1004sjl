@@ -291,6 +291,31 @@ int msg_reg_mmead_get_nelist(uint8_t ODA[], T_MMEAD_TOPOLOGY *plist)
 	return CMM_FAILED;
 }
 
+int msg_reg_mmead_get_user_hfid(uint8_t ODA[], uint8_t *pdata)
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	T_Msg_Header_MMEAD h;
+	T_REQ_Msg_MMEAD *r = (T_REQ_Msg_MMEAD *)buf;
+	bzero(pdata, sizeof(uint8_t));
+	bzero(buf, MAX_UDP_SIZE);
+
+	h.M_TYPE = 0xCC08;
+	h.DEV_TYPE = WEC_3801I;
+	h.MM_TYPE = MMEAD_GET_USER_HFID;
+	h.fragment = 0;
+	memcpy(h.ODA, ODA, 6);
+	h.LEN = 0;
+
+	memcpy(buf, &h, sizeof(h));
+
+	if( CMM_SUCCESS == __msg_reg_mmead_communicate(buf, sizeof(h)) )
+	{
+		memcpy(pdata, (void *)r->BUF, 64);
+		return CMM_SUCCESS;
+	}
+	return CMM_FAILED;
+}
+	
 int msg_reg_mmead_reset_eoc(uint32_t devType, uint8_t ODA[])
 {
 	uint8_t buf[MAX_UDP_SIZE];

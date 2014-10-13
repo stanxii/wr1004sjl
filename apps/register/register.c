@@ -488,7 +488,7 @@ void do_cnu_auto_config(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO
 	st_dbsCnu cnu;
 	DB_INTEGER_V iValue;
 	T_TOPOLOGY_INFO *this = &topEntry;
-
+	
 	/* 解决MAC地址相同但是设备类型不同的CNU 自动配置的BUG */
 	/* 如:在该CBAT下曾经有MAC为3071b2000010的WEC-3702I接入，该设备
 	下线之后，又有同样MAC地址，但是设备类型为WEC-604的设备
@@ -896,6 +896,7 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 	int autoCfgSts = 0;
 	//uint32_t userType = 0;
 	//st_dbsCnu cnu;
+
 	int inode = (clt_index-1)*MAX_CNUS_PER_CLT+(cnu_index-1);
 	T_TOPOLOGY_INFO *this = &topEntry;
 	
@@ -1011,6 +1012,7 @@ void do_cnu_register(uint32_t clt_index, uint32_t cnu_index, T_MMEAD_CNU_INFO ac
 		/* 如果MAC地址相同的非法用户在这里也能混进去*/
 		refresh_active_cnu(clt_index, cnu_index, activeCnu);
 	}
+	
 }
 
 void do_cnu_delete(uint32_t clt_index, uint32_t cnu_index)
@@ -1424,7 +1426,7 @@ void do_cnu_discorver(int cltid, T_MMEAD_TOPOLOGY *plist)
 	BOOLEAN discover_new = BOOL_TRUE;		
 	//uint8_t null_mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	T_TOPOLOGY_INFO *this = &topEntry;
-	
+
 	/* 被发现的设备分为2种类型: */
 	/* 1, 新发现的设备
 	** 2, 以前为off-line但现在变为online的设备*/
@@ -1511,10 +1513,13 @@ void pro_clt_dropped(uint32_t clt_index)
 *********************************************************************************************/
 void pro_top_sts_transition(int clt, T_MMEAD_TOPOLOGY *plist)
 {
+	int i = 0;
+	int cnuid; 
 	/* 这个函数里面,CLT一定在线*/
 	/* 如果之前CLT不在线，则需要写上线*/
 	do_clt_discorver(clt, plist);
-	
+
+
 	/* 如果CNU较之前有状态变迁，需要做相应逻辑处理*/
 	/* 先处理下线的设备*/	
 	do_cnu_dropped(clt, plist);	

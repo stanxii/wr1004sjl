@@ -244,6 +244,10 @@ int ihpapi_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result)
 		{
 			rc = ihp_DecodeGetTxGain (buffer, length, result);
 		}
+		else if(0x02 == intohl(pget_property_cnf_header->COOKIE))
+		{
+			rc = ihp_DecodeGetUserHFID (buffer, length, result);
+		}
 		else
 		{
 			printf("ihpapi_RxFrame->case VS_GET_PROPERTY: set errno = ENOSYS\n");
@@ -260,6 +264,10 @@ int ihpapi_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * result)
 		else if(0x01 == intohl(pset_property_cnf->COOKIE))
 		{
 			rc = ihp_DecodeSetTxGain (buffer, length, result);
+		}
+		else if(0x02 == intohl(pset_property_cnf->COOKIE))
+		{
+			rc = ihp_DecodeSetUserHFID (buffer, length, result);
 		}
 		else
 		{

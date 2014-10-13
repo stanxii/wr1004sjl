@@ -281,7 +281,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 		opt_sts = CMM_FAILED;
 	}
 
-	printf("auto2cmm_writeSwitchSettings now successfull!!!\n" );
+	//printf("auto2cmm_writeSwitchSettings now successfull!!!\n" );
 
 }
 

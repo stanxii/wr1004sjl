@@ -33,6 +33,7 @@ int http2cmm_getPortPropetyAll(T_CMM_PORT_PROPETY_INFO *propety);
 int http2cmm_getCbatTemperature(st_temperature *temp_data);
 int http2cmm_sysReboot(void);
 int http2cmm_restoreDefault(void);
+int http2cmm_getCnuUserHFID(T_szCnuUserHFID *cnuuserhfid );
 int http2cmm_upgrade(void);
 
 int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar);
