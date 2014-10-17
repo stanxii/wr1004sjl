@@ -112,7 +112,7 @@ DBS_TBL_DESIGN tbl_cnu[DBS_SYS_TBL_COLS_CNU] =
 	{DBS_SYS_TBL_CNU_COL_ID_ATT,		SQLITE3_TEXT,	16,	BOOL_FALSE,	BOOL_TRUE,	"col_att"},
 	{DBS_SYS_TBL_CNU_COL_ID_SYNCH,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_synch"},
 	{DBS_SYS_TBL_CNU_COL_ID_ROWSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_row_sts"},
-	{DBS_SYS_TBL_CNU_COL_ID_AUTOSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_auto_sts"}
+	{DBS_SYS_TBL_CNU_COL_ID_AUTOSTS,	SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_FALSE,	"col_auto_sts"},
 	{DBS_SYS_TBL_CNU_COL_ID_USERHFID, SQLITE3_TEXT,64,  BOOL_FALSE,   BOOL_TRUE,    "col_user_hfid"}
 };
 
@@ -3435,6 +3435,7 @@ int __dbs_underlayer_get_row_cnu(st_dbsCnu *row)
 		else
 		{
 			row->col_auto_sts = sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_AUTOSTS);
+		}
 		/* SQLITE3_TEXT		| col_user_hfid */
 		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_CNU_COL_ID_USERHFID) )
 		{

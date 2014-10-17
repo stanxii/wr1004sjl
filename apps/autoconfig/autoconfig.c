@@ -313,11 +313,11 @@ void do_cnu_template_auto_config(void )
 	    
 
 		if(1 != template.col_tempAutoSts){
-			printf("auto templateAuto sts == 0 xxxxxx\n");
+			//printf("auto templateAuto sts == 0 xxxxxx\n");
 			 return;
 		}
 		    
-		printf("now template.col_tempAutoSts ===1\n");
+		//printf("now template.col_tempAutoSts ===1\n");
 	
 	    
 	

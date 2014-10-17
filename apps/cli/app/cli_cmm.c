@@ -1225,6 +1225,43 @@ int cli2cmm_vlanConfig2(rtl8306eWriteInfo *req_data1, st_dbsProfile *profile)
 	return __cli2cmm_comm(buf, len);
 }
 
+int cli2cmm_readSwitchSettings(rtl8306eWriteInfo *rtl8306eSettings )
+{
+	uint8_t buf[MAX_UDP_SIZE] = {0};
+	uint32_t len = 0;
+	
+	T_Msg_CMM *req = (T_Msg_CMM *)buf;
+	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
+	
+	T_REQ_Msg_CMM *ack = (T_REQ_Msg_CMM *)buf;
+	st_rtl8306eSettings *ack_data = (st_rtl8306eSettings *)(ack->BUF);
+
+	req->HEADER.usSrcMID = MID_CLI;
+	req->HEADER.usDstMID = MID_CMM;
+	req->HEADER.usMsgType = CMM_CNU_SWITCH_CONFIG_READ;
+	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
+	req->HEADER.fragment = 0;
+
+	req_data->clt = rtl8306eSettings->node.clt;
+	req_data->cnu = rtl8306eSettings->node.cnu;
+	
+	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+
+	if( len > MAX_UDP_SIZE )
+	{
+		IO_Print("\r\n\r\n	Memery Error !");
+		return CMM_FAILED;
+	}
+
+	if( CMM_SUCCESS == __cli2cmm_comm(buf, len) )
+	{
+			memcpy(&(rtl8306eSettings->rtl8306eConfig),(void *)ack_data,sizeof(st_rtl8306eSettings));
+			return CMM_SUCCESS;
+	}
+	return CMM_FAILED;			
+}
+
+
 int cli2cmm_resetClt(uint16_t id)
 {
 	uint8_t buf[MAX_UDP_SIZE] = {0};
