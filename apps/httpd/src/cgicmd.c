@@ -31,8 +31,6 @@ CGI_CMD WebCmdTable[WEB_CMD_NUM_MAX] = {
    { "wecAlarmlog", cgiAlarmlogView },
    { "alarmlogDetail", cgiAlarmlogDetailView },
    { "wecTopology", cgiTopologyView },   
-   { "wecTemplateList", cgiTemplateView },   
-   { "wecTemplateEdit", cgiTemplateEdit },      
    { "wecTemplateMgmt", cgiTemplateMgmt },      
    { "editCltPro", cgiCltProfile },
    { "cltManagement", cgiCltMgmt },

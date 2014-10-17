@@ -529,23 +529,6 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(glbWebVar.frmloadUrl, "wecTopology.cmd");
 		strcpy(filename, "/webs/wecPreView.html");	
 	}
-	else if ( strstr(filename, "previewTemplate.html") != NULL )
-	{
-		strcpy(glbWebVar.frmloadUrl, "wecTemplateList.cmd");
-		strcpy(filename, "/webs/wecPreView.html");	
-	}
-	else if ( strstr(filename, "editTemplate.html") != NULL )
-	{
-		
-	/////////////////////
-		strcpy(filename, "wecTemplateEdit.cmd");
-	
-		/*opt-log*/			
-		http2dbs_writeOptlog(ret, "edit  template");
-	
-
-		//////////// 
-	}
 	else if ( strstr(filename, "mgmtTemplate.html") != NULL )
 	{
 	
