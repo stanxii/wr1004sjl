@@ -57,7 +57,7 @@ menuTitle[MENU_WEC_ACCOUNT_MGMT]              = 'Passwords';
 menuTitle[MENU_WEC_ACCOUNT_WEB]               = 'WEB';
 menuTitle[MENU_WEC_ACCOUNT_CLI]               = 'CLI';
 menuTitle[MENU_WEC_WEB_EXIT]                  = 'Exit';
-menuTitle[MENU_WEC_TEMPLATE_MGMT]        ='Template & VLAN Auto Add One';
+menuTitle[MENU_WEC_TEMPLATE_MGMT]        ='VLAN Autoconfig';
 //menuTitle[MENU_WEC_WEB_TEST_A]                  = 'Test001';
 
 
