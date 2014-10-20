@@ -207,7 +207,7 @@
 
 	/*how to flash ubifs*/
 	1) nand erase 0x2A0000 0x1C00000;tftp 0x20000000 ubifs.bin
-	2) nand write.jffs2 0x20000000 0x2A0000 0x1000000
+	2) nand write.jffs2 0x20000000 0x2A0000 0x1C00000
 
 ##############################################################################################
 @how to set u-boot env in nand flash

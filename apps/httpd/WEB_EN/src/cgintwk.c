@@ -3520,11 +3520,12 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "	</table>\n");
 	fprintf(fs, "</div>\n");
-	fprintf(fs, "<p>\n");
 	fprintf(fs, "	<button id='btn_write'>Ok</button>\n");
 	fprintf(fs, "	<button id='opener'>Help</button>\n");
-	fprintf(fs, "</p>\n");
-	fprintf(fs, "<div id='dialog' title='帮助信息'>\n");
+	//fprintf(fs, "<p>\n");
+	
+	//fprintf(fs, "</p>\n");
+	fprintf(fs, "<div id='dialog' title='Help Info'>\n");
 	fprintf(fs, "This page，You will use Vlan auto increase1 and auto send.<br><br>\n");
 	fprintf(fs, "1. if Enabled Enable Auto config，Then Vlan will auto send to cnu.<br>\n");
 	fprintf(fs, "2. if Enabled VLAN Auto Increase Then Vlan id will auto increase 1 from start and per cnu and auto increase 1.<br>\n");

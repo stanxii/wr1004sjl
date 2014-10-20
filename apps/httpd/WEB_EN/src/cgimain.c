@@ -524,6 +524,31 @@ void do_cgi(char *path, FILE *fs) {
 		strcpy(glbWebVar.frmloadUrl, "wecTopology.cmd");
 		strcpy(filename, "/webs/wecPreView.html");	
 	}
+	else if ( strstr(filename, "mgmtTemplate.html") != NULL )
+	{
+	
+		strcpy(filename, "wecTemplateMgmt.cmd");
+		/*opt-log*/			
+		http2dbs_writeOptlog(ret, "management  template");
+	}
+	else if ( strstr(filename, "saveTemplate.html") != NULL )
+	{  
+		ret = http2dbs_saveTemplate(&glbWebVar);
+
+		if( 0 != ret )
+		{
+			glbWebVar.wecOptCode = CMM_FAILED;
+		}
+		else
+			glbWebVar.wecOptCode = CMM_SUCCESS;
+
+		sprintf(glbWebVar.returnUrl, "mgmtTemplate.cgi");
+		strcpy(filename, "/webs/wecOptResult2.html");
+		
+		/*opt-log*/					
+		http2dbs_writeOptlog(ret, "save  template");
+		
+	}
 	else if ( strstr(filename, "previewLinkDiag.html") != NULL )
 	{
 		strcpy(glbWebVar.frmloadUrl, "wecLinkDiag.cmd");
