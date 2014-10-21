@@ -83,10 +83,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	{
 		opt_sts = CMM_FAILED;
 		//printf("\n#ERROR[07]\n");
-		for(i=0; i< 6; i++){
-		 	printf("bMac[%d]=[%d]\n", i, bMac[i]);
-	    }
-		printf("auto_mmead_get_rtl8306e_configs error\n" );
+		//printf("auto_mmead_get_rtl8306e_configs error\n" );
 		return opt_sts;
 	}
 
@@ -109,10 +106,10 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	    	
 			ack_data.vlanConfig.vlan_port[0].egress_mode = 1;
 			ack_data.vlanConfig.vlan_port[0].pvid = ptemplate->col_eth1VlanStop;	
-			printf("ETH1 now set ack_data vlanid=%d, vlanstart=%d \n", ack_data.vlanConfig.vlan_port[0].pvid, ptemplate->col_eth1VlanStop);		
+			//printf("ETH1 now set ack_data vlanid=%d, vlanstart=%d \n", ack_data.vlanConfig.vlan_port[0].pvid, ptemplate->col_eth1VlanStop);		
 		}		
 		else{
-			printf("col_eth1VlanStart id error pls reset it");
+			//printf("col_eth1VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -128,7 +125,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 			ack_data.vlanConfig.vlan_port[0].pvid = 1;
 		}
 		else{
-			printf("col_eth1VlanStart id error pls reset it");
+			//printf("col_eth1VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -145,10 +142,10 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	    	
 			ack_data.vlanConfig.vlan_port[1].egress_mode = 1;
 			ack_data.vlanConfig.vlan_port[1].pvid = ptemplate->col_eth2VlanStop;	
-			printf("ETH2 now set ack_data swutcg vlanid=%d,  template vlan=%d \n", ack_data.vlanConfig.vlan_port[1].pvid, ptemplate->col_eth2VlanStop);		
+			//printf("ETH2 now set ack_data swutcg vlanid=%d,  template vlan=%d \n", ack_data.vlanConfig.vlan_port[1].pvid, ptemplate->col_eth2VlanStop);		
 		}		
 		else{
-			printf("col_eth2VlanStart id error pls reset it");
+			//printf("col_eth2VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -164,7 +161,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 			ack_data.vlanConfig.vlan_port[1].pvid = 1;
 		}
 		else{
-			printf("col_eth2VlanStart id error pls reset it");
+			//printf("col_eth2VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -179,10 +176,10 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	    	
 			ack_data.vlanConfig.vlan_port[2].egress_mode = 1;
 			ack_data.vlanConfig.vlan_port[2].pvid = ptemplate->col_eth3VlanStop;	
-			printf("ETH3 now set ack_data sw vlan=%d, template vlan=%d\n", ack_data.vlanConfig.vlan_port[2].pvid, ptemplate->col_eth3VlanStop);		
+			//printf("ETH3 now set ack_data sw vlan=%d, template vlan=%d\n", ack_data.vlanConfig.vlan_port[2].pvid, ptemplate->col_eth3VlanStop);		
 		}		
 		else{
-			printf("col_eth3VlanStart id error pls reset it");
+			//printf("col_eth3VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -198,7 +195,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 			ack_data.vlanConfig.vlan_port[2].pvid = 1;
 		}
 		else{
-			printf("col_eth3VlanStart id error pls reset it");
+			//printf("col_eth3VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -214,10 +211,10 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	    	
 			ack_data.vlanConfig.vlan_port[3].egress_mode = 1;
 			ack_data.vlanConfig.vlan_port[3].pvid = ptemplate->col_eth4VlanStop;	
-			printf("ETH4 now set ack_data sw vlan=%d, template vlan=%d\n", ack_data.vlanConfig.vlan_port[3].pvid, ptemplate->col_eth4VlanStop);		
+			//printf("ETH4 now set ack_data sw vlan=%d, template vlan=%d\n", ack_data.vlanConfig.vlan_port[3].pvid, ptemplate->col_eth4VlanStop);		
 		}		
 		else{
-			printf("col_eth4VlanStart id error pls reset it");
+			//printf("col_eth4VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -233,7 +230,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 			ack_data.vlanConfig.vlan_port[3].pvid = 1;
 		}
 		else{
-			printf("col_eth4VlanStart id error pls reset it");
+			//printf("col_eth4VlanStart id error pls reset it");
 			return CMM_FAILED;
 		}
 	}
@@ -258,7 +255,7 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	//update template dbs
 	if(CMM_SUCCESS != dbsUpdateTemplate(dbsdev, 1, ptemplate))
 	{
-		perror("ERROR: do_cnu_template_auto_config->dbsUpdateTemplate !\n");
+		//perror("ERROR: do_cnu_template_auto_config->dbsUpdateTemplate !\n");
 		return;
 	}
 
@@ -268,8 +265,8 @@ void do_one_cnu_templat_autoconfig(int clt_index, int cnu_index, st_dbsTemplate 
 	if(CMM_SUCCESS  != auto2cmm_writeSwitchSettings(&SK_AUTOCONFIG2CMM, &iNode,  &ack_data))
 	{
 		opt_sts = CMM_FAILED;
-		printf("\n#ERROR[06]\n");
-		printf("auto2cmm_writeSwitchSettings error\n" );
+		//printf("\n#ERROR[06]\n");
+		//printf("auto2cmm_writeSwitchSettings error\n" );
 		return opt_sts;
 	}
 
@@ -307,17 +304,16 @@ void do_cnu_template_auto_config(void )
 	//get 1 row is templage management row
 	if(CMM_SUCCESS != dbsGetTemplate(dbsdev, 1, &template))
 	{
-		perror("ERROR: do_cnu_template_auto_config->dbsGetTemplate !\n");
+		//perror("ERROR: do_cnu_template_auto_config->dbsGetTemplate !\n");
 		return;
 	}else{
 	    
 
 		if(1 != template.col_tempAutoSts){
-			printf("auto templateAuto sts == 0 xxxxxx\n");
 			 return;
 		}
 		    
-		printf("now template.col_tempAutoSts ===1\n");
+		//printf("now template.col_tempAutoSts ===1\n");
 	
 	    
 	
