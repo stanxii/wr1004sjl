@@ -3527,6 +3527,7 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth4VlanStart' size='8'>[范围：1~4030]</td>\n");
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "	</table>\n");
+	fprintf(fs, "  </div>\n");
 	fprintf(fs, "</div>\n");
 	fprintf(fs, "<p>\n");
 	fprintf(fs, "	<button id='btn_write'>确 定</button>\n");
