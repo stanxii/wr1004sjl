@@ -1112,7 +1112,9 @@ CGI_ITEM CgiSetTable[] = {
    { "col_eth3VlanAddSts", (void *)&glbWebVar.col_eth3VlanAddSts, CGI_TYPE_NUM }, 
    { "col_eth3VlanStart", (void *)&glbWebVar.col_eth3VlanStart, CGI_TYPE_NUM }, 
    { "col_eth4VlanAddSts", (void *)&glbWebVar.col_eth4VlanAddSts, CGI_TYPE_NUM }, 
-   { "col_eth4VlanStart", (void *)&glbWebVar.col_eth4VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth4VlanStart", (void *)&glbWebVar.col_eth4VlanStart, CGI_TYPE_NUM },
+
+    { "cnuPermition", (void *)&glbWebVar.cnuPermition, CGI_TYPE_NUM }, 
    
    { NULL, NULL, CGI_TYPE_NONE }
 };

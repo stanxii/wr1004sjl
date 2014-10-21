@@ -71,6 +71,7 @@ int http2dbs_saveTemplate(PWEB_NTWK_VAR pWebVar)
 
 	if( CMM_SUCCESS != dbsGetTemplate(dbsdev, pWebVar->col_curTemp, &row) )
 	{
+	        printf("Error pWebVar->col_curTemp  =%d \n", pWebVar->col_curTemp);
 		return CMM_FAILED;
 	}
 

@@ -752,6 +752,17 @@ CGI_ITEM CgiGetTable[] = {
    { "swEth3TxRate", (void *)&glbWebVar.swEth3TxRate, CGI_TYPE_NUM },
    { "swEth4TxRate", (void *)&glbWebVar.swEth4TxRate, CGI_TYPE_NUM },
 
+   { "col_tempAutoSts", (void *)&glbWebVar.col_tempAutoSts, CGI_TYPE_NUM }, 
+   { "col_curTemp", (void *)&glbWebVar.col_curTemp, CGI_TYPE_NUM }, 
+   { "col_eth1VlanAddSts", (void *)&glbWebVar.col_eth1VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth1VlanStart", (void *)&glbWebVar.col_eth1VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth2VlanAddSts", (void *)&glbWebVar.col_eth2VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth2VlanStart", (void *)&glbWebVar.col_eth2VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth3VlanAddSts", (void *)&glbWebVar.col_eth3VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth3VlanStart", (void *)&glbWebVar.col_eth3VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth4VlanAddSts", (void *)&glbWebVar.col_eth4VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth4VlanStart", (void *)&glbWebVar.col_eth4VlanStart, CGI_TYPE_NUM }, 
+
    //{ "swLoopDetect", (void *)&glbWebVar.swLoopDetect, CGI_TYPE_NUM },
    //{ "swSwitchSid", (void *)glbWebVar.swSwitchSid, CGI_TYPE_STR },
    //{ "swEth1LoopStatus", (void *)&glbWebVar.swEth1LoopStatus, CGI_TYPE_NUM },
@@ -1084,6 +1095,17 @@ CGI_ITEM CgiSetTable[] = {
    { "swMlEth4Enable", (void *)&glbWebVar.swMlEth4Enable, CGI_TYPE_NUM }, 
    { "swMlEth4Thresholt", (void *)&glbWebVar.swMlEth4Thresholt, CGI_TYPE_NUM }, 
 
+   { "col_tempAutoSts", (void *)&glbWebVar.col_tempAutoSts, CGI_TYPE_NUM }, 
+   { "col_curTemp", (void *)&glbWebVar.col_curTemp, CGI_TYPE_NUM }, 
+   { "col_eth1VlanAddSts", (void *)&glbWebVar.col_eth1VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth1VlanStart", (void *)&glbWebVar.col_eth1VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth2VlanAddSts", (void *)&glbWebVar.col_eth2VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth2VlanStart", (void *)&glbWebVar.col_eth2VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth3VlanAddSts", (void *)&glbWebVar.col_eth3VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth3VlanStart", (void *)&glbWebVar.col_eth3VlanStart, CGI_TYPE_NUM }, 
+   { "col_eth4VlanAddSts", (void *)&glbWebVar.col_eth4VlanAddSts, CGI_TYPE_NUM }, 
+   { "col_eth4VlanStart", (void *)&glbWebVar.col_eth4VlanStart, CGI_TYPE_NUM }, 
+   
    { "cnuPermition", (void *)&glbWebVar.cnuPermition, CGI_TYPE_NUM }, 
    
    { NULL, NULL, CGI_TYPE_NONE }

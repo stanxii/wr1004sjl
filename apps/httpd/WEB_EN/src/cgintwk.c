@@ -3245,7 +3245,7 @@ void cgiTemplateMgmt(char *query, FILE *fs)
     fprintf(fs, "        $('#col_eth3VlanAddSts').removeAttr('disabled');\n");  
     fprintf(fs, "        $('#col_eth3VlanStart').removeAttr('disabled');\n");  
     fprintf(fs, "        $('#col_eth4VlanAddSts').removeAttr('disabled');\n");  
-    fprintf(fs, "        $('#col_eth4VlanStart').removeAttr('disabled');\n");  
+    fprintf(fs, "        $('#col_eth4VlanStart').removeAttr('disabled');\n");      
     fprintf(fs, "	  }else{\n");  
     fprintf(fs, "        $('#col_eth1VlanAddSts').attr('disabled', 'disabled');\n");  
     fprintf(fs, "        $('#col_eth1VlanStart').attr('disabled', 'disabled');\n");  
@@ -3254,8 +3254,15 @@ void cgiTemplateMgmt(char *query, FILE *fs)
     fprintf(fs, "        $('#col_eth3VlanAddSts').attr('disabled', 'disabled');\n");  
     fprintf(fs, "        $('#col_eth3VlanStart').attr('disabled', 'disabled');\n");  
     fprintf(fs, "        $('#col_eth4VlanAddSts').attr('disabled', 'disabled');\n");  
-    fprintf(fs, "        $('#col_eth4VlanStart').attr('disabled', 'disabled');\n");  
-    fprintf(fs, "	     $('#col_eth1VlanAddSts').val(%d);\n", 1);
+    fprintf(fs, "        $('#col_eth4VlanStart').attr('disabled', 'disabled');\n");      
+    fprintf(fs, "	     $('#col_eth1VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth1VlanStart').val(%d);\n", 1);
+    fprintf(fs, "	     $('#col_eth2VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth2VlanStart').val(%d);\n", 1);
+    fprintf(fs, "	     $('#col_eth3VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth3VlanStart').val(%d);\n", 1);
+    fprintf(fs, "	     $('#col_eth4VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth4VlanStart').val(%d);\n", 1);
     fprintf(fs, "     }\n");  
     fprintf(fs, "   });\n");
 	fprintf(fs, "}\n");
@@ -3519,12 +3526,11 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "			<td class='diagdata' width=220><input type='text' value='0' id='col_eth4VlanStart' size='8'>[Range：2~4030]</td>\n");
 	fprintf(fs, "		</tr>\n");
 	fprintf(fs, "	</table>\n");
-	fprintf(fs, "</div>\n");
+	fprintf(fs, "</div>\n");	
+	fprintf(fs, "<p>\n");
 	fprintf(fs, "	<button id='btn_write'>Ok</button>\n");
 	fprintf(fs, "	<button id='opener'>Help</button>\n");
-	//fprintf(fs, "<p>\n");
-	
-	//fprintf(fs, "</p>\n");
+	fprintf(fs, "</p>\n");
 	fprintf(fs, "<div id='dialog' title='Help Info'>\n");
 	fprintf(fs, "This page，You will use Vlan auto increase1 and auto send.<br><br>\n");
 	fprintf(fs, "1. if Enabled Enable Auto config，Then Vlan will auto send to cnu.<br>\n");

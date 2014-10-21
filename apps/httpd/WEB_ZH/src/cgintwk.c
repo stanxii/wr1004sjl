@@ -3256,7 +3256,14 @@ void cgiTemplateMgmt(char *query, FILE *fs)
     fprintf(fs, "        $('#col_eth3VlanStart').attr('disabled', 'disabled');\n");  
     fprintf(fs, "        $('#col_eth4VlanAddSts').attr('disabled', 'disabled');\n");  
     fprintf(fs, "        $('#col_eth4VlanStart').attr('disabled', 'disabled');\n");  
-    fprintf(fs, "	     $('#col_eth1VlanAddSts').val(%d);\n", 1);
+    fprintf(fs, "	     $('#col_eth1VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth1VlanStart').val(%d);\n", 1);
+    fprintf(fs, "	     $('#col_eth2VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth2VlanStart').val(%d);\n", 1);
+    fprintf(fs, "	     $('#col_eth3VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth3VlanStart').val(%d);\n", 1);
+    fprintf(fs, "	     $('#col_eth4VlanAddSts').val(%d);\n", 0);
+    fprintf(fs, "	     $('#col_eth4VlanStart').val(%d);\n", 1);
     fprintf(fs, "     }\n");  
     fprintf(fs, "   });\n");
 	fprintf(fs, "}\n");
