@@ -3236,6 +3236,16 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "	$('#col_eth3VlanStart').val(%d);\n", template.col_eth3VlanStart);
 	fprintf(fs, "	$('#col_eth4VlanAddSts').val(%d);\n", template.col_eth4VlanAddSts);
 	fprintf(fs, "	$('#col_eth4VlanStart').val(%d);\n", template.col_eth4VlanStart);
+	fprintf(fs, "   if($('#col_tempAutoSts').val() == 0){\n");  	  
+	fprintf(fs, "      $('#col_eth1VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "      $('#col_eth1VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "      $('#col_eth2VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "      $('#col_eth2VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "      $('#col_eth3VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "      $('#col_eth3VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "      $('#col_eth4VlanAddSts').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "      $('#col_eth4VlanStart').attr('disabled', 'disabled');\n");  
+    fprintf(fs, "   });\n");
 	fprintf(fs, "   $('#col_tempAutoSts').change(function(){\n");  
 	fprintf(fs, "     if($('#col_tempAutoSts').val() != 0){\n");  	  
 	fprintf(fs, "        $('#col_eth1VlanAddSts').removeAttr('disabled');\n");  
