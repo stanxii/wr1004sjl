@@ -3246,7 +3246,7 @@ void cgiTemplateMgmt(char *query, FILE *fs)
     fprintf(fs, "      $('#col_eth3VlanStart').attr('disabled', 'disabled');\n");  
     fprintf(fs, "      $('#col_eth4VlanAddSts').attr('disabled', 'disabled');\n");  
     fprintf(fs, "      $('#col_eth4VlanStart').attr('disabled', 'disabled');\n");  
-    fprintf(fs, "   });\n");
+    fprintf(fs, "   }\n");
 	fprintf(fs, "   $('#col_tempAutoSts').change(function(){\n");  
 	fprintf(fs, "     if($('#col_tempAutoSts').val() != 0){\n");  	  
 	fprintf(fs, "        $('#col_eth1VlanAddSts').removeAttr('disabled');\n");  
