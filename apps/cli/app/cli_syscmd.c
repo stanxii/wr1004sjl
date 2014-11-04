@@ -1122,29 +1122,43 @@ ULONG CLI_Cmd_ShowTopology()
 					}
 					else
 					{
-						if( cnu.col_sts == 1 )
+						if( boardapi_isAr6400Device(cnu.col_model) == 1)
 						{
-							if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA) )
-							{
-								return  CMM_FAILED;
-							}
-							if (CMM_SUCCESS != cli2cmm_readUserHFID(&cnuuserhfid))
-							{
-								return CMM_FAILED;
-							}
-							memcpy(cnu.col_user_hfid,cnuuserhfid.pdata,64);
-							dbsUpdateCnu(dbsdev, cnuid, &cnu);
-							dbsFflush(dbsdev);
+							IO_Print("\r\n    --CNU/%d/%-2d   %-16s[ %s ]  %3d/%-3d     %d",
+								j, i, 
+								boardapi_getDeviceModelStr(cnu.col_model),
+								cnu.col_mac,
+								cnu.col_rx,
+								cnu.col_tx,
+								cnu.col_sts
+							);
 						}
-						IO_Print("\r\n    --CNU/%d/%-2d   %-16s[ %s ]  %3d/%-3d     %d",
-							j, i, 
-							boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model),
-							cnu.col_mac,
-							cnu.col_rx,
-							cnu.col_tx,
-							cnu.col_sts
-						);
-					}
+						else
+						{
+							if( cnu.col_sts == 1 )
+							{
+								if( CMM_SUCCESS != boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA) )
+								{
+									return  CMM_FAILED;
+								}
+								if (CMM_SUCCESS != cli2cmm_readUserHFID(&cnuuserhfid))
+								{
+									return CMM_FAILED;
+								}
+									memcpy(cnu.col_user_hfid,cnuuserhfid.pdata,64);
+									dbsUpdateCnu(dbsdev, cnuid, &cnu);
+									dbsFflush(dbsdev);
+							}
+							IO_Print("\r\n    --CNU/%d/%-2d   %-16s[ %s ]  %3d/%-3d     %d",
+								j, i, 
+								boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model),
+								cnu.col_mac,
+								cnu.col_rx,
+								cnu.col_tx,
+								cnu.col_sts
+							);
+					     }
+				       }
 				}
 			}
 		}

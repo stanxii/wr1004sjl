@@ -3761,11 +3761,13 @@ void cgiCnuMgmt(char *query, FILE *fs)
 
 	dbsGetCnu(dbsdev, id, &cnu);
 	dbsGetProfile(dbsdev, id, &profile);
-
-	if (  cnu.col_sts == 1)
+	if ( boardapi_isAr6400Device(cnu.col_model) != 1)
 	{
-		boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA);
-		http2cmm_getCnuUserHFID(&cnuuserhfid);
+		if (  cnu.col_sts == 1)
+		{
+			boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA);
+			http2cmm_getCnuUserHFID(&cnuuserhfid);
+		}
 	}
 
 	fprintf(fs, "<html>\n");
@@ -3854,8 +3856,10 @@ void cgiCnuMgmt(char *query, FILE *fs)
 		fprintf(fs, "	var loc;\n");
 		fprintf(fs, "	if(0==modType)\n");
 		fprintf(fs, "		loc = 'editCnuPro.cmd?cnuid=' + cnuid;\n");
-		fprintf(fs, "	else\n");
+		fprintf(fs, "	else{\n");
 		fprintf(fs, "		loc = 'rtl8306eConfig.cgi?cnuid=' + cnuid;	\n");
+		fprintf(fs, "	        loc = 'rtl8306eConfigRead.cgi?cnuid=' + cnuid;\n");
+		fprintf(fs, "             }\n");
 		fprintf(fs, "	var code = 'location=\"' + loc + '\"';\n");
 		fprintf(fs, "	//alert(code);\n");
 		fprintf(fs, "	eval(code);\n");
@@ -4545,43 +4549,78 @@ void cgiTopologyView(char *query, FILE *fs)
 							continue;
 						}
 						else
-						{
-							if ( cnu.col_sts == 1)
+						{	
+							if ( boardapi_isAr6400Device(cnu.col_model) ==1)
 							{
-								 boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA);
-								 http2cmm_getCnuUserHFID(&cnuuserhfid);
-								 memcpy(cnu.col_user_hfid,cnuuserhfid.pdata,64);
-								 dbsUpdateCnu( dbsdev, n, &cnu);
-								 dbsFflush(dbsdev);
-							}
-							iCount++;
-							if( (iCount % 2) == 0 )
-							{
-								/**/
-								fprintf(fs, "<tr>\n");
-								fprintf(fs, "<td class='cnub' align='center'>CNU/%d/%d</td>\n", i, j);
-								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
-								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model));
-								fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
-								fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
-								fprintf(fs, "<td class='cnub' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
-								//fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
-								fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
-								fprintf(fs, "</tr>\n");
+								iCount++;
+								if( (iCount % 2) == 0 )
+								{
+									/**/
+									fprintf(fs, "<tr>\n");
+									fprintf(fs, "<td class='cnub' align='center'>CNU/%d/%d</td>\n", i, j);
+									fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
+									fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+									fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
+									fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+									fprintf(fs, "<td class='cnub' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+									//fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+									fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
+									fprintf(fs, "</tr>\n");
+								}
+								else
+								{
+									/**/
+									fprintf(fs, "<tr>\n");
+									fprintf(fs, "<td class='cnua' align='center'>CNU/%d/%d</td>\n", i, j);
+									fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
+									fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model));
+									fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
+									fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+									fprintf(fs, "<td class='cnua' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+									//fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+									fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
+									fprintf(fs, "</tr>\n");
+								}
 							}
 							else
 							{
-								/**/
-								fprintf(fs, "<tr>\n");
-								fprintf(fs, "<td class='cnua' align='center'>CNU/%d/%d</td>\n", i, j);
-								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
-								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model));
-								fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
-								fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
-								fprintf(fs, "<td class='cnua' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
-								//fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
-								fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
-								fprintf(fs, "</tr>\n");
+								if ( cnu.col_sts == 1)
+								{
+									 boardapi_macs2b(cnu.col_mac, cnuuserhfid.ODA);
+									 http2cmm_getCnuUserHFID(&cnuuserhfid);
+									 memcpy(cnu.col_user_hfid,cnuuserhfid.pdata,64);
+									 dbsUpdateCnu( dbsdev, n, &cnu);
+									 dbsFflush(dbsdev);
+								}
+								iCount++;
+								if( (iCount % 2) == 0 )
+								{
+									/**/
+									fprintf(fs, "<tr>\n");
+									fprintf(fs, "<td class='cnub' align='center'>CNU/%d/%d</td>\n", i, j);
+									fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_mac);
+									fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model));
+									fprintf(fs, "<td class='cnub' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
+									fprintf(fs, "<td class='cnub' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+									fprintf(fs, "<td class='cnub' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+									//fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+									fprintf(fs, "<td class='cnub' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
+									fprintf(fs, "</tr>\n");
+								}
+								else
+								{
+									/**/
+									fprintf(fs, "<tr>\n");
+									fprintf(fs, "<td class='cnua' align='center'>CNU/%d/%d</td>\n", i, j);
+									fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_mac);
+									fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", boardapi_getDeviceModelStr(cnu.col_model) == "UNKNOWN" ? cnu.col_user_hfid : boardapi_getDeviceModelStr(cnu.col_model));
+									fprintf(fs, "<td class='cnua' align='center'>%s</td>\n", cnu.col_auth?"允许":"禁止");
+									fprintf(fs, "<td class='cnua' align='center'>%d/%d</td>\n", cnu.col_rx, cnu.col_tx);
+									fprintf(fs, "<td class='cnua' align='center'><IMG src='%s'></td>\n", cnu.col_sts?"net_up.gif":"net_down.gif");
+									//fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuProfile.cmd?viewid=%d\"'></td>\n", n);
+									fprintf(fs, "<td class='cnua' align='center'><img src='show.gif' style='cursor:pointer' onclick='window.location=\"cnuManagement.cmd?cnuid=%d\"'></td>\n", n);
+									fprintf(fs, "</tr>\n");
+								}
 							}
 						}
 					}
