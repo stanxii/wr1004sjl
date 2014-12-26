@@ -389,6 +389,16 @@ char * boardapi_getDeviceModelStr(uint32_t model)
 					return "WR1004SJL";
 			}
 		}
+		case WR1004JLD:
+		{
+			switch(CUSTOM_LOGO_ID)
+			{
+				case CUSTOM_LOGO_DEMO:
+				case CUSTOM_LOGO_PREVAIL:
+				default:
+					return "WR1004JLD";
+			}
+		}
 		case WEC_3702I_E4:
 		{
 			switch(CUSTOM_LOGO_ID)

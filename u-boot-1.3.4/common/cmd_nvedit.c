@@ -186,7 +186,7 @@ int _do_setenv (int flag, int argc, char *argv[])
 		/* Allow serial# forced overwrite with 0xdeaf4add flag */
 		    ((strcmp (name, "serial#") == 0) && (flag != 0xdeaf4add)) ||
 #else
-		    (strcmp (name, "serial#") == 0) ||
+	    	    (strcmp (name, "serial#") == 0) ||
 #endif
 		    ((strcmp (name, "ethaddr") == 0)
 #if defined(CONFIG_OVERWRITE_ETHADDR_ONCE) && defined(CONFIG_ETHADDR)

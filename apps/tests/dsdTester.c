@@ -41,6 +41,7 @@ GT_SYS_CONFIG   cfg;
 GT_QD_DEV       diagDev;
 GT_QD_DEV       *dev = &diagDev;
 static T_DBS_DEV_INFO *dbsdev = NULL;
+int hfcPort = 4;
 
 void dsdTester_usage(void)
 {
@@ -69,7 +70,7 @@ void dsdTester_usage(void)
 	printf("  --case/6/5: sample add intellon multicast address 00:b0:52:00:00:01 in the ATU, and all cable port\n");
 	printf("  --case/7/1 1 0x200000 0x3D: 1 is Enable ,cbsLimit 0x200000 < 0xFFFFFF , cbsIncreament < 0xFF sample:: --case/7/1 0 is disable Storm prevent test for broadcast unknow unicast and multicast\n");
 	printf("  --case/8/1: reset 88e6171r by software\n");
-	
+	printf("  --case/9/1: show Port vlan status\n");
 	printf("\n\n");
 }
 
@@ -355,11 +356,15 @@ GT_STATUS __undo_mgmt_vlan(void)
 	/* 2) Set port 0-6's DefaultVID (PVID) = 1 */
 	/* Note: 2 is already done in MV88E6171R_INIT() */
 	
-	/* 3) Set port 0-4,6 's Egress Mode = 0 (egress unmodified) */	
-	/* 4) Set port 5's Egress mode = 1 (egress untagged) */
+	/* 3) Set port 0-3,6 's Egress Mode = 0 (egress unmodified) */	
+	/* 4) Set port 4,5's Egress mode = 1 (egress untagged) */
 	for( i=0; i<dev->numOfPorts; i++)
 	{
-		if( i == dev->cpuPortNum )
+		if( i == hfcPort )
+		{
+			mode = GT_UNTAGGED_EGRESS;
+		}
+		else if( i == dev->cpuPortNum )
 		{
 			mode = GT_UNTAGGED_EGRESS;
 		}
@@ -384,11 +389,15 @@ GT_STATUS __do_mgmt_vlan(uint32_t vid)
 	GT_EGRESS_MODE egressMode;
 	GT_VTU_ENTRY vtuEntry;
 	
-	/* 1) Set port 0-4,6 to 802.1q Fallback Mode */
-	/* 2) Set P5 to 802.1q secure mode */
+	/* 1) Set port 0-3,6 to 802.1q Fallback Mode */
+	/* 2) Set P4,5 to 802.1q secure mode */
 	for( i=0; i<dev->numOfPorts; i++)
 	{
-		if( i == dev->cpuPortNum )
+		if( i == hfcPort )
+		{
+			vlanMode = GT_SECURE;
+		}
+		else if( i == dev->cpuPortNum )
 		{
 			vlanMode = GT_SECURE;
 		}
@@ -402,19 +411,28 @@ GT_STATUS __do_mgmt_vlan(uint32_t vid)
 			return status;
 		}
 	}
-	/* 3) Set port 0-4,6's DefaultVID (PVID) = 1 */
+	/* 3) Set port 0-3,6's DefaultVID (PVID) = 1 */
 	/* Note: 3 is already done in MV88E6171R_INIT() */
-	/* 4) Set P5's DefaultVID (PVID) = vid */
+	/* 4) Set P4,5's DefaultVID (PVID) = vid */
+	if((status = gvlnSetPortVid(dev, hfcPort, vid)) != GT_OK)
+	{
+		printf("gvlnSetPortVid return Failed\n");
+		return status;
+	}
 	if((status = gvlnSetPortVid(dev, dev->cpuPortNum, vid)) != GT_OK)
 	{
 		printf("gvlnSetPortVid return Failed\n");
 		return status;
 	}	
-	/* 5) Set port 0-4,6 's Egress Mode = 0 (egress unmodified) */	
-	/* 6) Set port 5's Egress mode = 1 (egress untagged) */
+	/* 5) Set port 0-3,6 's Egress Mode = 0 (egress unmodified) */	
+	/* 6) Set port 4,5's Egress mode = 1 (egress untagged) */
 	for( i=0; i<dev->numOfPorts; i++)
 	{
-		if( i == dev->cpuPortNum )
+		if( i == hfcPort)
+		{
+			egressMode = GT_UNTAGGED_EGRESS;
+		}
+		else if( i == dev->cpuPortNum )
 		{
 			egressMode = GT_UNTAGGED_EGRESS;
 		}
@@ -427,17 +445,21 @@ GT_STATUS __do_mgmt_vlan(uint32_t vid)
 			printf("gprtSetEgressMode returned fail.\n");		
 		}
 	}
-	/* 7) Add VLAN vid VTU entry (MemberTagP5 = 1, egress untagged, and MemberTagP0-4,6 = 2, egress tagged) */
+	/* 7) Add VLAN vid VTU entry (MemberTagP4,5 = 1, egress untagged, and MemberTagP0-3,6 = 2, egress tagged) */
 	gtMemSet(&vtuEntry,0,sizeof(GT_VTU_ENTRY));
 	vtuEntry.DBNum = 0;
 	vtuEntry.vid = vid;
 	for( i=0; i<dev->numOfPorts; i++ )
 	{
-		if( i == dev->cpuPortNum )	/* MemberTagP5 = 1 (egress untagged) */
+		if( i == hfcPort )                           /* MemberTagP4 = 1 (egress untagged) */
 		{
 			vtuEntry.vtuData.memberTagP[i] = MEMBER_EGRESS_UNTAGGED;
 		}
-		else						/* MemberTagP0-4,6 = 2 (egress tagged) */
+		else if( i == dev->cpuPortNum )	/* MemberTagP5 = 1 (egress untagged) */
+		{
+			vtuEntry.vtuData.memberTagP[i] = MEMBER_EGRESS_UNTAGGED;
+		}
+		else						/* MemberTagP0-3,6 = 2 (egress tagged) */
 		{
 			vtuEntry.vtuData.memberTagP[i] = MEMBER_EGRESS_TAGGED;
 		}
@@ -1643,26 +1665,46 @@ int main(int argc, char *argv[])
 	int cpuPort = 5;
 	long cbsLimit =0x000000;
 	int cbsIncreament = 0x00;	
-	int cbsEnable= 0;	
+	int cbsEnable= 0;
+	uint32_t vid;
+	st_dbsSysinfo dsdtSysinfo;
 
 	if( argc > 2 )
 	{
 		if( strcmp(argv[1], "case/7/1") != 0)
 		{
 			dsdTester_usage();
-			return 0;
+			return 0;	
 		}
 	}
-	else if( argc != 2 )
+	else if( argc != 2)
 	{
 		dsdTester_usage();
-		return 0;
+		return 0;	
 	}
 
 	dbsdev = dbsNoWaitOpen(MID_DSDT_TESTER);
 	if( NULL == dbsdev )
 	{
 		return 0;
+	}
+
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &dsdtSysinfo))
+	{
+		return CMM_FAILED;
+	} 
+
+	if( dsdtSysinfo.col_model == 33 )
+	{
+		hfcPort = 6;
+	}
+	else if ( dsdtSysinfo.col_model == 32 )
+	{
+		hfcPort = 0;
+	}
+	else if( dsdtSysinfo.col_model == 36 )
+	{
+		hfcPort = 4;
 	}
 
 	/* ×¢²áÒì³£ÍË³ö¾ä±úº¯Êý*/
@@ -2050,6 +2092,17 @@ int main(int argc, char *argv[])
 		{
 			printf("OK.\n");
 		}
+
+		printf("\n");
+		goto DSDT_END;
+	}
+	else if( strcmp(argv[1], "case/9/1") == 0)
+	{
+		printf("\n");
+		dsdtInit(cpuPort);
+		
+		printf("\n");
+		dsdTester_showVlan();
 
 		printf("\n");
 		goto DSDT_END;

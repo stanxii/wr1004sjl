@@ -27,6 +27,8 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
+#define CONFIG_ENV_OVERWRITE
+
 /* ARM asynchronous clock */
 #define AT91_MAIN_CLOCK		396288000	/* from 18.432 MHz crystal */
 #define AT91_MASTER_CLOCK	132096000	/* peripheral = main / 3 */

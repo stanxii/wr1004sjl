@@ -281,9 +281,29 @@ int __find_dbnum_by_vid(uint32_t vid)
 GT_STATUS __undo_mgmt_vlan(void)
 {
 	int i;
+	int Model;
 	GT_STATUS status;
 	GT_EGRESS_MODE mode;
-	
+	st_dbsSysinfo dsdtSysinfo;
+	int hfcPort = 4;
+
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &dsdtSysinfo))
+	{
+		return CMM_FAILED;
+	} 
+
+	if( dsdtSysinfo.col_model == 33 )
+	{
+		hfcPort = 6;
+	}
+	else if (dsdtSysinfo.col_model == 32 )
+	{
+		hfcPort = 0;
+	}
+	else if (  dsdtSysinfo.col_model == 36 )
+	{
+		hfcPort = 4;
+	}
 	/* 1) Set port 0-6 to 802.1q Fallback Mode */
 	for( i=0; i<dev->numOfPorts; i++)
 	{
@@ -296,11 +316,17 @@ GT_STATUS __undo_mgmt_vlan(void)
 	/* 2) Set port 0-6's DefaultVID (PVID) = 1 */
 	/* Note: 2 is already done in MV88E6171R_INIT() */
 	
-	/* 3) Set port 0-4,6 's Egress Mode = 0 (egress unmodified) */	
-	/* 4) Set port 5's Egress mode = 1 (egress untagged) */
+	/* 3) Set port 0-3's Egress Mode = 0 (egress unmodified) */	
+	/* 4) Set port hfc,cpu's Egress mode = 1 (egress untagged) */
+	
+	
 	for( i=0; i<dev->numOfPorts; i++)
 	{
-		if( i == dev->cpuPortNum )
+		if( i == hfcPort)
+		{
+			mode = GT_UNTAGGED_EGRESS;
+		}
+		else if( i == dev->cpuPortNum )
 		{
 			mode = GT_UNTAGGED_EGRESS;
 		}
@@ -324,6 +350,26 @@ GT_STATUS __do_mgmt_vlan(uint32_t vid)
 	GT_DOT1Q_MODE vlanMode;
 	GT_EGRESS_MODE egressMode;
 	GT_VTU_ENTRY vtuEntry;
+	st_dbsSysinfo dsdtSysinfo;
+	int hfcPort = 4;
+
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &dsdtSysinfo))
+	{
+		return CMM_FAILED;
+	} 
+
+	if( dsdtSysinfo.col_model == 33 )
+	{
+		hfcPort = 6;
+	}
+	else if ( dsdtSysinfo.col_model == 32 )
+	{
+		hfcPort = 0;
+	}
+	else if( dsdtSysinfo.col_model == 36 )
+	{
+		hfcPort = 4;
+	}
 
 #if 0	
 	/* 1) Set port 0-4,6 to 802.1q Fallback Mode */
@@ -357,7 +403,7 @@ GT_STATUS __do_mgmt_vlan(uint32_t vid)
 		}
 	}
 #endif
-	/* 3) Set port 0-4,6's DefaultVID (PVID) = 1 */
+	/* 3) Set port 0-3,6's DefaultVID (PVID) = 1 */
 	/* Note: 3 is already done in MV88E6171R_INIT() */
 #if 0
 	/* 当启用管理VLAN时，AR7410的MME消息没有将管理VLAN携带回来
@@ -368,17 +414,26 @@ GT_STATUS __do_mgmt_vlan(uint32_t vid)
 		return status;
 	}
 #endif
-	/* 4) Set P5's DefaultVID (PVID) = vid */
+	/* 4) Set hfc,cpu's DefaultVID (PVID) = vid */
+	if((status = gvlnSetPortVid(dev, hfcPort, vid)) != GT_OK)
+	{
+		printf("gvlnSetPortVid return Failed\n");
+		return status;
+	}	
 	if((status = gvlnSetPortVid(dev, dev->cpuPortNum, vid)) != GT_OK)
 	{
 		printf("gvlnSetPortVid return Failed\n");
 		return status;
 	}	
-	/* 5) Set port 0-4,6 's Egress Mode = 0 (egress unmodified) */	
-	/* 6) Set port 5's Egress mode = 1 (egress untagged) */
+	/* 5) Set port 0-3's Egress Mode = 0 (egress unmodified) */	
+	/* 6) Set port hfc,cpu's Egress mode = 1 (egress untagged) */
 	for( i=0; i<dev->numOfPorts; i++)
 	{
-		if( i == dev->cpuPortNum )
+		if( i == hfcPort )
+		{
+			egressMode = GT_UNTAGGED_EGRESS;
+		}
+		else if( i == dev->cpuPortNum )
 		{
 			egressMode = GT_UNTAGGED_EGRESS;
 		}
@@ -391,17 +446,21 @@ GT_STATUS __do_mgmt_vlan(uint32_t vid)
 			printf("gprtSetEgressMode returned fail.\n");		
 		}
 	}
-	/* 7) Add VLAN vid VTU entry (MemberTagP5 = 1, egress untagged, and MemberTagP0-4,6 = 2, egress tagged) */
+	/* 7) Add VLAN vid VTU entry (MemberTag hfc,cpu = 1, egress untagged, and MemberTagP0-3 = 2, egress tagged) */
 	gtMemSet(&vtuEntry,0,sizeof(GT_VTU_ENTRY));
 	vtuEntry.DBNum = 0;
 	vtuEntry.vid = vid;
 	for( i=0; i<dev->numOfPorts; i++ )
 	{
-		if( i == dev->cpuPortNum )	/* MemberTagP5 = 1 (egress untagged) */
+		if( i == hfcPort )                     /* MemberTag hfc = 1 (egress untagged) */
 		{
 			vtuEntry.vtuData.memberTagP[i] = MEMBER_EGRESS_UNTAGGED;
 		}
-		else						/* MemberTagP0-4,6 = 2 (egress tagged) */
+		else if( i == dev->cpuPortNum )	/* MemberTagP5 = 1 (egress untagged) */
+		{
+			vtuEntry.vtuData.memberTagP[i] = MEMBER_EGRESS_UNTAGGED;
+		}
+		else						/* MemberTagP0-3 = 2 (egress tagged) */
 		{
 			vtuEntry.vtuData.memberTagP[i] = MEMBER_EGRESS_TAGGED;
 		}
@@ -1087,6 +1146,7 @@ int cmm2dsdt_bindingMacAddress(stDsdtMacBinding *macBindingInfo)
 int cmm2dsdt_init(void)
 {
 	int cpuPort = 5;
+	
 	if( dsdtStart(cpuPort) != GT_OK )
 	{
 		return CMM_FAILED;	
