@@ -1702,6 +1702,8 @@ int get_req_ext(void)
 					cnuFlags[pIndex->cnu-1] = REG_CNU_FORCE_REGISTRATION;
 					/* 将标志位csyncStatus 置0 */
 					set_cnu_pro_sync(pIndex->clt, pIndex->cnu, BOOL_FALSE);
+			//		printf("   pIndex->clt=%d\n",pIndex->clt);
+			//		printf("   pIndex->cnu=%d\n",pIndex->cnu);
 					return CMM_SUCCESS;
 				}
 				else if( REG_CNU_DELETE == req->HEADER.usMsgType )

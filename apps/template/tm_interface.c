@@ -2670,7 +2670,7 @@ uint32_t tm_write_profile(st_dbsProfile *profile)
 {
 	if( CMM_SUCCESS == dbsUpdateProfile(dbsdev, profile->id, profile) )
 	{
-		__tm_reg_force_regist((profile->id)/64+1, (profile->id)%64);
+		__tm_reg_force_regist((profile->id)/64+1, profile->id);
 		return CMM_SUCCESS;
 	}	
 	return CMM_FAILED;

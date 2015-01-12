@@ -5352,6 +5352,7 @@ ULONG CLI_CmdCnuSwitch()
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
 	uint16_t id = 0;
+	uint16_t cltid;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 
@@ -5368,7 +5369,7 @@ ULONG CLI_CmdCnuSwitch()
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
 	id = CLI_GetCnuTidByMode(iMode);
-
+	cltid = CLI_GetCltTidByMode(iMode);
 	/* 如果该CNU 槽位无效则禁止配置*/
 	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
@@ -5398,7 +5399,7 @@ ULONG CLI_CmdCnuSwitch()
 		return CMM_SUCCESS;
 	}
 
-	rtl8306eSettings.clt=1;
+	rtl8306eSettings.clt= cltid;
 	rtl8306eSettings.cnu=id;
 	if((pParam=CLI_GetParamByName("read |write"))==NULL)
 	{
@@ -5505,6 +5506,7 @@ ULONG CLI_CmdCnuAclDropMme()
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
 	id = CLI_GetCnuTidByMode(iMode);
+	cltid= CLI_GetCltTidByMode(iMode);
 
 	/* 如果该CNU 槽位无效则禁止配置*/
 	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
@@ -5524,8 +5526,7 @@ ULONG CLI_CmdCnuAclDropMme()
 	}
 	else
 	{
-		cltid = (id-1)/MAX_CNUS_PER_CLT + 1;
-		cnuid = (id-1)%MAX_CNUS_PER_CLT + 1;
+		cnuid = id;
 		return cli2cmm_do_aclDropMme(cltid, cnuid);
 	}
 }
@@ -5555,7 +5556,7 @@ ULONG CLI_CmdUndoCnuAclDropMme()
 	}
 	/* interface cnu 模式*//* 获取该CNU 的索引号码*/
 	id = CLI_GetCnuTidByMode(iMode);
-
+	cltid = CLI_GetCltTidByMode(iMode);
 	/* 如果该CNU 槽位无效则禁止配置*/
 	if( CMM_SUCCESS != dbsGetCnu(dbsdev, id, &cnu) )
 	{
@@ -5574,8 +5575,7 @@ ULONG CLI_CmdUndoCnuAclDropMme()
 	}
 	else
 	{
-		cltid = (id-1)/MAX_CNUS_PER_CLT + 1;
-		cnuid = (id-1)%MAX_CNUS_PER_CLT + 1;
+		cnuid = id;
 		return cli2cmm_undo_aclDropMme(cltid, cnuid);
 	}
 }
@@ -5794,12 +5794,14 @@ ULONG CLI_Cmd_ReloadProfile()
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
 	uint16_t id = 0;
+	uint16_t cltid;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
+	cltid = CLI_GetCltTidByMode(iMode);
 	/* 判断模式并显示打印信息*/
 	/* 该命令只能在CLT/CNU模式下执行*/
 	if( 1 == prevailMode )
@@ -5837,7 +5839,7 @@ ULONG CLI_Cmd_ReloadProfile()
 			return CMM_SUCCESS;
 		}		
 	
-		return cli2cmm_reloadCnuProfile(1, id);
+		return cli2cmm_reloadCnuProfile(cltid, id);
 	}
 	else
 	{
@@ -6445,12 +6447,14 @@ ULONG CLI_Cmd_Dump()
 	uint32_t iMode = 0;
 	uint32_t prevailMode = 0;
 	uint16_t id = 0;
+	uint16_t cltid;
 	st_dbsCnu cnu;
 	st_dbsProfile profile;
 
 	iMode = CLI_GetCurrentMode();
 	prevailMode = CLI_GetPrevailMode(iMode);
 
+	cltid = CLI_GetCltTidByMode(iMode);
 	/* 判断模式并显示打印信息*/
 	/* 该命令只能在CNU模式下执行*/
 	if( 2 != prevailMode )
@@ -6494,15 +6498,15 @@ ULONG CLI_Cmd_Dump()
 	
 	if (!STB_StriCmp(pParam, "register"))
 	{
-		return cli2cmm_Dump(1, id, 0);
+		return cli2cmm_Dump(cltid, id, 0);
 	}
 	else if (!STB_StriCmp(pParam, "mod"))
 	{
-		return cli2cmm_Dump(1, id, 1);
+		return cli2cmm_Dump(cltid, id, 1);
 	}
 	else if (!STB_StriCmp(pParam, "pib"))
 	{
-		return cli2cmm_Dump(1, id, 2);
+		return cli2cmm_Dump(cltid, id, 2);
 	}
 	else
 	{

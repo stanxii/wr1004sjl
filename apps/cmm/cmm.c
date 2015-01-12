@@ -844,7 +844,7 @@ int CMM_ProcessCnuReset(BBLOCK_QUEUE *this)
 	st_dbsCnu cnu;
 	stRegEvent registerEvent;
 
-	registerEvent.clt = 1;
+	registerEvent.clt = (*index-1)/MAX_CNUS_PER_CLT + 1 ;
 	registerEvent.cnu = *index;
 	registerEvent.event = REG_CNURESET;
 
@@ -875,12 +875,29 @@ int CMM_ProcessCnuReset(BBLOCK_QUEUE *this)
 int CMM_ProcessCnuVlanConfig(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
+	int cltid;
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	st_dbsProfile *req_data = (st_dbsProfile *)(req->BUF);
 
 	//printf("\r\n\r\n  CMM_ProcessCnuVlanConfig(%d)\n", req_data->id);
+	if (req_data->id < 65)
+	{
+		cltid = 1;
+	}
+	else if (req_data->id > 64 && req_data->id < 129)
+	{
+		cltid = 2;
+	}
+	else if (req_data->id > 128 && req_data->id <193)
+	{
+		cltid = 3;
+	}
+	else
+	{
+		cltid = 4;
+	}
 	
-	opt_sts = cmmTmWriteCnuProfile(1, req_data->id, req_data);
+	opt_sts = cmmTmWriteCnuProfile(cltid, req_data->id, req_data);
 	CMM_ProcessAck(opt_sts, this, NULL, 0);
 	return opt_sts;
 }
@@ -888,12 +905,29 @@ int CMM_ProcessCnuVlanConfig(BBLOCK_QUEUE *this)
 int CMM_ProcessCnuRateLimit(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
+	int cltid;
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	st_dbsProfile *req_data = (st_dbsProfile *)(req->BUF);
 
 	//printf("\r\n\r\n  CMM_ProcessCnuRateLimit(%d)\n", req_data->id);
+	if (req_data->id < 65)
+	{
+		cltid = 1;
+	}
+	else if (req_data->id > 64 && req_data->id < 129)
+	{
+		cltid = 2;
+	}
+	else if (req_data->id > 128 && req_data->id <193)
+	{
+		cltid = 3;
+	}
+	else
+	{
+		cltid = 4;
+	}
 	
-	opt_sts = cmmTmWriteCnuProfile(1, req_data->id, req_data);
+	opt_sts = cmmTmWriteCnuProfile(cltid, req_data->id, req_data);
 	CMM_ProcessAck(opt_sts, this, NULL, 0);
 	return opt_sts;
 }
@@ -901,12 +935,29 @@ int CMM_ProcessCnuRateLimit(BBLOCK_QUEUE *this)
 int CMM_ProcessCnuStormFilter(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
+	int cltid;
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	st_dbsProfile *req_data = (st_dbsProfile *)(req->BUF);
 
 	//printf("\r\n\r\n  CMM_ProcessCnuStormFilter(%d)\n", req_data->id);
+	if (req_data->id < 65)
+	{
+		cltid = 1;
+	}
+	else if (req_data->id > 64 && req_data->id < 129)
+	{
+		cltid = 2;
+	}
+	else if (req_data->id > 128 && req_data->id <193)
+	{
+		cltid = 3;
+	}
+	else
+	{
+		cltid = 4;
+	}
 	
-	opt_sts = cmmTmWriteCnuProfile(1, req_data->id, req_data);
+	opt_sts = cmmTmWriteCnuProfile(cltid, req_data->id, req_data);
 	CMM_ProcessAck(opt_sts, this, NULL, 0);
 	return opt_sts;
 }
@@ -914,12 +965,29 @@ int CMM_ProcessCnuStormFilter(BBLOCK_QUEUE *this)
 int CMM_ProcessCnuPortStatusConfig(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
+	int cltid;
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	st_dbsProfile *req_data = (st_dbsProfile *)(req->BUF);
 
 	//printf("\r\n\r\n  CMM_ProcessCnuPortStatusConfig(%d)\n", req_data->id);
+	if (req_data->id < 65)
+	{
+		cltid = 1;
+	}
+	else if (req_data->id > 64 && req_data->id < 129)
+	{
+		cltid = 2;
+	}
+	else if (req_data->id > 128 && req_data->id <193)
+	{
+		cltid = 3;
+	}
+	else
+	{
+		cltid = 4;
+	}
 	
-	opt_sts = cmmTmWriteCnuProfile(1, req_data->id, req_data);
+	opt_sts = cmmTmWriteCnuProfile(cltid, req_data->id, req_data);
 	CMM_ProcessAck(opt_sts, this, NULL, 0);
 	return opt_sts;
 }
@@ -927,10 +995,28 @@ int CMM_ProcessCnuPortStatusConfig(BBLOCK_QUEUE *this)
 int CMM_ProcessCnuMacLimitConfig(BBLOCK_QUEUE *this)
 {
 	int opt_sts = CMM_SUCCESS;
+	int cltid;
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	st_dbsProfile *req_data = (st_dbsProfile *)(req->BUF);
 
-	opt_sts = cmmTmWriteCnuProfile(1, req_data->id, req_data);
+	if (req_data->id < 65)
+	{
+		cltid = 1;
+	}
+	else if (req_data->id > 64 && req_data->id < 129)
+	{
+		cltid = 2;
+	}
+	else if (req_data->id > 128 && req_data->id <193)
+	{
+		cltid = 3;
+	}
+	else
+	{
+		cltid = 4;
+	}
+
+	opt_sts = cmmTmWriteCnuProfile(cltid, req_data->id, req_data);
 	CMM_ProcessAck(opt_sts, this, NULL, 0);
 	return opt_sts;
 }
@@ -1200,15 +1286,16 @@ int CMM_ProcessCnuSwitchConfigWrite(BBLOCK_QUEUE *this)
 	st_dbsCnu cnu;
 	uint8_t bMac[6] = {0};
 	uint8_t mod[1024] = {0};
+	int cnuId;
 	
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	rtl8306eWriteInfo *req_data = (rtl8306eWriteInfo *)(req->BUF);
 
 	//add bys tan for savedb
 	st_dbsProfile *req_data_db = (st_dbsProfile *)(req->BUF + sizeof(rtl8306eWriteInfo));
-//	printf("\r\n\r\n  CMM_ProcessCnuVlanConfig(%d)\n", req_data->id);
-	
-	opt_sts = cmmTmWriteCnuProfile(1, req_data_db->id, req_data_db);
+
+	cnuId = (req_data_db->id - 1) %MAX_CNUS_PER_CLT + 1;
+	opt_sts = cmmTmWriteCnuProfile(req_data->node.clt, cnuId, req_data_db);
 	//CMM_ProcessAck(opt_sts, this, NULL, 0);
 	//return opt_sts;
 	//add by stan for savedb

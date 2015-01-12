@@ -2166,6 +2166,7 @@ void cgiCnuProfileExt(char *query, FILE *fs)
 		cnu.col_auth = glbWebVar.cnuPermition;
 		dbsUpdateCnu(dbsdev, glbWebVar.cnuid, &cnu);
 	}
+	glbWebVar.cltid = (glbWebVar.cnuid - 1) / MAX_CNUS_PER_CLT + 1;
 	boardapi_macs2b(cnu.col_mac, mymac);
 	p = (uint8_t *)&iTemp;
 	p[0] = mymac[5];

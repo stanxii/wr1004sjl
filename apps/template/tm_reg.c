@@ -15,7 +15,8 @@ void tm2reg_send_notification(stRegEvent *regEvent)
 
 	TmUserInfo.clt = regEvent->clt;
 	TmUserInfo.cnu = regEvent->cnu;
-	
+	//printf("   TmUserInfo.clt =%d\n",TmUserInfo.clt);
+	//printf("   TmUserInfo.cnu =%d\n",TmUserInfo.cnu);
 
 	msg_cmm_regi->HEADER.usSrcMID = MID_TEMPLATE;
 	msg_cmm_regi->HEADER.usDstMID = MID_REGISTER;

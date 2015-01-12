@@ -1392,6 +1392,10 @@ uint32_t boardapi_getCltDsdtPortid(uint32_t cltid)
 		{
 			return PORT_CABLE1_PORT_ID;
 		}
+		case 2:
+		{
+			return  PORT_CABLE2_PORT_ID;
+		}
 		default:
 		{
 			return PORT_CABLE_PORT_NULL;

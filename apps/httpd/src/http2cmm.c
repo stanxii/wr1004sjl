@@ -265,8 +265,8 @@ int http2cmm_reloadCnu(int id)
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;
 	stTmUserInfo szNode;
 
-	szNode.clt = 1;
-	szNode.cnu = id;
+	szNode.clt = (id-1)/MAX_CNUS_PER_CLT + 1;
+	szNode.cnu = (id-1)%MAX_CNUS_PER_CLT +1;
 
 	req->HEADER.usSrcMID = MID_HTTP;
 	req->HEADER.usDstMID = MID_CMM;
@@ -292,9 +292,9 @@ int http2cmm_deleteCnu(int id)
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;
 	stTmUserInfo szNode;
 
-	szNode.clt = 1;
-	szNode.cnu = id;
-
+	szNode.clt = (id-1)/MAX_CNUS_PER_CLT + 1;
+	szNode.cnu = (id-1)%MAX_CNUS_PER_CLT +1;
+	
 	req->HEADER.usSrcMID = MID_HTTP;
 	req->HEADER.usDstMID = MID_CMM;
 	req->HEADER.usMsgType = CMM_CLI_DELETE_USER;
@@ -319,8 +319,8 @@ int http2cmm_permitCnu(int id)
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;
 	stTmUserInfo szNode;
 
-	szNode.clt = 1;
-	szNode.cnu = id;
+	szNode.clt = (id-1)/MAX_CNUS_PER_CLT + 1;
+	szNode.cnu = (id-1)%MAX_CNUS_PER_CLT +1;
 
 	req->HEADER.usSrcMID = MID_HTTP;
 	req->HEADER.usDstMID = MID_CMM;
@@ -346,8 +346,8 @@ int http2cmm_undoPermitCnu(int id)
 	T_Msg_CMM *req = (T_Msg_CMM *)buf;
 	stTmUserInfo szNode;
 
-	szNode.clt = 1;
-	szNode.cnu = id;
+	szNode.clt = (id-1)/MAX_CNUS_PER_CLT + 1;
+	szNode.cnu = (id-1)%MAX_CNUS_PER_CLT +1;
 
 	req->HEADER.usSrcMID = MID_HTTP;
 	req->HEADER.usDstMID = MID_CMM;
@@ -559,7 +559,7 @@ int http2cmm_readSwitchSettings(PWEB_NTWK_VAR pWebVar)
 	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
 	req->HEADER.fragment = 0;
 
-	req_data->clt = 1;
+	req_data->clt = pWebVar->cltid;
 	req_data->cnu = pWebVar->cnuid;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
@@ -1173,7 +1173,7 @@ int http2cmm_getSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	req->HEADER.ulBodyLength = sizeof(stTmUserInfo);
 	req->HEADER.fragment = 0;
 
-	req_data->clt = 1;
+	req_data->clt = node->clt;
 	req_data->cnu = node->cnu;
 
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
