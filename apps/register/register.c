@@ -1340,7 +1340,7 @@ void try_to_register_new_cun(int cltid, T_MMEAD_CNU_INFO activeCnu)
 	idle = try_to_add_cnu(cltid, activeCnu);
 	if( idle )
 	{
-		cnuid = idle%MAX_CNUS_PER_CLT;
+		cnuid = idle;
 		do_cnu_register(cltid, cnuid, activeCnu);
 	}
 }
@@ -1693,13 +1693,13 @@ int get_req_ext(void)
 				if(req->HEADER.usMsgType == REG_CNURESET)
 				{
 					//设置CNU强制重启标志位
-					cnuFlags[pIndex->cnu-1] = REG_CNURESET;
+					cnuFlags[(pIndex->clt-1)*MAX_CNUS_PER_CLT+(pIndex->cnu-1)] = REG_CNURESET;
 					return CMM_SUCCESS;
 				}
 				else if( REG_CNU_FORCE_REGISTRATION == req->HEADER.usMsgType )
 				{
 					//设置CNU强制重新注册标志位
-					cnuFlags[pIndex->cnu-1] = REG_CNU_FORCE_REGISTRATION;
+					cnuFlags[(pIndex->clt-1)*MAX_CNUS_PER_CLT+(pIndex->cnu-1)] = REG_CNU_FORCE_REGISTRATION;
 					/* 将标志位csyncStatus 置0 */
 					set_cnu_pro_sync(pIndex->clt, pIndex->cnu, BOOL_FALSE);
 			//		printf("   pIndex->clt=%d\n",pIndex->clt);
@@ -1711,7 +1711,7 @@ int get_req_ext(void)
 					//printf("\r\n  register event call : delete clt %d cnu %d\n", pIndex->clt, pIndex->cnu);
 					/* 在内存中删除该设备的信息*/
 					do_cnu_delete(pIndex->clt, pIndex->cnu);
-					cnuFlags[pIndex->cnu-1] = 0;
+					cnuFlags[(pIndex->clt-1)*MAX_CNUS_PER_CLT+(pIndex->cnu-1)] = 0;
 					return CMM_SUCCESS;					
 				}
 				else if( REG_CLT_RESET == req->HEADER.usMsgType )

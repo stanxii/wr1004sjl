@@ -25,7 +25,7 @@ MENU_WEC_ACCOUNT_MGMT	 		= 23
 MENU_WEC_ACCOUNT_WEB	 		= 24
 MENU_WEC_ACCOUNT_CLI	 		= 25
 MENU_WEC_WEB_EXIT	 				= 26
-MENU_WEC_TEMPLATE_MGMT                         =27
+//MENU_WEC_TEMPLATE_MGMT                         =27
 //MENU_WEC_WEB_TEST_A	 			= 27
 
 var menuTitle = new Array();
@@ -57,7 +57,7 @@ menuTitle[MENU_WEC_ACCOUNT_MGMT]              = 'Passwords';
 menuTitle[MENU_WEC_ACCOUNT_WEB]               = 'WEB';
 menuTitle[MENU_WEC_ACCOUNT_CLI]               = 'CLI';
 menuTitle[MENU_WEC_WEB_EXIT]                  = 'Exit';
-menuTitle[MENU_WEC_TEMPLATE_MGMT]        ='VLAN Autoconfig';
+//menuTitle[MENU_WEC_TEMPLATE_MGMT]        ='VLAN Autoconfig';
 //menuTitle[MENU_WEC_WEB_TEST_A]                  = 'Test001';
 
 

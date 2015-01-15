@@ -8,7 +8,7 @@
 #include <dbsapi.h>
 #include <boardapi.h>
 
-#define MAX_SMI_REG_SETTINGS_NUMS	64
+#define MAX_SMI_REG_SETTINGS_NUMS	256
 
 extern T_DBS_DEV_INFO *dbsdev;
 
@@ -2670,7 +2670,7 @@ uint32_t tm_write_profile(st_dbsProfile *profile)
 {
 	if( CMM_SUCCESS == dbsUpdateProfile(dbsdev, profile->id, profile) )
 	{
-		__tm_reg_force_regist((profile->id)/64+1, profile->id);
+		__tm_reg_force_regist((profile->id)/64+1, (profile->id)%64);
 		return CMM_SUCCESS;
 	}	
 	return CMM_FAILED;

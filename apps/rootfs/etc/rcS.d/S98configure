@@ -66,11 +66,12 @@ else
 	echo "ERROR: Can not find /usr/sbin/register"
 fi
 
-if [ -x "/usr/sbin/autoconfig" ];then
-	/usr/sbin/autoconfig &
-else
-	echo "ERROR: Can not find /usr/sbin/autoconfig"
-fi
+
+#if [ -x "/usr/sbin/autoconfig" ];then
+#	/usr/sbin/autoconfig &
+#else
+#	echo "ERROR: Can not find /usr/sbin/autoconfig"
+#fi
 
 
 if [ -x "/usr/sbin/httpd" ];then

@@ -3195,7 +3195,6 @@ void cgiCnuProfileExt(char *query, FILE *fs)
 	fflush(fs);	
 }
 
-
 void cgiTemplateMgmt(char *query, FILE *fs)
 {
 	int id = 0;
@@ -3471,7 +3470,7 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	fprintf(fs, "});\n");
 	fprintf(fs, "</script>\n");
 	fprintf(fs, "</head>\n");
-	fprintf(fs, "<body>\n");
+	fprintf(fs, "<body style='display:none'>\n");
 	fprintf(fs, "<blockquote>\n");
 	fprintf(fs, "<br>\n");
 	fprintf(fs, "<table border=0 cellpadding=5 cellspacing=0>\n");
@@ -3563,8 +3562,6 @@ void cgiTemplateMgmt(char *query, FILE *fs)
 	
 	fflush(fs);	
 }
-
-
 
 void cgiCltMgmt(char *query, FILE *fs)
 {	
