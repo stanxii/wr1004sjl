@@ -57,7 +57,7 @@ menuTitle[MENU_WEC_ACCOUNT_MGMT]              = '帐户管理';
 menuTitle[MENU_WEC_ACCOUNT_WEB]               = 'WEB账户';
 menuTitle[MENU_WEC_ACCOUNT_CLI]               = 'CLI账户';
 menuTitle[MENU_WEC_WEB_EXIT]                  = '退出';
-menuTitle[MENU_WEC_TEMPLATE_MGMT]             = '模板管理与VLAN池';
+//menuTitle[MENU_WEC_TEMPLATE_MGMT]             = '模板管理与VLAN池';
 //menuTitle[MENU_WEC_WEB_TEST_A]                  = 'Test001';
 
 
