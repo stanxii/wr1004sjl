@@ -44,6 +44,7 @@ void BcmWeb_getAllInfo(PWEB_NTWK_VAR pWebVar)
 	http2dbs_getBootVersion(pWebVar->wecBootVersion);
 	http2dbs_getKernelVersion(pWebVar->wecKernelVersion);
 	http2dbs_getAppVersion(pWebVar->wecAppVersion);
+	http2dbs_getAppHash(pWebVar->wecAppHash);
 	http2dbs_getManufactory(pWebVar->wecManufactory);
 
 }

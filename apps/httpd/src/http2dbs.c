@@ -436,6 +436,21 @@ int http2dbs_getAppVersion(char *varValue)
 	}
 }
 
+int http2dbs_getAppHash(char *varValue)
+{
+	st_dbsSysinfo row;
+
+	if( CMM_SUCCESS != dbsGetSysinfo(dbsdev, 1, &row) )
+	{
+		return CMM_FAILED;
+	}
+	else
+	{
+		strcpy(varValue, (const char *)row.col_apphash);
+		return CMM_SUCCESS;
+	}
+}
+
 int http2dbs_getManufactory(char *varValue)
 {
 	st_dbsSysinfo row;
