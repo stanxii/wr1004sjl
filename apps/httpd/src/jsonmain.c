@@ -453,11 +453,46 @@ int jsonSetCnuProfile(FILE * fs)
 		rtl8306e.bandwidthConfig.g_rx_bandwidth_control_enable = (1==glbJsonVar.cnuRxRateLimitSts)?1:0;
 		if(rtl8306e.bandwidthConfig.g_rx_bandwidth_control_enable)
 		{
-			rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value = (glbJsonVar.cnuCpuPortRxRate*32)/64;
-			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value = (glbJsonVar.cnuEth1RxRate*32)/64;
-			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value = (glbJsonVar.cnuEth2RxRate*32)/64;
-			rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value = (glbJsonVar.cnuEth3RxRate*32)/64;
-			rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value = (glbJsonVar.cnuEth4RxRate*32)/64;
+			if (glbJsonVar.cnuCpuPortRxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value = 2047;
+			}
+			else 
+			{
+				rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value = (glbJsonVar.cnuCpuPortRxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth1RxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value = 2047;
+			}
+			else 
+			{
+				rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value = (glbJsonVar.cnuEth1RxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth2RxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value = 2047;
+			}
+			else
+			{
+				rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value = (glbJsonVar.cnuEth2RxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth3RxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value = 2047;
+			}
+			else
+			{
+				rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value = (glbJsonVar.cnuEth3RxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth4RxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value = 2047;
+			}
+			else
+			{
+				rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value = (glbJsonVar.cnuEth4RxRate*32)/64;
+			}
 			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 1;
 			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 1;
 			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_control_enable = 1;
@@ -467,11 +502,11 @@ int jsonSetCnuProfile(FILE * fs)
 		}
 		else
 		{
-			rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value = 2047;
 			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 0;
 			rtl8306e.bandwidthConfig.rxPort[0].bandwidth_control_enable = 0;
 			rtl8306e.bandwidthConfig.rxPort[1].bandwidth_control_enable = 0;
@@ -483,11 +518,46 @@ int jsonSetCnuProfile(FILE * fs)
 		rtl8306e.bandwidthConfig.g_tx_bandwidth_control_enable = (1==glbJsonVar.cnuTxRateLimitSts)?1:0;
 		if(rtl8306e.bandwidthConfig.g_tx_bandwidth_control_enable)
 		{
-			rtl8306e.bandwidthConfig.txPort[4].bandwidth_value = (glbJsonVar.cnuCpuPortTxRate*32)/64;
-			rtl8306e.bandwidthConfig.txPort[0].bandwidth_value = (glbJsonVar.cnuEth1TxRate*32)/64;
-			rtl8306e.bandwidthConfig.txPort[1].bandwidth_value = (glbJsonVar.cnuEth2TxRate*32)/64;
-			rtl8306e.bandwidthConfig.txPort[2].bandwidth_value = (glbJsonVar.cnuEth3TxRate*32)/64;
-			rtl8306e.bandwidthConfig.txPort[3].bandwidth_value = (glbJsonVar.cnuEth4TxRate*32)/64;
+			if (glbJsonVar.cnuCpuPortTxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.txPort[4].bandwidth_value = 2047;
+			}
+			else 
+			{
+				rtl8306e.bandwidthConfig.txPort[4].bandwidth_value = (glbJsonVar.cnuCpuPortTxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth1TxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.txPort[0].bandwidth_value = 2047;
+			}
+			else 
+			{
+				rtl8306e.bandwidthConfig.txPort[0].bandwidth_value = (glbJsonVar.cnuEth1TxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth2TxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.txPort[1].bandwidth_value = 2047;
+			}
+			else
+			{
+				rtl8306e.bandwidthConfig.txPort[1].bandwidth_value = (glbJsonVar.cnuEth2TxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth3TxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.txPort[2].bandwidth_value = 2047;
+			}
+			else
+			{
+				rtl8306e.bandwidthConfig.txPort[2].bandwidth_value = (glbJsonVar.cnuEth3TxRate*32)/64;
+			}
+			if (glbJsonVar.cnuEth4TxRate == 0)
+			{
+				rtl8306e.bandwidthConfig.txPort[3].bandwidth_value = 2047;
+			}
+			else
+			{
+				rtl8306e.bandwidthConfig.txPort[3].bandwidth_value = (glbJsonVar.cnuEth4TxRate*32)/64;
+			}
 			rtl8306e.bandwidthConfig.txPort[0].bandwidth_control_enable = 1;
 			rtl8306e.bandwidthConfig.txPort[1].bandwidth_control_enable = 1;
 			rtl8306e.bandwidthConfig.txPort[2].bandwidth_control_enable = 1;
@@ -496,17 +566,18 @@ int jsonSetCnuProfile(FILE * fs)
 		}
 		else
 		{
-			rtl8306e.bandwidthConfig.txPort[4].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.txPort[0].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.txPort[1].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.txPort[2].bandwidth_value = 0;
-			rtl8306e.bandwidthConfig.txPort[3].bandwidth_value = 0;
+			rtl8306e.bandwidthConfig.txPort[4].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.txPort[0].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.txPort[1].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.txPort[2].bandwidth_value = 2047;
+			rtl8306e.bandwidthConfig.txPort[3].bandwidth_value = 2047;
 			rtl8306e.bandwidthConfig.txPort[0].bandwidth_control_enable = 0;
 			rtl8306e.bandwidthConfig.txPort[1].bandwidth_control_enable = 0;
 			rtl8306e.bandwidthConfig.txPort[2].bandwidth_control_enable = 0;
 			rtl8306e.bandwidthConfig.txPort[3].bandwidth_control_enable = 0;
 			rtl8306e.bandwidthConfig.txPort[4].bandwidth_control_enable = 0;
-		}		
+		}	
+
 		//cnu.col_auth = 1;
 		/* write to device */
 		ret = http2cmm_setSwitchSettings(&iNode, &rtl8306e);
@@ -565,11 +636,11 @@ int jsonGetCnuPrepare(st_dbsProfile * profile, st_dbsCnu * cnu)
 	glbJsonVar.cnuRxRateLimitSts = profile->col_rxLimitSts?1:2;
 	if(profile->col_rxLimitSts)
 	{
-		glbJsonVar.cnuCpuPortRxRate = profile->col_cpuPortRxRate/32;
-		glbJsonVar.cnuEth1RxRate = profile->col_eth1rx/32;
-		glbJsonVar.cnuEth2RxRate = profile->col_eth2rx/32;
-		glbJsonVar.cnuEth3RxRate = profile->col_eth3rx/32;
-		glbJsonVar.cnuEth4RxRate = profile->col_eth4rx/32;
+		glbJsonVar.cnuCpuPortRxRate = profile->col_cpuPortRxRate;
+		glbJsonVar.cnuEth1RxRate = profile->col_eth1rx;
+		glbJsonVar.cnuEth2RxRate = profile->col_eth2rx;
+		glbJsonVar.cnuEth3RxRate = profile->col_eth3rx;
+		glbJsonVar.cnuEth4RxRate = profile->col_eth4rx;
 	}
 	else
 	{
@@ -582,11 +653,11 @@ int jsonGetCnuPrepare(st_dbsProfile * profile, st_dbsCnu * cnu)
 	glbJsonVar.cnuTxRateLimitSts = profile->col_txLimitSts?1:2;
 	if(profile->col_txLimitSts)
 	{
-		glbJsonVar.cnuCpuPortTxRate = profile->col_cpuPortTxRate/32;
-		glbJsonVar.cnuEth1TxRate = profile->col_eth1tx/32;
-		glbJsonVar.cnuEth2TxRate = profile->col_eth2tx/32;
-		glbJsonVar.cnuEth3TxRate = profile->col_eth3tx/32;
-		glbJsonVar.cnuEth4TxRate = profile->col_eth4tx/32;
+		glbJsonVar.cnuCpuPortTxRate = profile->col_cpuPortTxRate;
+		glbJsonVar.cnuEth1TxRate = profile->col_eth1tx;
+		glbJsonVar.cnuEth2TxRate = profile->col_eth2tx;
+		glbJsonVar.cnuEth3TxRate = profile->col_eth3tx;
+		glbJsonVar.cnuEth4TxRate = profile->col_eth4tx;
 	}
 	else
 	{
@@ -692,17 +763,87 @@ int jsonGetCnuProfile(FILE * fs)
 		myProfile.col_eth3vid = rtl8306e.vlanConfig.vlan_port[2].pvid;
 		myProfile.col_eth4vid = rtl8306e.vlanConfig.vlan_port[3].pvid;
 		myProfile.col_rxLimitSts = rtl8306e.bandwidthConfig.g_rx_bandwidth_control_enable;
-		myProfile.col_cpuPortRxRate = rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value*64;
-		myProfile.col_eth1rx = rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value*64;
-		myProfile.col_eth2rx = rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value*64;
-		myProfile.col_eth3rx = rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value*64;
-		myProfile.col_eth4rx = rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value*64;
+		if (rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value >= 1600)
+		{
+			myProfile.col_cpuPortRxRate = 3200;
+		}
+		else
+		{
+			myProfile.col_cpuPortRxRate = rtl8306e.bandwidthConfig.rxPort[4].bandwidth_value*2;	
+		}
+		if (rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value >= 1600)
+		{
+			myProfile.col_eth1rx = 3200;
+		}
+		else
+		{
+			myProfile.col_eth1rx = rtl8306e.bandwidthConfig.rxPort[0].bandwidth_value*2;
+		}
+		if (rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value >= 1600)
+		{
+			myProfile.col_eth2rx = 3200;
+		}
+		else
+		{
+			myProfile.col_eth2rx = rtl8306e.bandwidthConfig.rxPort[1].bandwidth_value*2;
+		}
+		if (rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value >=1600)
+		{
+			myProfile.col_eth3rx = 3200;
+		}
+		else
+		{
+			myProfile.col_eth3rx = rtl8306e.bandwidthConfig.rxPort[2].bandwidth_value*2;
+		}
+		if (rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value >=1600)
+		{
+			myProfile.col_eth4rx = 3200;
+		}
+		else 
+		{
+			myProfile.col_eth4rx = rtl8306e.bandwidthConfig.rxPort[3].bandwidth_value*2;
+		}		
 		myProfile.col_txLimitSts = rtl8306e.bandwidthConfig.g_tx_bandwidth_control_enable;
-		myProfile.col_cpuPortTxRate= rtl8306e.bandwidthConfig.txPort[4].bandwidth_value*64;
-		myProfile.col_eth1tx = rtl8306e.bandwidthConfig.txPort[0].bandwidth_value*64;
-		myProfile.col_eth2tx = rtl8306e.bandwidthConfig.txPort[1].bandwidth_value*64;
-		myProfile.col_eth3tx = rtl8306e.bandwidthConfig.txPort[2].bandwidth_value*64;
-		myProfile.col_eth4tx = rtl8306e.bandwidthConfig.txPort[3].bandwidth_value*64;
+		if (rtl8306e.bandwidthConfig.txPort[4].bandwidth_value >=1600)
+		{
+			myProfile.col_cpuPortTxRate = 3200;
+		}
+		else
+		{
+			myProfile.col_cpuPortTxRate= rtl8306e.bandwidthConfig.txPort[4].bandwidth_value*2;
+		}
+		if (rtl8306e.bandwidthConfig.txPort[0].bandwidth_value >=1600)
+		{
+			myProfile.col_eth1tx = 3200;
+		}
+		else 
+		{
+			myProfile.col_eth1tx = rtl8306e.bandwidthConfig.txPort[0].bandwidth_value*2;
+		}
+		if (rtl8306e.bandwidthConfig.txPort[1].bandwidth_value >=1600)
+		{
+			myProfile.col_eth2tx = 3200;
+		}
+		else
+		{
+			myProfile.col_eth2tx = rtl8306e.bandwidthConfig.txPort[1].bandwidth_value*2;
+		}
+		if (rtl8306e.bandwidthConfig.txPort[2].bandwidth_value >=1600)
+		{
+			myProfile.col_eth3tx = 3200;
+		}
+		else
+		{
+			myProfile.col_eth3tx = rtl8306e.bandwidthConfig.txPort[2].bandwidth_value*2;
+		}
+		if (rtl8306e.bandwidthConfig.txPort[3].bandwidth_value >=1600)
+		{
+			myProfile.col_eth4tx =3200;
+		}
+		else
+		{
+			myProfile.col_eth4tx = rtl8306e.bandwidthConfig.txPort[3].bandwidth_value*2;
+		}
 		cnu.col_auth = rtl8306e.portControl.port[4].enable;
 	}
 	

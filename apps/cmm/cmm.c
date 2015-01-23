@@ -2074,7 +2074,7 @@ int CMM_ProcessUserPermit(BBLOCK_QUEUE *this)
 	T_Msg_CMM *req = (T_Msg_CMM *)(this->b);
 	stTmUserInfo *req_data = (stTmUserInfo *)(req->BUF);
 
-	//printf("\r\n\r\n  CMM_ProcessUserPermit(%d, %d)\n", req_data->clt, req_data->cnu);
+	//  printf("\r\n\r\n  CMM_ProcessUserPermit(%d, %d)\n", req_data->clt, req_data->cnu);
 	
 	opt_sts = cmmTmDoCnuPermit(req_data->clt, req_data->cnu);
 	CMM_ProcessAck(opt_sts, this, NULL, 0);

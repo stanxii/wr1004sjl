@@ -5447,7 +5447,7 @@ int __dbs_underlayer_select_cnu_index_by_mac(char *mac, stCnuNode *index)
 		}
 		else
 		{
-			index->clt = 1;
+			index->clt = (sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_ID) -1) / MAX_CNUS_PER_CLT + 1;
 			index->cnu = sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_ID);
 			ret = SQLITE_OK;
 		}

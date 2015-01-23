@@ -3027,7 +3027,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_cpuPortTxRate = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[4].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH1 */
@@ -3035,7 +3035,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth1rx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[0].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH2 */
@@ -3043,7 +3043,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth2rx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[1].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH3 */
@@ -3051,7 +3051,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth3rx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[2].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH4 */
@@ -3059,7 +3059,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth4rx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[3].bandwidth_value = rate/64;
 			break;
 		}
 		default:
@@ -3129,7 +3129,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_cpuPortRxRate = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.rxPort[4].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH1 */
@@ -3137,7 +3137,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth1tx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[0].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH2 */
@@ -3145,7 +3145,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth2tx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[1].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH3 */
@@ -3153,7 +3153,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth3tx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[2].bandwidth_value = rate/64;
 			break;
 		}
 		/* ETH4 */
@@ -3161,7 +3161,7 @@ ULONG CLI_Cmd_DoRateLimiting()
 		{
 			profile.col_eth4tx = rate;
 			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_control_enable = 1;
-			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = rate;
+			rtl8306eSettings.rtl8306eConfig.bandwidthConfig.txPort[3].bandwidth_value = rate/64;
 			break;
 		}
 		default:
