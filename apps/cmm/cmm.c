@@ -1724,6 +1724,35 @@ int CMM_ProcessLinkDiag(BBLOCK_QUEUE *this)
 			CMM_ProcessAck(opt_sts, this, NULL, 0);
 			return opt_sts;
 		}
+		printf("cnu.col_model=%d\n",cnu.col_model);
+		switch( cnu.col_model )
+		{
+			case WEC_3702I:
+				inputInfo.chipser = 0;
+				break;
+			case WEC_604:
+				inputInfo.chipser = 0;
+				break;
+			case WEC_3702I_E4:
+				inputInfo.chipser = 0;
+				break;
+			case WEC701_C4:
+				inputInfo.chipser = 1;
+				break;
+			case WEC701_E4:
+				inputInfo.chipser = 1;
+				break;
+			case WEC701_L4:
+				inputInfo.chipser = 1;
+				break;
+			case WEC701_W4: 
+				inputInfo.chipser = 1;
+				break;
+			default:
+				inputInfo.chipser = 1;
+				break;
+		}
+		printf("  inputInfo.chipser= %d\n",inputInfo.chipser);
 	}
 	else
 	{

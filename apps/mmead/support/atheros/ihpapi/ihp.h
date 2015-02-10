@@ -897,7 +897,9 @@ int ihp_DecodeResetDevice (const uint8_t buffer [], size_t length, ihpapi_result
 int ihp_DecodeResetToFactoryDefaults (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeSetSDRAMCfg (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeGetToneMapInfo (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
+int ihp_DecodeGet74ToneMapInfo (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeGetRxToneMapInfo (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
+int ihp_DecodeGet74RxToneMapInfo (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeEthernetPHYSettings (const uint8_t buffer [], size_t length, ihpapi_result_t * result);
 int ihp_DecodeStartMAC (const uint8_t buffer [], size_t length, ihpapi_result_t * result, BlockInfo * block);
 int ihp_DecodeReadModule (const uint8_t buffer [], size_t length, ihpapi_result_t * result);

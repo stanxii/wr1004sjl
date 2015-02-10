@@ -1952,6 +1952,7 @@ typedef struct
 	uint8_t dir;
 	uint8_t ccoMac[6];
 	uint8_t peerNodeMac[6];
+	uint8_t chipser;
 }T_MMEAD_LINK_DIAG_INFO;
 
 typedef struct 
@@ -1965,8 +1966,8 @@ typedef struct
 	uint8_t ccoTei;
 	uint8_t ccoSnid;
 	uint8_t ccoNid[7];	
-	uint8_t rx;
-	uint8_t tx;
+	uint16_t rx;
+	uint16_t tx;
 	uint8_t bridgedMac[6];
 	float bitRate;
 	uint8_t attenuation;

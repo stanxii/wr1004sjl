@@ -232,11 +232,13 @@ static int mme_v1_rx
 		p = (header_V1_cnf *)buffer;
 		if( intohs(p->intellon.MMTYPE) != ( MMtype|MMTYPE_CNF ) )
 		{
+			printf("  MMTYPE ERROR\N");
 			mmead_debug_printf("MMtype not match, continue !\n");
 			continue;
 		}
 		if (ihpapi_v1_RxFrame(packetsize, buffer, xresult) == -1)
-		{			
+		{	
+			printf(" ihpapi_v1_RxFrame error\n");
 			switch(errno)			
 			{
 				case EFAULT:				
@@ -3793,6 +3795,58 @@ int MME_Atheros_MsgGetRxToneMapInfo
 }
 
 /********************************************************************************************
+*	函数名称:MME_Atheros_MsgGet74RxToneMapInfo
+*	函数功能:
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgGet74RxToneMapInfo
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	ihpapi_toneMapCtl_t * inputToneMapInfo, 
+	ihpapi_getRxToneMapData_t *outputToneMapInfo
+)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGetRxToneMapInfo\n");
+	
+	memset(buffer, 0, sizeof(buffer));
+	packetsize = ihpapi_Get74RxToneMapInfo(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer, inputToneMapInfo);
+
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer, 0, sizeof(buffer));
+
+	if ( mme_v1_rx(MME_SK, VS_RX_TONE_MAP_CHAR, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		memcpy(outputToneMapInfo, &xresult.data.rxToneMap, sizeof(ihpapi_getRxToneMapData_t));
+		return xresult.opStatus.status;
+	}	
+	return CMM_MME_ERROR;
+}
+
+/********************************************************************************************
 *	函数名称:MME_Atheros_MsgGetTxToneMapInfo
 *	函数功能:
 *				   
@@ -3841,6 +3895,58 @@ int MME_Atheros_MsgGetTxToneMapInfo
 		memcpy(outputToneMapInfo, &xresult.data.toneMap, sizeof(ihpapi_getToneMapData_t));
 		return xresult.opStatus.status;
 	}	
+	return CMM_MME_ERROR;
+}
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGet74TxToneMapInfo
+*	函数功能:
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgGet74TxToneMapInfo
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	ihpapi_toneMapCtl_t * inputToneMapInfo, 
+	ihpapi_getToneMapData_t *outputToneMapInfo
+)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	ihpapi_result_t xresult;
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGet74TxToneMapInfo\n");
+	
+	memset(buffer, 0, sizeof(buffer));
+	packetsize = ihpapi_Get74ToneMapInfo(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer, inputToneMapInfo);
+	
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer, 0, sizeof(buffer));
+
+	if ( mme_v1_rx(MME_SK, VS_TONE_MAP_CHAR, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS)
+	{
+		return CMM_MME_ERROR;
+	}
+	if(xresult.validData)
+	{
+		memcpy(outputToneMapInfo, &xresult.data.toneMap, sizeof(ihpapi_getToneMapData_t));
+		return xresult.opStatus.status;
+	}
 	return CMM_MME_ERROR;
 }
 
@@ -3952,4 +4058,63 @@ int MME_Atheros_MsgGetNetInfo
 		return CMM_MME_ERROR;
 	}
 }
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGet74NetInfo
+*	函数功能:ihpapi_GetNetworkInfo
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgGet74NetInfo
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	ihpapi_getNetworkInfoData_t *outputNetInfo
+)
+{
+	int packetsize;
+	int recv_msg_len = 0;
+	ihpapi_result_t xresult;
+	uint8_t buffer[IHPAPI_ETHER_MAX_LEN];
+	
+	assert( NULL != outputNetInfo );
+
+	mmead_debug_printf("-------->MME_Atheros_MsgGetNetInfo\n");
+	
+	memset(outputNetInfo, 0, sizeof(ihpapi_getNetworkInfoData_t));
+	memset(buffer, 0, IHPAPI_ETHER_MAX_LEN);
+	
+	packetsize = ihpapi_Get74NetworkInfo(OSA, ODA, IHPAPI_ETHER_MIN_LEN, buffer);
+	if( 0 != packetsize )
+	{
+		if( mme_tx(MME_SK, buffer, packetsize) <= 0 )
+		{
+			return CMM_MME_ERROR;
+		}
+	}
+	else
+	{
+		return CMM_FAILED;
+	}
+
+	memset(buffer,0,sizeof(buffer));
+
+	if ( mme_v1_rx(MME_SK, VS_NW_INFO, buffer, sizeof(buffer), &recv_msg_len, &xresult) != CMM_SUCCESS )
+	{
+		printf("mme_v1_rx error\n");
+		return CMM_MME_ERROR;
+	}
+	else if( xresult.validData )
+	{
+		memcpy(outputNetInfo, &xresult.data.netInfo, sizeof(ihpapi_getNetworkInfoData_t));
+		return xresult.opStatus.status;		
+	}
+	else
+	{
+		return CMM_MME_ERROR;
+	}
+}
+
 
