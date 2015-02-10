@@ -355,6 +355,21 @@ int ihpapi_v1_RxFrame (size_t length, uint8_t buffer [], ihpapi_result_t * resul
 		result->opCode = IHPAPI_OPCODE_GET_NETWORK_INFO_STATS;
 		result->opCompltCode = IHPAPI_OPCMPLTCODE_COMPLETE;
 		break;
+	case VS_TONE_MAP_CHAR | MMTYPE_CNF:
+		rc = ihp_DecodeGet74ToneMapInfo (buffer, length, result);
+		result->opCode = IHPAPI_OPCODE_GET_TONE_MAP_INFO;
+		result->opCompltCode = IHPAPI_OPCMPLTCODE_COMPLETE;
+		break;
+	case VS_RX_TONE_MAP_CHAR | MMTYPE_CNF:
+		rc = ihp_DecodeGet74RxToneMapInfo (buffer, length, result);
+		result->opCode = IHPAPI_OPCODE_GET_RX_TONE_MAP_INFO;
+		result->opCompltCode = IHPAPI_OPCMPLTCODE_COMPLETE;
+		break;
+	case VS_NW_INFO | MMTYPE_CNF:
+		rc = ihp_Decode74NetworkInfo (buffer, length, result);
+		result->opCode = IHPAPI_OPCODE_GET_NETWORK_INFO;
+		result->opCompltCode = IHPAPI_OPCMPLTCODE_COMPLETE;
+		break;
 	default:
 		printf("ihpapi_RxFrame->case default: set errno = ENOSYS\n");
 		result->opStatus.status = errno = ENOSYS;

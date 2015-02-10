@@ -121,6 +121,21 @@ int MME_Atheros_MsgGetRxToneMapInfo
 );
 
 /********************************************************************************************
+*	函数名称:MME_Atheros_MsgGet74RxToneMapInfo
+*	函数功能:获取网元节点信息
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgGet74RxToneMapInfo
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	ihpapi_toneMapCtl_t * inputToneMapInfo, 
+	ihpapi_getRxToneMapData_t *outputToneMapInfo
+);
+/********************************************************************************************
 *	函数名称:MME_Atheros_MsgGetTxToneMapInfo
 *	函数功能:
 *				   
@@ -129,6 +144,22 @@ int MME_Atheros_MsgGetRxToneMapInfo
 *	时间:2010-07-23
 *********************************************************************************************/
 int MME_Atheros_MsgGetTxToneMapInfo
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	ihpapi_toneMapCtl_t * inputToneMapInfo, 
+	ihpapi_getToneMapData_t *outputToneMapInfo
+);
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGet74TxToneMapInfo
+*	函数功能:
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgGet74TxToneMapInfo
 (
 	T_MME_SK_HANDLE *MME_SK, 
 	uint8_t ODA[], 
@@ -161,6 +192,21 @@ int MME_Atheros_MsgGetConnectionInfo
 *	时间:2010-07-23
 *********************************************************************************************/
 int MME_Atheros_MsgGetNetInfo
+(
+	T_MME_SK_HANDLE *MME_SK, 
+	uint8_t ODA[], 
+	ihpapi_getNetworkInfoData_t *outputNetInfo
+);
+
+/********************************************************************************************
+*	函数名称:MME_Atheros_MsgGet74NetInfo
+*	函数功能:ihpapi_GetNetworkInfo
+*				   
+*	返回值:操作是否成功的状态码
+*	作者:frank
+*	时间:2010-07-23
+*********************************************************************************************/
+int MME_Atheros_MsgGet74NetInfo
 (
 	T_MME_SK_HANDLE *MME_SK, 
 	uint8_t ODA[], 

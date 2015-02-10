@@ -79,6 +79,48 @@ size_t ihpapi_GetRxToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, 
 	return (IHPAPI_ETHER_MIN_LEN);
 }
 
+size_t ihpapi_Get74RxToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_toneMapCtl_t * inputToneMapInfo) 
+
+{
+	struct __packed vs_rx_tone_map_char_req 
+	{
+		struct header_v1_vs header;
+		uint8_t SUBVER;
+		uint8_t RESERVED[3];
+		uint8_t MACADDRESS [IHPAPI_ETHER_ADDR_LEN];
+		uint8_t TMSLOT;
+	}
+	* request = (struct vs_rx_tone_map_char_req *)(buffer);
+	size_t offset = 0;
+	offset += EncodeEthernetHeader (buffer + offset, bufferLen - offset, da, sa);
+	offset += EncodeV1IntellonHeader (buffer + offset, bufferLen - offset, (VS_RX_TONE_MAP_CHAR | MMTYPE_REQ));
+	if (offset < sizeof (struct header_v1_vs)) 
+	{
+		return (0);
+	}
+	if (bufferLen < IHPAPI_ETHER_MIN_LEN) 
+	{
+		errno = ERANGE;
+		return (0);
+	}
+	if (offset < IHPAPI_ETHER_MIN_LEN) 
+	{
+		memset (buffer + offset, 0, IHPAPI_ETHER_MIN_LEN - offset);
+	}
+	if (inputToneMapInfo == (ihpapi_toneMapCtl_t *)(0)) 
+	{
+		errno = EFAULT;
+		return (0);
+	}
+	request->SUBVER = 0;
+	request->RESERVED[0] = 0;
+	request->RESERVED[1] = 0;
+	request->RESERVED[2] = 0;
+	request->TMSLOT = inputToneMapInfo->tmslot;
+	memcpy (request->MACADDRESS, inputToneMapInfo->macaddress, IHPAPI_ETHER_ADDR_LEN);
+	return (IHPAPI_ETHER_MIN_LEN);
+}
+
 #endif
  
 

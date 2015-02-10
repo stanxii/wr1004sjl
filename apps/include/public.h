@@ -69,6 +69,7 @@ enum
 #define SYSINFO_BOOT_VERSION		"U-boot-1.3.4"
 #define SYSINFO_KERNEL_VERSION	"Linux-3.4.6"
 #define SYSINFO_HW_VERSION		"v1.0.2"
+#define SYSINFO_APP_HASH			"fc8f165772f3d1447800f017a71b0784c2e47802"
 #define SYSINFO_FLASH_SIZE			256
 #define SYSINFO_RAM_SIZE			64
 /* NMS management protocal version */
@@ -702,7 +703,7 @@ typedef enum
 #define DBS_SYS_TBL_COLS_CNUPRO		69
 #define DBS_SYS_TBL_COLS_SNMPINFO		8
 #define DBS_SYS_TBL_COLS_SWMGMT		6
-#define DBS_SYS_TBL_COLS_SYSINFO		16
+#define DBS_SYS_TBL_COLS_SYSINFO		17
 #define DBS_SYS_TBL_COLS_TEMPLATE           15
 
 /*      定义system.db中数据表的索引号   */
@@ -968,6 +969,7 @@ typedef enum
 #define DBS_SYS_TBL_SYSINFO_COL_ID_MF		13
 #define DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD		14
 #define DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD		15
+#define DBS_SYS_TBL_SYSINFO_COL_ID_APPHASH   16
 
 /* 定义数据表列元素索引*/
 #define DBS_SYS_TBL_TEMPLATE_COL_ID_ID			0
@@ -1950,6 +1952,7 @@ typedef struct
 	uint8_t dir;
 	uint8_t ccoMac[6];
 	uint8_t peerNodeMac[6];
+	uint8_t chipser;
 }T_MMEAD_LINK_DIAG_INFO;
 
 typedef struct 
@@ -1963,8 +1966,8 @@ typedef struct
 	uint8_t ccoTei;
 	uint8_t ccoSnid;
 	uint8_t ccoNid[7];	
-	uint8_t rx;
-	uint8_t tx;
+	uint16_t rx;
+	uint16_t tx;
 	uint8_t bridgedMac[6];
 	float bitRate;
 	uint8_t attenuation;
@@ -2716,6 +2719,7 @@ typedef struct
 	uint8_t	col_mfinfo[128];
 	uint32_t	col_p6rxdelay;
 	uint32_t	col_p6txdelay;
+	uint8_t   col_apphash[64];
 }st_dbsSysinfo;
 
 #if 0

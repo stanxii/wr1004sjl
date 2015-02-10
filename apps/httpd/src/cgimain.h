@@ -58,6 +58,7 @@ typedef struct {
    char wecBootVersion[IFC_HOST_LEN];
    char wecKernelVersion[IFC_HOST_LEN];
    char wecAppVersion[IFC_HOST_LEN];
+   char wecAppHash[IFC_HOST_LEN];
    int wecFlashSize;
    int wecSdramSize;
    char wecManufactory[128];

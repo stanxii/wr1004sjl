@@ -77,6 +77,51 @@ int ihp_DecodeGetToneMapInfo (const uint8_t buffer [], size_t length, ihpapi_res
 	return (0);
 }
 
+int ihp_DecodeGet74ToneMapInfo (const uint8_t buffer [], size_t length, ihpapi_result_t * result) 
+
+{
+	struct __packed vs_tone_map_char_cnf 
+	{
+		struct header_v1_vs header;
+		uint8_t STATUS;
+		uint8_t RESERVED1;
+		uint8_t LENGTH[2];
+		uint8_t SUBVER;
+		uint8_t RESERVED2;
+		uint8_t MACADDRESS [IHPAPI_ETHER_ADDR_LEN];
+		uint8_t TMSLOT;
+		uint8_t COUPLINGSEL;
+		uint8_t NUMTMS;
+		uint8_t RESERVED3;
+		uint16_t TMNUMACTCARRIERS;
+		uint32_t RESERVED4;
+		uint8_t MOD_CARRIER [MOD_CARRIER_MAX_TUPLE_NUM];
+	}
+	* confirm = (struct vs_tone_map_char_cnf *)(buffer);
+
+#if INTELLON_SAFEMODE
+ 
+	if (length < sizeof (struct vs_tone_map_char_cnf)) 
+	{
+		return (-1);
+	}
+	if (result == (ihpapi_result_t *)(0)) 
+	{
+		return (-1);
+	}
+
+#endif
+
+	result->validData = true;
+	result->opStatus.status = confirm->STATUS;
+	result->data.toneMap.tmslot = confirm->TMSLOT;
+	result->data.toneMap.numtms = confirm->NUMTMS;
+	result->data.toneMap.tmnumactcarriers = intohs(confirm->TMNUMACTCARRIERS);
+	memcpy (result->data.toneMap.mod_carrier, confirm->MOD_CARRIER, MOD_CARRIER_MAX_TUPLE_NUM);
+	return (0);
+}
+
+
 #endif
  
 

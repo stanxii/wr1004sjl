@@ -65,6 +65,39 @@ size_t ihpapi_GetNetworkInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, ui
 	return (IHPAPI_ETHER_MIN_LEN);
 }
 
+size_t ihpapi_Get74NetworkInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []) 
+
+{
+	struct __packed vs_net_work_info_req 
+	{
+		struct header_v1_vs header;
+		uint8_t SUBVER;
+		uint8_t RESERVED[3];
+	}
+	* request = (struct vs_net_work_info_req *)(buffer);
+	size_t offset = 0;
+	offset += EncodeEthernetHeader (buffer + offset, bufferLen - offset, da, sa);
+	offset += EncodeV1IntellonHeader (buffer + offset, bufferLen - offset, (VS_NW_INFO | MMTYPE_REQ));
+	if (offset < sizeof (struct header_v1_vs)) 
+	{
+		return (0);
+	}
+	if (bufferLen < IHPAPI_ETHER_MIN_LEN) 
+	{
+		errno = ERANGE;
+		return (0);
+	}
+	if (offset < IHPAPI_ETHER_MIN_LEN) 
+	{
+		memset (buffer + offset, 0, IHPAPI_ETHER_MIN_LEN - offset);
+	}
+	request->SUBVER = 0;
+	request->RESERVED[0] = 0;
+	request->RESERVED[1] = 0;
+	request->RESERVED[2] = 0;
+	return (IHPAPI_ETHER_MIN_LEN);
+}
+
 #endif
  
 

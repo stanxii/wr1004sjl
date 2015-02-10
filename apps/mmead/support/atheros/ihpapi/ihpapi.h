@@ -709,10 +709,13 @@ size_t ihpapi_Bandwidthlimiting (uint8_t sa [], uint8_t da [], size_t bufferLen,
 size_t ihpapi_GetConnectionInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_connectCtl_t * inputConnectInfo);
 size_t ihpapi_GetManufacturerInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_GetNetworkInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
+size_t ihpapi_Get74NetworkInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_GetNetworkInfoStats (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_GetVersionInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_GetToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_toneMapCtl_t * inputToneMapInfo);
+size_t ihpapi_Get74ToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_toneMapCtl_t * inputToneMapInfo);
 size_t ihpapi_GetRxToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_toneMapCtl_t * inputToneMapInfo);
+size_t ihpapi_Get74RxToneMapInfo (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_toneMapCtl_t * inputToneMapInfo);
 size_t ihpapi_ManageEnetPHY (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer [], ihpapi_enetPHYCtl_t * inputENETPHYInfo);
 size_t ihpapi_ResetDevice (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);
 size_t ihpapi_ResetToFactoryDefaults (uint8_t sa [], uint8_t da [], size_t bufferLen, uint8_t buffer []);

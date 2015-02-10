@@ -325,7 +325,8 @@ DBS_TBL_DESIGN tbl_sysinfo[DBS_SYS_TBL_COLS_SYSINFO] =
 	{DBS_SYS_TBL_SYSINFO_COL_ID_WDT,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_wdt"},
 	{DBS_SYS_TBL_SYSINFO_COL_ID_MF,		SQLITE3_TEXT,	128,	BOOL_FALSE,	BOOL_TRUE,	"col_mfinfo"},
 	{DBS_SYS_TBL_SYSINFO_COL_ID_P6RXD,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_p6rxdelay"},
-	{DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_p6txdelay"}
+	{DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD,		SQLITE_INTEGER,	4,	BOOL_FALSE,	BOOL_TRUE,	"col_p6txdelay"},
+	{DBS_SYS_TBL_SYSINFO_COL_ID_APPHASH, SQLITE3_TEXT,    64,  BOOL_FALSE,  BOOL_TRUE,   "col_apphash"}
 };
 
 /* 描述数据表设计的结构体，实际数据库设计
@@ -2299,12 +2300,17 @@ int __dbs_underlayer_SQLUpdateRowSysinfo(st_dbsSysinfo *row, uint8_t *sql)
 	{
 		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowSysinfo : len col_mfinfo !\n");
 		return SQLITE_ERROR;
-	}	
+	}
+	if( strlen(row->col_apphash) >= tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_APPHASH].col_len )
+	{
+		fprintf(stderr, "ERROR: __dbs_underlayer_SQLUpdateRowSysinfo : len col_apphash !\n");
+		return SQLITE_ERROR;
+	}
 	
 	/* 判断行数量是否超出定义*/
 	if( (row->id >= 1) && (row->id <= 1))
 	{
-		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=\"%s\" WHERE [id]=%d", 
+		sprintf(sql, "UPDATE [%s] SET [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=\"%s\", [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=%d, [%s]=\"%s\", [%s]=\"%s\" WHERE [id]=%d", 
 			db_system[DBS_SYS_TBL_ID_SYSINFO].tbl_name, 			
 			tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_MODEL].col_name, 
 			row->col_model, 
@@ -2331,7 +2337,9 @@ int __dbs_underlayer_SQLUpdateRowSysinfo(st_dbsSysinfo *row, uint8_t *sql)
 			tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_WDT].col_name, 
 			row->col_wdt, 
 			tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_MF].col_name, 
-			row->col_mfinfo, 						
+			row->col_mfinfo, 			
+			tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_APPHASH].col_name, 
+			row->col_apphash, 
 			row->id );
 		return SQLITE_OK;
 	}
@@ -5361,6 +5369,16 @@ int __dbs_underlayer_get_row_sysinfo(st_dbsSysinfo *row)
 		{
 			row->col_p6txdelay = sqlite3_column_int(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_P6TXD);
 		}
+		/* SQLITE3_TEXT		| col_apphash */
+		if( SQLITE_NULL == sqlite3_column_type(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_APPHASH) )
+		{
+			row->col_apphash[0] = '\0';
+		}
+		else
+		{
+			strncpy(row->col_apphash, sqlite3_column_text(stmt, DBS_SYS_TBL_SYSINFO_COL_ID_APPHASH), 
+				tbl_sysinfo[DBS_SYS_TBL_SYSINFO_COL_ID_APPHASH].col_len);
+		}
 		
 		ret = SQLITE_OK;		
 	}
@@ -5429,7 +5447,7 @@ int __dbs_underlayer_select_cnu_index_by_mac(char *mac, stCnuNode *index)
 		}
 		else
 		{
-			index->clt = 1;
+			index->clt = (sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_ID) -1) / MAX_CNUS_PER_CLT + 1;
 			index->cnu = sqlite3_column_int(stmt, DBS_SYS_TBL_CNU_COL_ID_ID);
 			ret = SQLITE_OK;
 		}

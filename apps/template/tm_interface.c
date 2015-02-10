@@ -160,7 +160,7 @@ BOOLEAN __is_cnu_valid(uint16_t clt_index, uint16_t cnu_index)
 	{
 		return BOOL_FALSE;
 	}
-	else if( boardapi_isCnuSupported(cnu.col_model) == BOOL_FALSE )
+	else if( boardapi_isCnuTrusted(cnu.col_model) == BOOL_FALSE )
 	{
 		return BOOL_FALSE;
 	}

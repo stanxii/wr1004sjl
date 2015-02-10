@@ -47,6 +47,7 @@ int http2dbs_getHwVersion(char *varValue);
 int http2dbs_getBootVersion(char *varValue);
 int http2dbs_getKernelVersion(char *varValue);
 int http2dbs_getAppVersion(char *varValue);
+int http2dbs_getAppHash(char *varValue);
 int http2dbs_getManufactory(char *varValue);
 int http2dbs_getFtpIpaddr(char *varValue);
 int http2dbs_getFtpPort(char *varValue);

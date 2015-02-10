@@ -696,6 +696,7 @@ CGI_ITEM CgiGetTable[] = {
    { "wecBootVersion", (void *)glbWebVar.wecBootVersion, CGI_TYPE_STR },
    { "wecKernelVersion", (void *)glbWebVar.wecKernelVersion, CGI_TYPE_STR },
    { "wecAppVersion", (void *)glbWebVar.wecAppVersion, CGI_TYPE_STR },
+   { "wecAppHash", (void *)glbWebVar.wecAppHash, CGI_TYPE_STR },
    { "wecFlashSize", (void *)&glbWebVar.wecFlashSize, CGI_TYPE_NUM },
    { "wecSdramSize", (void *)&glbWebVar.wecSdramSize, CGI_TYPE_NUM },
    { "wecManufactory", (void *)glbWebVar.wecManufactory, CGI_TYPE_STR },

@@ -87,6 +87,10 @@ int __mapModCarrier(char value)
 		{
 			return 10;
 		}
+		case 8:
+		{
+			return 12;
+		}
 		default:
 		{
 			return 0;
@@ -1360,45 +1364,91 @@ void MME_ProcessLinkDiag(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 	if( 0 == idata->dir )
 	{
 		ihpapi_getToneMapData_t outputToneMapInfo;		
-		bzero(&outputToneMapInfo, sizeof(ihpapi_getToneMapData_t));		
-		if( CMM_SUCCESS == MME_Atheros_MsgGetTxToneMapInfo(MME_SK, msg->HEADER.ODA, &inputToneMapInfo, &outputToneMapInfo) )
+		bzero(&outputToneMapInfo, sizeof(ihpapi_getToneMapData_t));
+		if( idata->chipser == 0 )
 		{
-			p = outputToneMapInfo.mod_carrier;
-			for( i=0; i<MOD_CARRIER_MAX_TUPLE_NUM; i++ )
+			if( CMM_SUCCESS == MME_Atheros_MsgGetTxToneMapInfo(MME_SK, msg->HEADER.ODA, &inputToneMapInfo, &outputToneMapInfo) )
 			{
-				temp += __mapModCarrier(p[i]&0x0f);
-				temp += __mapModCarrier((p[i]>>4)&0x0f);
+				p = outputToneMapInfo.mod_carrier;
+				for( i=0; i<MOD_CARRIER_MAX_TUPLE_NUM; i++ )
+				{
+					temp += __mapModCarrier(p[i]&0x0f);
+					temp += __mapModCarrier((p[i]>>4)&0x0f);
+				}
+				diagInfo.bitRate = (float)temp/outputToneMapInfo.tmnumactcarriers;
+				diagInfo.attenuation = 0;			
 			}
-			diagInfo.bitRate = (float)temp/outputToneMapInfo.tmnumactcarriers;
-			diagInfo.attenuation = 0;			
+			else
+			{
+				/* 将错误信息返回给请求者 */
+				MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
+				return;
+			}
 		}
-		else
+		else if( idata->chipser == 1)
 		{
-			/* 将错误信息返回给请求者 */
-			MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
-			return;
-		}		
+			if( CMM_SUCCESS == MME_Atheros_MsgGet74TxToneMapInfo(MME_SK, msg->HEADER.ODA, &inputToneMapInfo, &outputToneMapInfo) )
+			{
+				p = outputToneMapInfo.mod_carrier;
+				for( i=0; i<MOD_CARRIER_MAX_TUPLE_NUM; i++ )
+				{
+					temp += __mapModCarrier(p[i]&0x0f);
+					temp += __mapModCarrier((p[i]>>4)&0x0f);
+				}
+				diagInfo.bitRate = (float)temp/outputToneMapInfo.tmnumactcarriers;
+				diagInfo.attenuation = 0;
+			}
+			else
+			{
+				/* 将错误信息返回给请求者 */
+				MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
+				return;
+			}
+		}			
 	}
 	else if( 1 == idata->dir )
 	{
 		ihpapi_getRxToneMapData_t outputToneMapInfo;
 		bzero(&outputToneMapInfo, sizeof(ihpapi_getRxToneMapData_t));
-		if( CMM_SUCCESS == MME_Atheros_MsgGetRxToneMapInfo(MME_SK, msg->HEADER.ODA, &inputToneMapInfo, &outputToneMapInfo) )
+		if( idata->chipser == 0 )
 		{
-			p = outputToneMapInfo.mod_carrier;
-			for( i=0; i<MOD_CARRIER_MAX_TUPLE_NUM; i++ )
+			if( CMM_SUCCESS == MME_Atheros_MsgGetRxToneMapInfo(MME_SK, msg->HEADER.ODA, &inputToneMapInfo, &outputToneMapInfo) )
 			{
-				temp += __mapModCarrier(p[i]&0x0f);
-				temp += __mapModCarrier((p[i]>>4)&0x0f);
-			}			
-			diagInfo.bitRate = (float)temp/outputToneMapInfo.tmnumactcarriers;
-			diagInfo.attenuation = outputToneMapInfo.avg_agc_gain;			
+				p = outputToneMapInfo.mod_carrier;
+				for( i=0; i<MOD_CARRIER_MAX_TUPLE_NUM; i++ )
+				{
+					temp += __mapModCarrier(p[i]&0x0f);
+					temp += __mapModCarrier((p[i]>>4)&0x0f);
+				}			
+				diagInfo.bitRate = (float)temp/outputToneMapInfo.tmnumactcarriers;
+				diagInfo.attenuation = outputToneMapInfo.avg_agc_gain;			
+			}
+			else
+			{
+				/* 将错误信息返回给请求者 */
+				MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
+				return;
+			}
 		}
-		else
+		else if( idata->chipser == 1 )
 		{
-			/* 将错误信息返回给请求者 */
-			MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
-			return;
+			if( CMM_SUCCESS == MME_Atheros_MsgGet74RxToneMapInfo(MME_SK, msg->HEADER.ODA, &inputToneMapInfo, &outputToneMapInfo) )
+			{
+				p = outputToneMapInfo.mod_carrier;
+				for( i=0; i<MOD_CARRIER_MAX_TUPLE_NUM; i++ )
+				{
+					temp += __mapModCarrier(p[i]&0x0f);
+					temp += __mapModCarrier((p[i]>>4)&0x0f);
+				}			
+				diagInfo.bitRate = (float)temp/outputToneMapInfo.tmnumactcarriers;
+				diagInfo.attenuation = outputToneMapInfo.avg_agc_gain;			
+			}
+			else
+			{
+				/* 将错误信息返回给请求者 */
+				MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
+				return;
+			}
 		}
 	}
 	else
@@ -1439,41 +1489,82 @@ void MME_ProcessLinkDiag(MMEAD_BBLOCK_QUEUE *this, T_MME_SK_HANDLE *MME_SK)
 		return;
 	}
 
-	if( CMM_SUCCESS == MME_Atheros_MsgGetNetInfo(MME_SK, diagInfo.ccoMac, &outputNetInfo) )
+	if( idata->chipser == 0 )
 	{
-		cfound = 0;
-		p = outputNetInfo.nwinfo;
-		memcpy(diagInfo.ccoNid, p, 7);
-		p += 7;
-		diagInfo.ccoSnid = *p++;
-		diagInfo.ccoTei = *p;
-		p += 9;
-		temp = *p++;
-
-		for( i=0; i<temp; i++, p+=15 )
+		if( CMM_SUCCESS == MME_Atheros_MsgGetNetInfo(MME_SK, diagInfo.ccoMac, &outputNetInfo) )
 		{
-			if( 0 == memcmp(msg->HEADER.ODA, p, 6) )
+			cfound = 0;
+			p = outputNetInfo.nwinfo;
+			memcpy(diagInfo.ccoNid, p, 7);
+			p += 7;
+			diagInfo.ccoSnid = *p++;
+			diagInfo.ccoTei = *p;
+			p += 9;
+			temp = *p++;
+			for( i=0; i<temp; i++, p+=15 )
 			{
-				cfound = 1;
-				diagInfo.tei = *(p+6);
-				memcpy(diagInfo.bridgedMac, p+7, 6);
-				diagInfo.tx = *(p+13);;
-				diagInfo.rx = *(p+14);;
-				break;
+				if( 0 == memcmp(msg->HEADER.ODA, p, 6) )
+				{
+					cfound = 1;
+					diagInfo.tei = *(p+6);
+					memcpy(diagInfo.bridgedMac, p+7, 6);
+					diagInfo.tx = *(p+13);
+					diagInfo.rx = *(p+14);
+					break;
+				}
+			}
+			if(!cfound)
+			{
+				/* 将错误信息返回给请求者 */
+				MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
+				return;
 			}
 		}
-		if(!cfound)
+		else
 		{
 			/* 将错误信息返回给请求者 */
 			MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
 			return;
 		}
 	}
-	else
+	else if( idata->chipser == 1 )
 	{
-		/* 将错误信息返回给请求者 */
-		MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
-		return;
+		if( CMM_SUCCESS == MME_Atheros_MsgGet74NetInfo(MME_SK, diagInfo.ccoMac, &outputNetInfo) )
+		{
+			cfound = 0;
+			p = outputNetInfo.nwinfo;
+			memcpy(diagInfo.ccoNid, p, 7);
+			p += 9;
+			diagInfo.ccoSnid = *p++;
+			diagInfo.ccoTei = *p;
+			p += 16;
+			temp = *p++;
+			p += 5;
+			for( i=0; i<temp; i++, p+=24 )
+			{
+				if( 0 == memcmp(msg->HEADER.ODA, p, 6) )
+				{
+					cfound = 1;
+					diagInfo.tei = *(p+6);
+					memcpy(diagInfo.bridgedMac, p+10, 6);
+					diagInfo.tx = *(p+16) | (*(p+17)<<8);
+					diagInfo.rx = *(p+20) | (*(p+21)<<8);
+					break;
+				}
+			}
+			if(!cfound)
+			{
+				/* 将错误信息返回给请求者 */
+				MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
+				return;
+			}
+		}
+		else
+		{
+			/* 将错误信息返回给请求者 */
+			MMEAD_ProcessAck(CMM_FAILED, this, NULL, 0);
+			return;
+		}
 	}
 	MMEAD_ProcessAck(CMM_SUCCESS, this, (uint8_t *)&diagInfo, sizeof(T_MMEAD_LINK_DIAG_RESULT));
 }

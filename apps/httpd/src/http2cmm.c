@@ -1313,10 +1313,8 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	}else{
 		rtl8306e->vlanConfig.vlan_port[3].egress_mode = 3;
 	}	
-	
 
 	/* add by stan for save dbs  end */
-	
 
 	req->HEADER.usSrcMID = MID_HTTP;
 	req->HEADER.usDstMID = MID_CMM;
@@ -1325,12 +1323,7 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	req->HEADER.fragment = 0;
 
 	/*add by stan */
-	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
-	if( len > MAX_UDP_SIZE )
-	{
-		printf("add by stan too len rtl8306 body + profile len\n");
-		return CMM_FAILED;
-	}
+	
 
 	memcpy(req->BUF + sizeof(rtl8306eWriteInfo), &profile, sizeof(st_dbsProfile));
 
@@ -1340,11 +1333,15 @@ int http2cmm_setSwitchSettings(stCnuNode *node, st_rtl8306eSettings * rtl8306e)
 	req_data->node.clt = node->clt;
 	req_data->node.cnu = node->cnu;
 	memcpy(&(req_data->rtl8306eConfig), rtl8306e, sizeof(st_rtl8306eSettings));
-	
+
 	len = sizeof(req->HEADER) + req->HEADER.ulBodyLength;
+	if( len > MAX_UDP_SIZE )
+	{
+		printf("add by stan too len rtl8306 body + profile len\n");
+		return CMM_FAILED;
+	}
 	
-	return __http2cmm_comm(buf, len);
-	
+	return __http2cmm_comm(buf, len);	
 }
 
 int http2cmm_doLinkDiag( PWEB_NTWK_VAR pWebVar )
